@@ -25,7 +25,7 @@ python3 tools/ci/github_ops.py merge 42
 
 The command waits for the exact PR head to pass **Windows build and tests** and passes that SHA to GitHub as part of the squash merge. If the PR changes while it waits, run the command again for the new SHA. Use `--check-only` to inspect the result without merging. Use this command for merges while the private repository is on GitHub Free.
 
-The CI report links to the Windows job and shows the model tests, installer tests and Setup build result. You can refresh the report directly with `python3 tools/ci/github_ops.py report 42`. For changes to the interface, capture the affected screen in a light and dark theme on a trusted Windows device. Attach the two screenshots to the PR and pass their HTTPS URLs via `report 42 --head <PR_SHA> --light <URL> --dark <URL>`. Running Windows CI alone gives build and test coverage for those changes.
+The Windows CI report bot posts or updates one comment for the current PR head. It links to the Windows job and shows the model tests, installer tests and Setup build result. You can refresh the report directly with `python3 tools/ci/github_ops.py report 42`. For changes to the interface, capture the affected screen in a light and dark theme on a trusted Windows device. Attach the two screenshots to the PR and pass their HTTPS URLs via `report 42 --head <PR_SHA> --light <URL> --dark <URL>`. Running Windows CI alone gives build and test coverage for those changes.
 
 ## Prepare a beta release draft
 
