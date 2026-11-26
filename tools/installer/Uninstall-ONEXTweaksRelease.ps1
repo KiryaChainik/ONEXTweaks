@@ -461,6 +461,23 @@ function Remove-ONEXTweaksOwnedMachineState($Plan) {
     }
 }
 
+function Remove-ONEXTweaksOwnedReleaseFile($Plan, $Row) {
+    for ($attempt = 0; ; $attempt++) {
+        $path = Get-ONEXTweaksOwnedFile $Plan.Root $Row
+        if (!(Test-Path -LiteralPath $path -PathType Leaf -ErrorAction Stop)) { return }
+        try {
+            Remove-Item -LiteralPath $path -Force -ErrorAction Stop
+            return
+        } catch {
+            # Windows can report access denied for a runtime image that is
+            # still mapped while the Bridge process is being torn down.
+            $code = $_.Exception.GetBaseException().HResult -band 0xffff
+            if ($attempt -ge 20 -or $Row.Path -notmatch '^WidgetBridge[\\/]' -or $code -notin @(5,32,33,1224)) { throw }
+            Start-Sleep -Milliseconds 250
+        }
+    }
+}
+
 function Invoke-ONEXTweaksMachineRemoval($Plan, [string]$Lease) {
     $marker = "Registry::HKEY_USERS\$($Plan.Receipt.OwnerSid)\Software\ONEXTweaks\Installation"
     if ((Get-ItemProperty -LiteralPath $marker -Name OwnerRemovalReceipt -ErrorAction Stop).OwnerRemovalReceipt -cne $Plan.Digest) {
@@ -499,10 +516,7 @@ function Invoke-ONEXTweaksMachineRemoval($Plan, [string]$Lease) {
     # Keep installer code until other binaries are gone so a locked runtime
     # file leaves the protected retry entry available.
     foreach ($row in @($Plan.Files.Values | Sort-Object @{Expression={ [int]($_.Path -like 'Tools\Installer\*') }},Path)) {
-        $path = Get-ONEXTweaksOwnedFile $Plan.Root $row
-        if (Test-Path -LiteralPath $path -PathType Leaf -ErrorAction Stop) {
-            Remove-Item -LiteralPath $path -Force -ErrorAction Stop
-        }
+        Remove-ONEXTweaksOwnedReleaseFile $Plan $row
     }
     foreach ($relative in @('Tools\Installer','Tools','PowerAgent','WidgetBridge')) {
         $directory = Join-Path $Plan.Root $relative

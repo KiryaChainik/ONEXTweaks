@@ -18,7 +18,8 @@ $sid = 'S-1-5-21-100-200-300-1001'
 $family = 'ONEXTweaks.Widget_3a23eh8tyg7na'
 $full = 'ONEXTweaks.Widget_0.29.100.0_x64__3a23eh8tyg7na'
 $f = @{ Running=$true; Enabled=$true; Task=$true; Package=$true; Marker=''; TaskReads=0; Stops=0; Restores=0; Unregisters=0; Author='installer';
-    MaintenanceActive=$false; MaintenanceStarts=0; MaintenanceStops=0; ParentKey=$false; ReceiptKey=$false; TransientReads=0; TransientOmission=$false }
+    MaintenanceActive=$false; MaintenanceStarts=0; MaintenanceStops=0; ParentKey=$false; ReceiptKey=$false; TransientReads=0; TransientOmission=$false;
+    RuntimeDeleteBlocks=0; RuntimeDeleteAttempts=0 }
 function Assert-ONEXTweaksProtectedItem($Path) { Check ($Path.StartsWith($temp) -and (Test-Path -LiteralPath $Path)) 'Unexpected fixture protection check.' }
 function Export-ScheduledTask($TaskPath,$TaskName) {
     Check ($TaskPath -eq '\' -and $TaskName -ceq 'ONEXTweaks-WidgetBridge') 'Unexpected task export.'
@@ -92,6 +93,15 @@ function Test-Path($LiteralPath,$PathType='Any') {
     if ($LiteralPath -ceq 'HKCU:\Software\ONEXTweaks\Installation') { return $f.ReceiptKey }
     Microsoft.PowerShell.Management\Test-Path -LiteralPath $LiteralPath -PathType $PathType -ErrorAction Stop
 }
+function Remove-Item($LiteralPath,[switch]$Force) {
+    Check ($LiteralPath -ceq $owned -and $Force) 'Deletion attempted outside the owned runtime file.'
+    $f.RuntimeDeleteAttempts++
+    if ($f.RuntimeDeleteBlocks -gt 0) {
+        $f.RuntimeDeleteBlocks--
+        throw [UnauthorizedAccessException]::new('The fixture runtime image is still mapped.')
+    }
+    Microsoft.PowerShell.Management\Remove-Item -LiteralPath $LiteralPath -Force -ErrorAction Stop
+}
 try {
     foreach ($folder in @($state,(Split-Path $owned),(Split-Path $lease))) { [void][IO.Directory]::CreateDirectory($folder) }
     [IO.File]::WriteAllText($owned,'owned')
@@ -153,9 +163,19 @@ try {
     Check ($f.Unregisters -eq 0 -and (Test-Path -LiteralPath $owned) -and (Test-Path -LiteralPath $receiptPath)) 'OEM conflict lost recovery state.'
     $f.FailRestore = $false
     [IO.File]::SetAttributes($owned, [IO.FileAttributes]::ReadOnly)
+    & {
+        function Start-Sleep([int]$Milliseconds) { Check ($Milliseconds -eq 250) 'Unexpected retry interval.' }
+        $f.RuntimeDeleteBlocks = 22
+        Reject { Remove-ONEXTweaksOwnedReleaseFile $plan $plan.Files[$owned] } 'runtime image is still mapped'
+        Check ($f.RuntimeDeleteAttempts -eq 21 -and (Test-Path -LiteralPath $owned) -and
+            (Test-Path -LiteralPath $receiptPath)) 'Persistent runtime lock did not stop at the retry limit.'
+    }
+    $f.RuntimeDeleteAttempts = 0
+    $f.RuntimeDeleteBlocks = 2
     $result = Invoke-ONEXTweaksMachineRemoval (Get-ONEXTweaksUninstallPlan $state $root) $lease
     Check ($result.State -eq 'Removed' -and !$f.Task -and !(Test-Path -LiteralPath $owned) -and (Test-Path -LiteralPath $shared)) 'Unexpected machine cleanup result.'
     Check ($f.TransientReads -eq 0 -and $f.Unregisters -eq 1) 'Transient scheduler reads prevented one verified removal.'
+    Check ($f.RuntimeDeleteAttempts -eq 3) 'The temporary runtime image mapping prevented first-attempt uninstall.'
     Check (!(Test-Path -LiteralPath $receiptPath) -and (Test-Path -LiteralPath $data) -and $null -eq (Get-ONEXTweaksUninstallPlan $state $root)) 'Repeated uninstall or user data changed.'
     'Two-phase uninstall, capture blocking, preserved AppX data, exact task/file ownership and retry fixtures passed.'
 } finally { if ([IO.Directory]::Exists($temp)) { [IO.Directory]::Delete($temp,$true) } }
