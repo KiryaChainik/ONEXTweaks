@@ -160,7 +160,11 @@ function Restore-ONEXTweaksUpgrade($Journal, [bool]$RestartLegacy) {
             throw 'An unrelated or already completed release owns the runtime.'
         }
         $remove = Get-ONEXTweaksVerifiedTool $plan 'Tools\Installer\Uninstall-ONEXTweaksRelease.ps1'
-        & $remove -Uninstall -Confirm:$false | Out-Null
+        # Keep the staged widget registered for the in-place downgrade, but
+        # prevent activations while removing the private 1110 runtime.
+        $maintenance = if ((Get-ONEXTweaksUpgradePackage) -ceq $newPackage) { Open-ONEXTweaksPackageMaintenance $newPackage }
+        try { & $remove -Uninstall -Confirm:$false | Out-Null }
+        finally { if ($maintenance) { $maintenance.Dispose() } }
     }
     if (Test-Path -LiteralPath $enrollment) {
         Assert-ONEXTweaksProtectedItem $enrollment
