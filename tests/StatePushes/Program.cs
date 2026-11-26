@@ -1,0 +1,20 @@
+using XboxGamingBar;
+var checks=new List<string>();
+void Check(bool ok,string name){if(!ok)throw new Exception(name);checks.Add(name);}
+var buffer=new OnexLatestStates();
+for(int n=0;n<50000;n++)buffer.Put("volume",n.ToString());
+Check(buffer.PendingCount==1,"A slow dispatcher keeps one latest snapshot per kind");
+var latest=buffer.Take(4);Check(latest.Length==1&&latest[0].Value=="49999","The latest snapshot survives a long backlog");
+buffer.Complete("volume","49999",true);buffer.Put("volume","49999");Check(buffer.PendingCount==0,"Identical applied state does not recreate UI objects");
+buffer.Put("volume","50");latest=buffer.Take(4);buffer.Put("volume","60");buffer.Complete("volume","50",true);Check(buffer.Take(4).Single().Value=="60","A newer snapshot arriving during apply is retained");
+buffer.Complete("volume","60",false);buffer.Put("volume","60");Check(buffer.Take(4).Length==1,"A busy control retries the same state when ready");
+buffer.Complete("volume","60",true);buffer.Put("volume","70");buffer.Take(4);buffer.Put("volume","60");buffer.Complete("volume","70",true);Check(buffer.Take(4).Single().Value=="60","Returning to a prior value while a newer value is in flight is retained");
+buffer.Complete("volume","60",true);buffer.Invalidate();buffer.Put("volume","60");Check(buffer.Take(4).Length==1,"Reopening or reconnecting invalidates deduplication");
+Parallel.For(0,50000,n=>buffer.Put("kind"+(n%15),n.ToString()));Check(buffer.PendingCount==15,"Concurrent producer backlog is bounded by snapshot kinds");
+Check(buffer.Take(4).Length==4&&buffer.PendingCount==11,"A dispatcher turn has a bounded batch");
+while(buffer.PendingCount>0)buffer.Take(4);Check(buffer.PendingCount==0,"All pending states eventually drain");
+var replies=new OnexLatestStates();replies.Put("charge","old");replies.Take(4);replies.Complete("charge","old",true);
+replies.Put("charge","older queued state");replies.Take(4);replies.ResetAfterReply();replies.Complete("charge","older queued state",true);
+replies.Put("charge","old");Check(replies.Take(4).Single().Value=="old","A command reply invalidates an old in-flight cache even when the next value matches a prior snapshot");
+replies.Put("mode","stale");replies.ResetAfterReply();Check(replies.PendingCount==0,"A fresh command reply discards older queued telemetry");
+Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{passed=true,checks}));

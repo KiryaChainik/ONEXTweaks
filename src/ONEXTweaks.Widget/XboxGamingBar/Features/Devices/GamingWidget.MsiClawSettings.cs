@@ -1,0 +1,674 @@
+using NLog;
+using System;
+using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.UI;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+
+namespace XboxGamingBar
+{
+    /// <summary>
+    /// Widget-side handlers for MSI Claw-specific hardware features:
+    ///   • LED Controller Color (HID)
+    ///   • Battery Charge Limit (WMI/ACPI)
+    ///
+    /// Both cards are hidden by default and revealed only when the helper
+    /// confirms an MSI Claw device (deviceDisplayName contains "Claw").
+    ///
+    /// Settings are persisted in LocalSettings and pushed to the helper
+    /// via named pipe on change and on widget startup.
+    /// </summary>
+    public sealed partial class GamingWidget
+    {
+        // ── LocalSettings keys ──────────────────────────────────────────────────────
+        private const string MsiLedColorKey         = "MsiClaw_LedColor";       // "R,G,B"
+        private const string MsiLedBrightnessKey    = "MsiClaw_LedBrightness";  // int 0..100 (0 = LED off)
+        private const string MsiLedOnBrightnessKey  = "MsiClaw_LedOnBrightness"; // int 1..100 — level to restore when the tile turns the LED back on
+        private const string MsiChargeLimitEnabledKey = "MsiClaw_ChargeLimitOn";  // bool
+        private const string MsiChargeLimitPercentKey = "MsiClaw_ChargeLimitPct"; // int 20..100
+        // Set true the first time the user enables the charge limiter in the System tab. The
+        // Quick Settings ChargeLimiter tile only works after this initial setup.
+        private const string MsiChargeLimitInitKey    = "MsiClaw_ChargeLimitInit"; // bool
+        private const int    MsiChargeLimitTileDefault = 90;  // tile default % when the user has no stored value
+
+        // ── State ───────────────────────────────────────────────────────────────────
+        private bool   _msiLedExpanded       = false;
+        // Start TRUE (same rationale as _msiChargeLimitLoading below): MsiLedSyncToggle has IsOn="True"
+        // in XAML, so its Toggled fires during page construction — BEFORE RestoreMsiLedEffectFromSettings
+        // runs. With this false, that spurious Toggled ran WriteEditorToComposite(), which copied the
+        // editor's own field defaults (Static + white + RGB wave colours) into _ledComposite and
+        // persisted/pushed them. On a device WITH a saved config EnsureCompositeLoaded overwrote that
+        // again, hiding the bug — but on a FRESH INSTALL there is nothing to overwrite it with, so white
+        // was written to LocalSettings and pushed to the controller as if the user had picked it. That is
+        // the "LED goes white after every reinstall" bug. Restore clears this flag when done.
+        private bool   _msiLedLoading        = true;
+        // Start TRUE so the Slider's XAML-default ValueChanged (Value="80") and the ToggleSwitch's
+        // default Toggled — both raised during page construction, BEFORE RestoreMsiChargeLimitFromSettings
+        // runs — are ignored. Otherwise that spurious 80 clobbered the stored percent and got pushed to
+        // the helper on every startup, resetting a user's 95% back to 80%. Restore clears it when done.
+        private bool   _msiChargeLimitLoading = true;
+
+        // Debounce timer so dragging the color wheel doesn't flood the helper
+        private Windows.UI.Xaml.DispatcherTimer _msiLedDebounceTimer;
+        private Color  _pendingLedColor;
+
+        // ── Init ────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Called from the main widget initialization (after device name is known).
+        /// Shows MSI Claw cards and restores saved settings.
+        /// </summary>
+        internal void InitializeMsiClawSettings()
+        {
+            if (!IsMsiClawDevice()) return;
+
+            // Show the MSI-Claw-only cards
+            if (MsiLedColorCard    != null) MsiLedColorCard.Visibility    = Visibility.Visible;
+            if (MsiChargeLimitCard != null) MsiChargeLimitCard.Visibility = Visibility.Visible;
+            // Vibration & Deadzone card (Controller tab). Gated on the device name like the LED /
+            // charge-limit cards — NOT on controllerEmulationAvailable, which can arrive after the
+            // gyro callback (its only other visibility owner) and used to leave the card hidden.
+            if (ControllerFeedbackCard != null) ControllerFeedbackCard.Visibility = Visibility.Visible;
+
+            // Same timing problem for the gyro action button: SetGyroSectionVisibility may have run
+            // before the device name arrived and left it labelled for a Legion.
+            UpdateGyroActionButtonForDevice();
+
+            // Controller-Status card is always visible in the Controller tab (set in XAML).
+            // Just fetch a fresh state on init.
+            RequestControllerState();
+
+            RestoreMsiLedEffectFromSettings();
+            RestoreMsiChargeLimitFromSettings();
+            RestoreGameBarWidgetPositionFromSettings();
+            RestoreClawGyroSource();
+            RestoreClawGyroWorldSpace();
+            RestoreMsiFanNoScaleBreak();
+
+            Logger.Debug("[MsiClawSettings] Cards visible, settings restored");
+        }
+
+        // ── Right MSI Button: ONEXTweaks Game Bar widget position (RB auto-jump) ──────────
+        // Start TRUE (same rationale as _msiChargeLimitLoading): the Slider's XAML-default
+        // ValueChanged (Value="1") fires during page construction, BEFORE
+        // RestoreGameBarWidgetPositionFromSettings runs. With this false, that spurious 1 was saved
+        // over the user's stored value and pushed to the helper — so the position reset to 1 on every
+        // reboot. Restore clears this flag in its finally once the real value is loaded.
+        private bool _loadingGameBarWidgetPosition = true;
+
+        private void RestoreGameBarWidgetPositionFromSettings()
+        {
+            try
+            {
+                _loadingGameBarWidgetPosition = true;
+                int pos = 1; // default 1 = auto-jump off; also the value after a factory reset (LocalSettings cleared → key missing)
+                var settings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                bool haveStored = settings.Values.TryGetValue(GameBarWidgetPositionKey, out var v) && v is int;
+                if (haveStored) pos = (int)v;
+                if (pos < 1) pos = 1;
+                if (pos > 10) pos = 10;
+
+                ShowGameBarWidgetPosition(pos);
+
+                // Deliberately NOT pushed to the helper. This value is only what this widget last saw;
+                // the helper owns the position (it persists it and performs the RB hops), and Center's
+                // onboarding can have changed it since — through the helper, without ever touching these
+                // LocalSettings. Re-pushing from here silently reverted such a change: helper 3, widget
+                // 1, widget pushes 1, auto-jump back to off.
+                // The real value arrives via GameBarWidgetPositionPush on connect and on every change;
+                // what is shown here is just the last-known value so the UI isn't blank until then.
+                Logger.Info($"[GameBarAutoNav] showing last-known widget position = {pos} " +
+                            $"(stored={haveStored}) — waiting for the helper's authoritative value");
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"[GameBarAutoNav] restore position failed: {ex.Message}");
+            }
+            finally { _loadingGameBarWidgetPosition = false; }
+        }
+
+        /// <summary>Writes a position into both slider copies and their labels. No persist, no push.</summary>
+        private void ShowGameBarWidgetPosition(int pos)
+        {
+            if (ClawTweaksWidgetPositionSlider != null) ClawTweaksWidgetPositionSlider.Value = pos;
+            if (ClawTweaksWidgetPositionValue != null) ClawTweaksWidgetPositionValue.Text = pos.ToString();
+            // Onboarding duplicate (mirror).
+            if (OnbClawTweaksWidgetPositionSlider != null) OnbClawTweaksWidgetPositionSlider.Value = pos;
+            if (OnbClawTweaksWidgetPositionValue != null) OnbClawTweaksWidgetPositionValue.Text = pos.ToString();
+        }
+
+        /// <summary>
+        /// The helper reported the auto-jump slot it actually applies. Adopt it: update both sliders and
+        /// mirror it into LocalSettings so the UI is right immediately AND on the next start, before the
+        /// helper reconnects. Runs under the loading guard so this never echoes back as a user change.
+        ///
+        /// This is the missing link that made a Center-set position invisible in the widget: Center talks
+        /// only to the helper, and nothing carried the value the other way.
+        /// </summary>
+        internal void OnHelperGameBarWidgetPosition(int pos)
+        {
+            if (pos < 1) pos = 1;
+            if (pos > 10) pos = 10;
+
+            bool wasLoading = _loadingGameBarWidgetPosition;
+            _loadingGameBarWidgetPosition = true;
+            try
+            {
+                ShowGameBarWidgetPosition(pos);
+                Windows.Storage.ApplicationData.Current.LocalSettings.Values[GameBarWidgetPositionKey] = pos;
+                Logger.Info($"[GameBarAutoNav] adopted helper's widget position = {pos}");
+            }
+            catch (Exception ex) { Logger.Warn($"[GameBarAutoNav] adopting helper position failed: {ex.Message}"); }
+            finally { _loadingGameBarWidgetPosition = wasLoading; }
+        }
+
+        private bool _syncingWidgetPos;   // re-entrancy guard for the Controls-tab ↔ onboarding slider mirror
+
+        private void ClawTweaksWidgetPosition_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (_loadingGameBarWidgetPosition) return;
+            if (_syncingWidgetPos) return;   // ignore the echo from mirroring into the other slider
+            int pos = (int)System.Math.Round(e.NewValue);
+
+            // Mirror to the other copy (Controls tab ↔ onboarding) so both always show the same value.
+            _syncingWidgetPos = true;
+            try
+            {
+                if (ClawTweaksWidgetPositionSlider != null && (int)System.Math.Round(ClawTweaksWidgetPositionSlider.Value) != pos)
+                    ClawTweaksWidgetPositionSlider.Value = pos;
+                if (OnbClawTweaksWidgetPositionSlider != null && (int)System.Math.Round(OnbClawTweaksWidgetPositionSlider.Value) != pos)
+                    OnbClawTweaksWidgetPositionSlider.Value = pos;
+            }
+            finally { _syncingWidgetPos = false; }
+
+            if (ClawTweaksWidgetPositionValue != null) ClawTweaksWidgetPositionValue.Text = pos.ToString();
+            if (OnbClawTweaksWidgetPositionValue != null) OnbClawTweaksWidgetPositionValue.Text = pos.ToString();
+            try
+            {
+                Windows.Storage.ApplicationData.Current.LocalSettings.Values[GameBarWidgetPositionKey] = pos;
+            }
+            catch (Exception ex) { Logger.Warn($"[GameBarAutoNav] persist position failed: {ex.Message}"); }
+            gameBarWidgetPosition?.SetValue(pos);
+            Logger.Info($"[GameBarAutoNav] ONEXTweaks widget position set to {pos}");
+        }
+
+        /// <summary>Onboarding shortcut: jump to the Controls tab and open the Front Buttons card so the
+        /// user can assign the Left MSI (front) single-click action. The combo group there is too coupled
+        /// to safely duplicate, so onboarding links to it instead of mirroring it.</summary>
+        private void OnbSetupLeftMsi_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (LegionNavItem != null) LegionNavItem.IsChecked = true; // switch to the Controls tab
+
+                // Expand the Front Buttons (controller-emulation) card if it is currently collapsed
+                // (the handler is a toggle over isControllerEmulationExpanded and ignores its args).
+                if (!isControllerEmulationExpanded && ControllerEmulationExpandButton != null)
+                    ControllerEmulationExpandButton_Click(ControllerEmulationExpandButton, null);
+
+                // Bring the Left MSI card into view + focus its first control, deferred so the tab is shown.
+                _ = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, () =>
+                {
+                    try
+                    {
+                        LeftMsiButtonCard?.StartBringIntoView();
+                        LegionButtonDesktopTypeComboBox?.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+                    }
+                    catch { }
+                });
+            }
+            catch (Exception ex) { Logger.Debug($"OnbSetupLeftMsi_Click: {ex.Message}"); }
+        }
+
+        // ── LED Color ────────────────────────────────────────────────────────────────
+
+        // Vibration & Deadzone card expander (matches Button Remapping; collapsed by default).
+        private bool _controllerFeedbackExpanded;
+        internal void ControllerFeedbackExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            _controllerFeedbackExpanded = !_controllerFeedbackExpanded;
+            if (ControllerFeedbackContent != null)
+                ControllerFeedbackContent.Visibility = _controllerFeedbackExpanded ? Visibility.Visible : Visibility.Collapsed;
+            // E70D = ChevronDown (collapsed), E70E = ChevronUp (expanded)
+            if (ControllerFeedbackExpandIcon != null)
+                ControllerFeedbackExpandIcon.Glyph = _controllerFeedbackExpanded ? "" : "";
+        }
+
+        // Mouse Settings card expander (Mouse Mode options split out of the old Virtual Controller
+        // card; collapsed by default, gated + hidden in-game like the other controller sections).
+        private bool _mouseSettingsExpanded;
+        internal void MouseSettingsExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            _mouseSettingsExpanded = !_mouseSettingsExpanded;
+            if (MouseSettingsContent != null)
+                MouseSettingsContent.Visibility = _mouseSettingsExpanded ? Visibility.Visible : Visibility.Collapsed;
+            // E70E = ChevronUp (expanded), E70D = ChevronDown (collapsed)
+            if (MouseSettingsExpandIcon != null)
+                MouseSettingsExpandIcon.Glyph = _mouseSettingsExpanded ? "" : "";
+        }
+
+        // Fires a short test rumble pulse at the current intensity (no game needed).
+        // Send a UNIQUE value each press — the trigger property dedupes equal values, so a constant
+        // "test" would only fire once. The helper ignores the content (it just checks for a Set).
+        private int _testVibrationSeq;
+        // Monotonic counter so a repeated "Xbox Button" tap always changes the trigger value
+        // (WidgetProperty dedupes equal values). Mirrors _testVibrationSeq.
+        private int _emulateXboxGuideSeq;
+        private void TestVibrationButton_Click(object sender, RoutedEventArgs e)
+        {
+            testControllerVibration?.Trigger("test" + (++_testVibrationSeq));
+        }
+
+        internal void MsiLedExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            _msiLedExpanded = !_msiLedExpanded;
+            if (MsiLedContent    != null) MsiLedContent.Visibility    = _msiLedExpanded ? Visibility.Visible : Visibility.Collapsed;
+            if (MsiLedExpandIcon != null) MsiLedExpandIcon.Glyph      = _msiLedExpanded ? "" : "";
+        }
+
+        // Static/Breathing colour picker (in the swatch flyout) → the editor's colour for the current zone.
+        internal void MsiLedColorPicker_ColorChanged(Microsoft.UI.Xaml.Controls.ColorPicker sender,
+                                                      Microsoft.UI.Xaml.Controls.ColorChangedEventArgs args)
+        {
+            if (_msiLedLoading) return;
+            OnEditorColorChanged(args.NewColor);
+        }
+
+        // Legacy LED-by-battery toggle — SUPERSEDED by the "Battery" LED mode (per zone). Kept Collapsed
+        // so this handler compiles; neutralized.
+        private void LedColorBySocToggle_Toggled(object sender, RoutedEventArgs e) { }
+
+        /// <summary>Global LED brightness slider (applies to all zones; 0 = off). Debounced.</summary>
+        private void MsiLedBrightnessSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (_msiLedLoading) return;
+            OnGlobalBrightnessChanged((int)Math.Round(e.NewValue));
+        }
+
+        // ── MSI Claw LED on/off (drives the LED quick-settings tile) ─────────────────────
+        internal int GetMsiLedBrightness()
+        {
+            EnsureCompositeLoaded();   // read the saved config, not a stale default (tile can run pre-Restore)
+            return _ledComposite != null ? _ledComposite.Brightness : 100;
+        }
+
+        internal bool IsMsiLedOn() => GetMsiLedBrightness() > 0;
+
+        /// <summary>Turns the MSI Claw LED on (brightness 100) or off (0), keeping the current effect.</summary>
+        internal void ApplyMsiLedOnOff(bool on)
+        {
+            EnsureCompositeLoaded();   // operate on the persisted composite, never a pre-Restore default
+            // Remember the current on-level before switching off so turning back on restores it (instead
+            // of snapping to 100 %), then apply.
+            if (!on && _ledComposite.Brightness > 0) SetLedOnBrightness(_ledComposite.Brightness);
+            _ledComposite.Brightness = on ? GetLedOnBrightness() : 0;
+            if (MsiLedBrightnessSlider != null)
+            {
+                _msiLedLoading = true;
+                try { MsiLedBrightnessSlider.Value = _ledComposite.Brightness; } finally { _msiLedLoading = false; }
+            }
+            SendCompositeNow();
+            Logger.Info($"[MsiLed] LED tile → {(on ? "ON (100%)" : "OFF (0%)")}");
+        }
+
+        /// <summary>
+        /// Re-pushes the composite to the helper on pipe (re)connect (widget is authoritative). Kept
+        /// under the original name so the pipe-connect caller stays unchanged.
+        /// </summary>
+        internal void ResendMsiLedColorToHelper()
+        {
+            try
+            {
+                if (!IsMsiClawDevice()) return;
+                ResendMsiLedEffectToHelper();
+            }
+            catch (Exception ex) { Logger.Warn($"[MsiLed] ResendMsiLedColorToHelper: {ex.Message}"); }
+        }
+
+        private async Task SendMsiLedColorAsync(byte r, byte g, byte b, int brightness = 100)
+        {
+            try
+            {
+                if (!App.IsConnected) return;
+                int bright = Math.Max(0, Math.Min(100, brightness));
+                var msg = new Windows.Foundation.Collections.ValueSet
+                {
+                    { "MsiLedColor", $"{r},{g},{b},{bright}" }
+                };
+                await App.SendMessageAsync(msg);
+                Logger.Info($"[MsiLed] Sent color R={r} G={g} B={b} Brightness={bright}");
+            }
+            catch (Exception ex) { Logger.Warn($"[MsiLed] Send failed: {ex.Message}"); }
+        }
+
+        // ── Charge Limit ─────────────────────────────────────────────────────────────
+
+        // Debounce so dragging the slider doesn't flood the helper with WMI writes.
+        private Windows.UI.Xaml.DispatcherTimer _msiChargeDebounceTimer;
+        private int _pendingChargePercent = MsiChargeLimitTileDefault;
+
+        private void RestoreMsiChargeLimitFromSettings()
+        {
+            try
+            {
+                _msiChargeLimitLoading = true;
+                var s = ApplicationData.Current.LocalSettings.Values;
+
+                bool enabled = s.TryGetValue(MsiChargeLimitEnabledKey, out var en) && en is bool b && b;
+                int  pct     = s.TryGetValue(MsiChargeLimitPercentKey,  out var pc) && pc is int  i ? i : MsiChargeLimitTileDefault;
+                pct = Math.Max(20, Math.Min(100, pct));
+
+                if (MsiChargeLimitToggle != null)
+                    MsiChargeLimitToggle.IsOn = enabled;
+                if (MsiChargeLimitPercentPanel != null)
+                    MsiChargeLimitPercentPanel.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+                if (MsiChargeLimitSlider != null)
+                    MsiChargeLimitSlider.Value = pct;
+                if (MsiChargeLimitValue != null)
+                    MsiChargeLimitValue.Text = $"{pct}%";
+            }
+            catch (Exception ex) { Logger.Warn($"[BattMgr] Restore charge limit failed: {ex.Message}"); }
+            finally { _msiChargeLimitLoading = false; }
+
+            // Read the live EC value so the status line reflects reality on open.
+            _ = QueryMsiChargeLimitStatusAsync();
+        }
+
+        internal void MsiChargeLimitToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_msiChargeLimitLoading) return;
+            if (OnexFrontend.UsesOwnBackend) { _ = SetOnexChargeAsync(MsiChargeLimitToggle.IsOn ? _onexChargePercent : 100); return; }
+            bool on = MsiChargeLimitToggle?.IsOn ?? false;
+
+            ApplicationData.Current.LocalSettings.Values[MsiChargeLimitEnabledKey] = on;
+            // First-time enable in Settings unlocks the Quick Settings tile.
+            if (on) ApplicationData.Current.LocalSettings.Values[MsiChargeLimitInitKey] = true;
+            if (MsiChargeLimitPercentPanel != null)
+                MsiChargeLimitPercentPanel.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+
+            int pct = (int)(MsiChargeLimitSlider?.Value ?? MsiChargeLimitTileDefault);
+            // Persist the percent alongside the enabled flag so the stored value is always
+            // complete (the slider may never have been moved), and the helper can be re-synced.
+            ApplicationData.Current.LocalSettings.Values[MsiChargeLimitPercentKey] = pct;
+            _ = SendMsiChargeLimitAsync(on, pct);
+            Logger.Info($"[BattMgr] Toggle → enabled={on} pct={pct}");
+        }
+
+        // ── Collapsible cards (System tab): Appearance/Theme + Charge Limit ──────────
+        // Same custom pattern as the Tab Settings card above (ToggleButton + chevron glyph
+        // flip E70D↔E70E + manual Visibility). Both start collapsed.
+        private bool _themeExpanded;
+        internal void ThemeExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(OnexFrontend.UsesOwnBackend){SetOnexAppearanceExpanded(ThemeExpandButton.IsChecked==true);return;}
+            _themeExpanded = !_themeExpanded;
+            if (ThemeContent != null)
+                ThemeContent.Visibility = _themeExpanded ? Visibility.Visible : Visibility.Collapsed;
+            if (ThemeExpandIcon != null)
+                ThemeExpandIcon.Glyph = _themeExpanded ? "" : "";
+        }
+
+        private bool _chargeLimitExpanded;
+        internal void ChargeLimitExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            _chargeLimitExpanded = !_chargeLimitExpanded;
+            if (MsiChargeLimitContent != null)
+                MsiChargeLimitContent.Visibility = _chargeLimitExpanded ? Visibility.Visible : Visibility.Collapsed;
+            if (ChargeLimitExpandIcon != null)
+                ChargeLimitExpandIcon.Glyph = _chargeLimitExpanded ? "" : "";
+        }
+
+        // Saved Profiles card (relocated to the Performance tab) — collapsed by default.
+        private bool _savedProfilesExpanded;
+        internal void PerfSavedProfilesExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            _savedProfilesExpanded = !_savedProfilesExpanded;
+            if (PerfSavedProfilesContent != null)
+                PerfSavedProfilesContent.Visibility = _savedProfilesExpanded ? Visibility.Visible : Visibility.Collapsed;
+            if (PerfSavedProfilesExpandIcon != null)
+                PerfSavedProfilesExpandIcon.Glyph = _savedProfilesExpanded ? "" : "";
+        }
+
+        // CPU card (Performance tab) — collapsed by default.
+        private bool _cpuCardExpanded;
+        private bool _cpuAdvancedSupported = true;
+
+        /// <summary>Device capability gate for the advanced CPU section (scheduling policy, P/E max
+        /// frequency). On the Claw 8 EX those are not dependable, so the chevron stays VISIBLE but
+        /// disabled — the user can see the section exists and does not apply here, rather than it
+        /// silently vanishing. The Boost toggle above is unaffected and keeps working.</summary>
+        private void SetCpuAdvancedAvailability(bool supported)
+        {
+            if(OnexFrontend.UsesOwnBackend)
+            {
+                _cpuAdvancedSupported=true;if(CpuCardExpandButton!=null){CpuCardExpandButton.IsEnabled=App.IsConnected&&OnexWindowsPowerReady&&!_onexPerformanceCpuLoading&&!_onexPerformanceCpuApplying;CpuCardExpandButton.IsTabStop=true;CpuCardExpandButton.Opacity=1;}
+                if(CpuCardCaptionText!=null)CpuCardCaptionText.Text=global::XboxGamingBar.OnexStrings.Get("Expand for boost policies, core preference and frequency limit · plugged in / battery.");return;
+            }
+            _cpuAdvancedSupported = supported;
+            if (CpuCardExpandButton != null)
+            {
+                CpuCardExpandButton.IsEnabled = supported;
+                // Disabled-but-focusable is a controller focus trap: drop it from the D-Pad chain too.
+                CpuCardExpandButton.IsTabStop = supported;
+                CpuCardExpandButton.Opacity = supported ? 1.0 : 0.4;
+            }
+            if (!supported)
+            {
+                // Collapse anything already open (the capability can arrive after the card was expanded).
+                _cpuCardExpanded = false;
+                if (CpuSectionContent != null) CpuSectionContent.Visibility = Visibility.Collapsed;
+                if (CpuCardCaptionText != null)
+                    CpuCardCaptionText.Text = global::XboxGamingBar.OnexStrings.Get("Toggle enables/disables CPU Boost. Scheduling policy and P/E core max frequency are not available on this device.");
+            }
+        }
+
+        internal void CpuCardExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(OnexFrontend.UsesOwnBackend){_=ToggleOnexPerformanceCpuAsync();return;}
+            if (!_cpuAdvancedSupported)
+            {
+                // Keep the chevron's checked state in sync with the section that never opened.
+                if (CpuCardExpandButton != null) CpuCardExpandButton.IsChecked = false;
+                return;
+            }
+            _cpuCardExpanded = !_cpuCardExpanded;
+            if (CpuSectionContent != null)
+                CpuSectionContent.Visibility = _cpuCardExpanded ? Visibility.Visible : Visibility.Collapsed;
+            if (CpuCardExpandIcon != null)
+                CpuCardExpandIcon.Glyph = _cpuCardExpanded ? "" : "";
+        }
+
+        internal void MsiChargeLimitSlider_ValueChanged(object sender,
+            Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            int pct = (int)Math.Round(e.NewValue);
+            if (MsiChargeLimitValue != null) MsiChargeLimitValue.Text = $"{pct}%";
+            if (_msiChargeLimitLoading) return;
+            if(OnexInputGuard.IsPreviewing(MsiChargeLimitSlider))return;
+            if (OnexFrontend.UsesOwnBackend) { QueueOnexChargeSlider(pct); return; }
+
+            ApplicationData.Current.LocalSettings.Values[MsiChargeLimitPercentKey] = pct;
+            _pendingChargePercent = pct;
+
+            // Debounce the helper write (500 ms after the last change).
+            if (_msiChargeDebounceTimer == null)
+            {
+                _msiChargeDebounceTimer = new Windows.UI.Xaml.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(500)
+                };
+                _msiChargeDebounceTimer.Tick += (s, ev) =>
+                {
+                    _msiChargeDebounceTimer.Stop();
+                    bool on = MsiChargeLimitToggle?.IsOn ?? false;
+                    _ = SendMsiChargeLimitAsync(on, _pendingChargePercent);
+                    Logger.Info($"[BattMgr] Percent (debounced) → {_pendingChargePercent}%");
+                };
+            }
+            _msiChargeDebounceTimer.Stop();
+            _msiChargeDebounceTimer.Start();
+        }
+
+        /// <summary>Re-reads the live EC charge-limit value (for resume-from-sleep verification).</summary>
+        internal void MsiChargeLimitVerifyButton_Click(object sender, RoutedEventArgs e)
+        {
+            _ = QueryMsiChargeLimitStatusAsync();
+        }
+
+        // ── Charge Limiter Quick Settings tile ───────────────────────────────────────
+        /// <summary>True once the user has enabled the charge limiter in the System tab at least once.</summary>
+        internal bool IsChargeLimiterInitialized()
+        {
+            if (OnexFrontend.UsesOwnBackend) return _onexChargeKnown;
+            var s = ApplicationData.Current.LocalSettings.Values;
+            return s.TryGetValue(MsiChargeLimitInitKey, out var v) && v is bool b && b;
+        }
+
+        internal bool IsChargeLimiterEnabled()
+        {
+            if (OnexFrontend.UsesOwnBackend) return _onexChargeOn;
+            var s = ApplicationData.Current.LocalSettings.Values;
+            return s.TryGetValue(MsiChargeLimitEnabledKey, out var v) && v is bool b && b;
+        }
+
+        internal int ChargeLimiterPercent()
+        {
+            if (OnexFrontend.UsesOwnBackend) return _onexChargePercent;
+            var s = ApplicationData.Current.LocalSettings.Values;
+            return s.TryGetValue(MsiChargeLimitPercentKey, out var v) && v is int i ? i : MsiChargeLimitTileDefault;
+        }
+
+        /// <summary>
+        /// Quick Settings tile: simple on/off. Only works once the limiter has been set up in the
+        /// System tab (IsChargeLimiterInitialized). Toggling on restores the user's stored percent
+        /// (or 90% if none). Keeps the System-tab UI in sync.
+        /// </summary>
+        private void ToggleChargeLimiterTile()
+        {
+            if (OnexFrontend.UsesOwnBackend) { if (_onexChargeKnown) _ = SetOnexChargeAsync(_onexChargeOn ? 100 : _onexChargePercent); return; }
+            if (!IsChargeLimiterInitialized())
+            {
+                // Not set up yet — tell the user to enable it once in Settings.
+                _ = SendActionNotificationAsync("Charge Limit\nEnable it once in the System tab first");
+                Logger.Info("[BattMgr] ChargeLimiter tile tapped but not initialized — prompting Settings setup");
+                return;
+            }
+
+            bool newOn = !IsChargeLimiterEnabled();
+            int pct = ChargeLimiterPercent();
+            if (pct < 20 || pct > 100) pct = MsiChargeLimitTileDefault;
+
+            ApplicationData.Current.LocalSettings.Values[MsiChargeLimitEnabledKey] = newOn;
+            ApplicationData.Current.LocalSettings.Values[MsiChargeLimitPercentKey] = pct;
+
+            // Keep the System-tab controls in sync (without re-triggering their handlers).
+            _msiChargeLimitLoading = true;
+            try
+            {
+                if (MsiChargeLimitToggle != null) MsiChargeLimitToggle.IsOn = newOn;
+                if (MsiChargeLimitPercentPanel != null)
+                    MsiChargeLimitPercentPanel.Visibility = newOn ? Visibility.Visible : Visibility.Collapsed;
+                if (MsiChargeLimitSlider != null) MsiChargeLimitSlider.Value = pct;
+                if (MsiChargeLimitValue != null)  MsiChargeLimitValue.Text = $"{pct}%";
+            }
+            finally { _msiChargeLimitLoading = false; }
+
+            _ = SendMsiChargeLimitAsync(newOn, pct);
+            Logger.Info($"[BattMgr] ChargeLimiter tile → {(newOn ? "On" : "Off")} {pct}%");
+        }
+
+        private async Task SendMsiChargeLimitAsync(bool enabled, int percent)
+        {
+            try
+            {
+                if (!App.IsConnected) return;
+                var msg = new Windows.Foundation.Collections.ValueSet
+                {
+                    { "MsiChargeLimit", $"{enabled}:{percent}" }
+                };
+                await App.SendMessageAsync(msg);
+                Logger.Info($"[BattMgr] Sent limit enabled={enabled} percent={percent}");
+            }
+            catch (Exception ex) { Logger.Warn($"[BattMgr] Send failed: {ex.Message}"); }
+
+            // Confirm what actually landed in the EC.
+            await QueryMsiChargeLimitStatusAsync();
+        }
+
+        /// <summary>
+        /// Re-pushes the widget's stored (authoritative) charge-limit to the helper. Called on
+        /// pipe (re)connect. Fixes the case where a debounced slider write never reached the
+        /// helper (app/helper killed within the debounce window, or a lost helper-side write):
+        /// the helper would otherwise keep a stale/older value (e.g. the 80% it got from the
+        /// initial toggle-on) and re-apply it on every reboot. The widget LocalSettings value is
+        /// written synchronously on every change, so it is the reliable source of truth.
+        /// </summary>
+        internal void ResendChargeLimitToHelper()
+        {
+            try
+            {
+                if (!IsMsiClawDevice()) return;
+                if (!IsChargeLimiterInitialized()) return;   // never set up → nothing to enforce
+                if (!IsChargeLimiterEnabled()) return;        // disabled → don't fight the helper
+                int pct = ChargeLimiterPercent();
+                if (pct < 20 || pct > 100) pct = MsiChargeLimitTileDefault;
+                _ = SendMsiChargeLimitAsync(true, pct);
+                Logger.Info($"[BattMgr] Re-pushed stored charge limit on connect: On {pct}%");
+            }
+            catch (Exception ex) { Logger.Warn($"[BattMgr] ResendChargeLimitToHelper: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// Asks the helper for the live EC charge-limit value and shows it in the status line.
+        /// Response format: "enabled:percent:readok".
+        /// </summary>
+        private async Task QueryMsiChargeLimitStatusAsync()
+        {
+            if (OnexFrontend.UsesOwnBackend) { await QueryOnexChargeAsync(); return; }
+            try
+            {
+                if (!App.IsConnected)
+                {
+                    SetChargeStatus("Helper not connected — cannot read live value.", warn: true);
+                    return;
+                }
+
+                var msg = new Windows.Foundation.Collections.ValueSet { { "MsiChargeLimitGet", true } };
+                var resp = await App.SendMessageAsync(msg);
+                if (resp == null || !resp.TryGetValue("MsiChargeLimitStatus", out var stObj) || !(stObj is string st))
+                {
+                    SetChargeStatus("Could not read the live value.", warn: true);
+                    return;
+                }
+
+                var parts = st.Split(':');
+                bool enabled = parts.Length > 0 && bool.TryParse(parts[0], out var en) && en;
+                int  pct     = parts.Length > 1 && int.TryParse(parts[1], out var p) ? p : 0;
+                bool readOk  = parts.Length < 3 || (bool.TryParse(parts[2], out var ro) && ro);
+
+                if (!readOk)
+                    SetChargeStatus("Live value: unknown (device not ready / powered off).", warn: true);
+                else if (enabled)
+                    SetChargeStatus($"Live value: active, limit {pct}% ✓ verified.", warn: false);
+                else
+                    SetChargeStatus($"Live value: disabled (charges to 100%). Stored limit {pct}%.", warn: false);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"[BattMgr] Query status failed: {ex.Message}");
+                SetChargeStatus("Could not read the live value.", warn: true);
+            }
+        }
+
+        private void SetChargeStatus(string text, bool warn)
+        {
+            if (MsiChargeLimitStatusText == null) return;
+            MsiChargeLimitStatusText.Text = OnexStrings.Get(text);
+            MsiChargeLimitStatusText.Foreground = new SolidColorBrush(
+                warn ? Color.FromArgb(255, 0xFF, 0x8C, 0x00)   // orange
+                     : Color.FromArgb(255, 0x4C, 0xAF, 0x50)); // green
+        }
+    }
+}

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="384" viewBox="0 0 640 384">
+<defs><linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#535b66"/><stop offset=".10" stop-color="#2b3039"/><stop offset=".62" stop-color="#20252c"/><stop offset="1" stop-color="#11151b"/></linearGradient><linearGradient id="rear" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#383f49"/><stop offset="1" stop-color="#171c23"/></linearGradient><linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101922"/><stop offset=".6" stop-color="#0c1119"/><stop offset="1" stop-color="#191426"/></linearGradient><linearGradient id="edge" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#00e2e3" stop-opacity=".25"/><stop offset=".5" stop-color="#a569ff" stop-opacity=".06"/><stop offset="1" stop-color="#f84809" stop-opacity=".25"/></linearGradient></defs>
+<!-- Rear housing: mirrored view, with visible M1/M2 paddles. -->
+<path d="M258 9 H508 C538 9 555 34 556 65 L552 117 H225 L221 65 C221 31 232 9 258 9Z" fill="url(#rear)" stroke="#59616c" stroke-width="1.5"/>
+<path d="M277 14 V112 M498 14 V112" stroke="#11161d" stroke-width="3"/>
+<rect x="296" y="24" width="179" height="80" rx="8" fill="#11161a" stroke="#333c46"/>
+<path d="M304 30 L367 98 M316 29 L379 98 M328 29 L391 98 M340 29 L403 98 M352 29 L415 98 M364 29 L427 98 M376 29 L439 98 M388 29 L451 98 M400 29 L463 98 M412 29 L468 89 M424 29 L468 77 M436 29 L468 65" stroke="#404751" stroke-width="3"/>
+<path d="M233 39 Q231 25 244 22 M535 22 Q547 27 545 41" fill="none" stroke="#6a717a" stroke-width="2"/>
+<!-- Shoulder caps sit above the front grips. -->
+<rect x="29" y="91" width="76" height="43" rx="15" fill="#202731" stroke="#5b6571"/><rect x="535" y="91" width="76" height="43" rx="15" fill="#202731" stroke="#5b6571"/>
+<!-- ONEXPLAYER3 detachable console silhouette, screen and grip seams. -->
+<path d="M101 128 H539 C596 128 631 171 631 249 C631 327 607 372 552 372 H88 C34 372 9 328 9 250 C9 172 42 128 101 128Z" fill="url(#body)" stroke="#707986" stroke-width="1.6"/>
+<path d="M27 194 C22 213 21 238 23 263 C26 320 42 350 77 359 M611 194 C617 218 618 244 616 270 C612 319 598 347 562 359" fill="none" stroke="#424b57" stroke-width="2"/>
+<rect x="128" y="138" width="384" height="224" rx="7" fill="#080c11" stroke="#68727f" stroke-width="1.4"/><rect x="136" y="146" width="368" height="208" rx="3" fill="url(#glass)" stroke="#171f29"/>
+<rect x="139" y="149" width="362" height="2" fill="url(#edge)"/>
+<path d="M124 145 V353 M516 145 V353" stroke="#11161d" stroke-width="2"/>
+<path d="M145 335 L495 165" stroke="#314155" stroke-opacity=".14" stroke-width="2"/>
+<!-- Stick bezels and physical D-pad backing; interactive caps are native controls. -->
+<circle cx="57" cy="203" r="28" fill="#0e141a" stroke="#4c6970" stroke-width="2"/><circle cx="57" cy="203" r="24" fill="#303841" stroke="#00e2e3" stroke-opacity=".5"/>
+<circle cx="578" cy="283" r="28" fill="#0e141a" stroke="#4c6970" stroke-width="2"/><circle cx="578" cy="283" r="24" fill="#303841" stroke="#a569ff" stroke-opacity=".6"/>
+<path d="M77 245 H97 V265 H117 V286 H97 V306 H77 V286 H57 V265 H77Z" fill="#11171e" stroke="#5b6571"/>
+<path d="M20 367 Q320 383 620 367" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="3"/>
+</svg>

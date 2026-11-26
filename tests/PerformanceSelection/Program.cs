@@ -1,0 +1,42 @@
+using System.Text.Json;
+using ONEXTweaks.WidgetBridge;
+
+int checks=0;
+void Check(bool value,string name){checks++;if(!value)throw new Exception(name);}
+void Reject(Action action,string name){bool rejected=false;try{action();}catch(InvalidDataException){rejected=true;}Check(rejected,name);}
+var entries=new PerformanceSelectable[]{new("global",null,false),new("manual-1",null,false),new("app-a",@"C:\ONEXTweaksQA\GameA.exe",true),new("app-b",@"C:\ONEXTweaksQA\GameB.exe",true),new("disabled",@"C:\ONEXTweaksQA\Disabled.exe",false)};
+var first=new ProfileSession(101,638000000000000001,@"C:\ONEXTweaksQA\GameA.exe","GameA");
+var restarted=first with{StartedUtcTicks=638000000000000002};
+var other=new ProfileSession(202,638000000000000003,@"C:\ONEXTweaksQA\GameB.exe","GameB");
+bool oldAlive=true;
+bool Alive(ProfileSession s)=>oldAlive&&s==first;
+var state=PerformanceSelectionPolicy.Tick(new(),null,Alive,entries);
+Check(state.ActiveId=="global","Fresh scope defaults to Global");
+state=PerformanceSelectionPolicy.Tick(state,first,Alive,entries);Check(state.ActiveId=="app-a"&&state.Selection=="auto","Process context automatically selects its bound profile");
+Check(PerformanceSelectionPolicy.Tick(state,null,Alive,entries).ActiveId=="global","Automatic app scope falls back when it ends");
+state=PerformanceSelectionPolicy.Select("manual-1",first,entries);
+Check(PerformanceSelectionPolicy.Tick(state,first,Alive,entries)==state,"Manual choice wins over the currently running app");
+Check(PerformanceSelectionPolicy.Tick(state,null,Alive,entries)==state,"Ordinary focus loss preserves the manual choice");
+Check(PerformanceSelectionPolicy.Tick(state,other,Alive,entries)==state,"Another window cannot revoke the held manual choice");
+string saved=JsonSerializer.Serialize(state);
+Check(saved.Contains("\"638000000000000001\""),"Start ticks are stored as an exact JSON string");
+var loaded=JsonSerializer.Deserialize<PerformanceSelection>(saved)!;
+Check(loaded==state&&PerformanceSelectionPolicy.Tick(loaded,first,Alive,entries)==state,"Helper reload retains the exact process-session override");
+oldAlive=false;
+state=PerformanceSelectionPolicy.Tick(loaded,restarted,Alive,entries);
+Check(state.ActiveId=="app-a"&&state.Selection=="auto"&&state.ManualHold==null,"A real restart, including reused PID, restores automatic selection");
+Check(PerformanceSelectionPolicy.Tick(state,restarted with{Path=first.Path.ToUpperInvariant()},Alive,entries).ActiveId=="app-a","Executable binding is case-insensitive");
+state=PerformanceSelectionPolicy.Select("global",first,entries);oldAlive=true;
+Check(PerformanceSelectionPolicy.Tick(state,first,Alive,entries).ActiveId=="global","Choosing Global can override a running game");
+oldAlive=false;Check(PerformanceSelectionPolicy.Tick(state,restarted,Alive,entries).ActiveId=="app-a","Restart also releases an explicit Global override");
+state=PerformanceSelectionPolicy.Select("manual-1",null,entries);
+Check(PerformanceSelectionPolicy.Tick(state,null,Alive,entries).ActiveId=="manual-1","An unbound manual profile persists without an app");
+Check(PerformanceSelectionPolicy.Tick(state,other,Alive,entries).ActiveId=="app-b","A subsequent eligible app activates its own profile");
+Check(PerformanceSelectionPolicy.Tick(new(),new(303,1,@"C:\ONEXTweaksQA\Disabled.exe","Disabled"),Alive,entries).ActiveId=="global","An opted-out legacy binding stays inactive");
+Reject(()=>PerformanceSelectionPolicy.Select("missing",null,entries),"Unknown profile cannot become active");
+Reject(()=>PerformanceSelectionPolicy.Validate(new(),entries.Append(new("duplicate",first.Path,true)).ToArray()),"Duplicate executable bindings are rejected");
+Reject(()=>PerformanceSelectionPolicy.Validate(new(),entries.Append(new("manual-1",null,false)).ToArray()),"Duplicate profile IDs are rejected");
+Reject(()=>PerformanceSelectionPolicy.Validate(new(),entries.Where(e=>e.Id!="global").ToArray()),"Global cannot disappear");
+Reject(()=>PerformanceSelectionPolicy.Validate(new("global","auto",first),entries),"Automatic selection cannot contain a manual hold");
+Reject(()=>PerformanceSelectionPolicy.Select("manual-1",first with{StartedUtcTicks=0},entries),"A missing process generation cannot create an override");
+Console.WriteLine(JsonSerializer.Serialize(new{passed=true,checks,modelOnly=true,hardwareWrites=0,realProcessTested=false,liveManagerIntegrated=false}));

@@ -1,0 +1,539 @@
+using Microsoft.Gaming.XboxGameBar;
+using Microsoft.Gaming.XboxGameBar.Input;
+using Microsoft.UI.Xaml.Controls;
+using NLog;
+using Shared.Data;
+using Shared.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.Data.Json;
+using Windows.Foundation;
+using Windows.Foundation.Metadata;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Navigation;
+using Windows.System.Power;
+using Windows.Storage;
+using Windows.System;
+using Windows.UI.Xaml.Input;
+using System.Runtime.InteropServices;
+using Windows.UI;
+using XboxGamingBar.Data;
+using XboxGamingBar.Event;
+using XboxGamingBar.IPC;
+using XboxGamingBar.QuickSettings;
+using Shared.Enums;
+
+namespace XboxGamingBar
+{
+    public sealed partial class GamingWidget
+    {
+
+        /// <summary>
+        /// Handles messages received from helper via Named Pipe.
+        /// </summary>
+        private async void PipeClient_MessageReceived(object sender, IPC.PipeMessageEventArgs e)
+        {
+            if (!(sender is IPC.NamedPipeClient owner) || !App.IsCurrentConnectedPipeClient(owner)) return;
+            try
+            {
+                // Only process messages if this is the active widget instance
+                var activeWidget = App.GetActiveGamingWidget();
+                if (isUnloading || (OnexFrontend.UsesOwnBackend ? activeWidget != this : activeWidget != null && activeWidget != this))
+                {
+                    Logger.Debug("Widget received pipe message but this is NOT the active instance. Ignoring.");
+                    return;
+                }
+
+                // Keep only the newest unsolicited state of each kind before creating WinRT JSON
+                // objects. Command replies are completed in NamedPipeClient and never enter here.
+                if(OnexFrontend.UsesOwnBackend&&QueueOnexStatePush(owner, e.Message))return;
+
+                // Parse the JSON message to ValueSet
+                var message = ParsePipeMessageToValueSet(e.Message);
+                if (message == null)
+                {
+                    Logger.Warn("Failed to parse pipe message");
+                    return;
+                }
+
+                // Use TryGetValue — not every helper→widget message carries a "Function" key
+                if(message.TryGetValue("OnexProfilesState",out object ps)&&ps is string psJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexProfilesState(psJson));return;}
+                if(message.TryGetValue("OnexWifiState",out object wifi)&&wifi is string wifiJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexWifiState(wifiJson));return;}
+                if(message.TryGetValue("OnexEnergySaverState",out object saver)&&saver is string saverJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexEnergySaverState(saverJson));return;}
+                if(message.TryGetValue("OnexAirplaneState",out object airplane)&&airplane is string airplaneJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexAirplaneState(airplaneJson));return;}
+                if(message.TryGetValue("OnexFseState",out object fse)&&fse is string fseJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexFseState(fseJson));return;}
+                if(message.TryGetValue("OnexDisplayState",out object ds)&&ds is string dsJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexDisplayState(dsJson));return;}
+                if(message.TryGetValue("OnexFpsState",out object fs)&&fs is string fsJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexFpsState(fsJson));return;}
+                if(message.TryGetValue("OnexOverlayState",out object os)&&os is string osJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexOverlayState(osJson));return;}
+                if(message.TryGetValue("OnexWindowsPowerState",out object wp)&&wp is string wpJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexWindowsPowerState(wpJson));return;}
+                if(message.TryGetValue("OnexHardwareHomeState",out object hp)&&hp is string hpJson){await DispatchPipePushAsync(owner, ()=>ApplyOnexHardwareHomeState(hpJson));return;}
+                if(message.TryGetValue("OnexBoostState",out object boostState)&&boostState is string boostJson)
+                {
+                    await DispatchPipePushAsync(owner, ()=>ApplyOnexBoostState(boostJson));
+                    return;
+                }
+                if (message.TryGetValue("OnexChargeState", out object chargeState) && chargeState is string chargeJson)
+                    {
+                    await DispatchPipePushAsync(owner, () => ApplyOnexChargeState(chargeJson));
+                    return;
+                }
+                if (message.TryGetValue("OnexDesktopState", out object desktopState) && desktopState is string desktopJson)
+                {
+                    await DispatchPipePushAsync(owner, () => ApplyOnexDesktopState(desktopJson));
+                    return;
+                }
+                if (message.TryGetValue("MediaLevels", out object mediaLevels) && mediaLevels is string mediaJson)
+                {
+                    await DispatchPipePushAsync(owner, () => ApplyOnexMediaLevels(mediaJson, true));
+                    return;
+                }
+                if (message.TryGetValue("OnexPowerAvailable", out object powerAvailable) && powerAvailable is bool ready)
+                {
+                    await DispatchPipePushAsync(owner, ()=>
+                    {
+                        OnexFrontend.PowerAvailable = ready;
+                        ApplyOnexAvailability();
+                        if(message.TryGetValue("OnexPowerState",out var actualPower)&&actualPower is string actualJson)ApplyOnexReleasePowerState(actualJson);
+                    });
+                    return;
+                }
+                // (e.g. TileHotkeyFired, DriverUpdatesAvailable, GoTweaksUpdate). Indexing a
+                // missing key threw KeyNotFoundException here, which aborted the whole handler
+                // (logged as "Error processing pipe message from helper: key") and silently
+                // dropped those messages.
+                object funcForLog = message.TryGetValue("Function", out var funcLogVal) ? funcLogVal : "(none)";
+                Logger.Debug($"Widget received pipe message: Function={funcForLog}");
+
+                // Check for focus widget request from helper
+                if (message.TryGetValue("Function", out object funcObj) &&
+                    Convert.ToInt32(funcObj) == (int)Shared.Enums.Function.Labs_FocusWidget)
+                {
+                    Logger.Info("Focus widget request received from helper via pipe");
+                    Task focus = null;
+                    TryRunForPipePush(owner, () => focus = FocusThisWidgetAsync());
+                    if (focus != null) await focus;
+                    return;
+                }
+
+                // Toggle: helper asks the standalone app-mode window to close (second press of the
+                // "Open ONEXTweaks Window" action / front MSI button).
+                if (message.TryGetValue("Function", out object closeFuncObj) &&
+                    Convert.ToInt32(closeFuncObj) == (int)Shared.Enums.Function.CloseAppModeWindow)
+                {
+                    Logger.Info("CloseAppModeWindow request received from helper via pipe");
+                    TryRunForPipePush(owner, () => App.CloseStandaloneAppModeWindow());
+                    return;
+                }
+
+                // Check for Quick Metrics push from helper
+                if (message.TryGetValue("Function", out object qmFuncObj) &&
+                    Convert.ToInt32(qmFuncObj) == (int)Shared.Enums.Function.QuickMetrics)
+                {
+                    if (message.TryGetValue("Content", out object content) && content is string metricsJson)
+                    {
+                        TryRunForPipePush(owner, () => UpdateQuickMetrics(owner, metricsJson));
+                    }
+                    return;
+                }
+
+                // Helper pushes a one-shot "system resumed" ping right after it re-applies TDP on
+                // resume. This is the metrics-independent trigger for the "blank widget after resume"
+                // dispatcher-teardown self-check (see OnHelperResumePing / GamingWidget.DispatcherHealth).
+                if (message.TryGetValue("WidgetResumePing", out object resumePingObj) && resumePingObj is string resumePing)
+                {
+                    TryRunForPipePush(owner, () => OnHelperResumePing(resumePing));
+                    return;
+                }
+
+                // Helper reports which Intel features the driver actually supports ("frameGen|vrr", each
+                // 0 or 1). Drives the visibility of the Frame Generation / VRR controls and the D-pad
+                // chain around them.
+                if (message.TryGetValue("IntelDirectCaps", out object capsObj) && capsObj is string caps)
+                {
+                    var parts = caps.Split('|');
+                    bool fg = parts.Length > 0 && parts[0] == "1";
+                    bool vrr = parts.Length > 1 && parts[1] == "1";
+                    // Third field added with the VRR mode control. Absent means "not offered" rather
+                    // than a parse failure, so a helper that predates it simply hides the control.
+                    bool vrrMode = parts.Length > 2 && parts[2] == "1";
+                    bool scaling = parts.Length > 3 && parts[3] == "1";
+                    // Fields 5 and 6 say what the driver can do RIGHT NOW rather than in principle.
+                    // Absent means "assume usable": a helper that predates them must not grey out
+                    // controls that work.
+                    bool hasOutput = parts.Length <= 4 || parts[4] == "1";
+                    bool atNative = parts.Length <= 5 || parts[5] == "1";
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { SetIntelDirectFeatureVisibility(fg, vrr, vrrMode, scaling, hasOutput, atNative); }
+                        catch (Exception ex) { Logger.Warn($"[IntelDirect] applying caps failed: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Answer to the Fetch button in Display Settings: a text readout of what the Intel
+                // driver reports. Newlines arrive escaped, because the report is multi-line.
+                if (message.TryGetValue("IntelDriverState", out object stateObj) && stateObj is string state)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnIntelDriverState(state.Replace("\\n", "\n")); }
+                        catch (Exception ex) { Logger.Warn($"[IntelDirect] showing driver state failed: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper reports which fan curve the EC is actually running and under whose name
+                // ("<scope>|<cpu6>|<gpu6>", empty scope = global). The fan editor follows THIS rather
+                // than deriving the scope from currentGameName + the per-game toggle, both of which
+                // flap with game detection — see PushFanScopeToWidget for the measurement.
+                if (message.TryGetValue("MsiFanActiveScope", out object fanScopeObj) && fanScopeObj is string fanScope)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnHelperFanScope(fanScope); }
+                        catch (Exception ex) { Logger.Warn($"[PerGameFan] adopting helper scope failed: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper reports where an Apply would SAVE the curve (game name, empty = global). A
+                // separate message from the scope above because the two answer different questions and
+                // only agree once a per-game curve exists — see PushFanSaveTargetToWidget.
+                if (message.TryGetValue("MsiFanSaveTarget", out object fanTargetObj) && fanTargetObj is string fanTarget)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnHelperFanSaveTarget(fanTarget); }
+                        catch (Exception ex) { Logger.Warn($"[PerGameFan] adopting fan save target failed: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // The GLOBAL fan setting for both power states, resolved
+                // ("<plugMode>|<plugCpu>|<plugGpu>|<battMode>|<battCpu>|<battGpu>"). Comes over the wire
+                // rather than out of the profile snapshot because the global curve is the one fan value
+                // that lives in the helper's LocalSettings instead of the profile.
+                if (message.TryGetValue("MsiFanGlobal", out object fanGlobalObj) && fanGlobalObj is string fanGlobal)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnHelperGlobalFan(fanGlobal); }
+                        catch (Exception ex) { Logger.Warn($"[PerGameFan] adopting global fan slots failed: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Seconds left on a scheduled fan change ("<secondsLeft>|<isPerGame>", "0|0" = nothing
+                // pending). Sent once a second only while a change is waiting.
+                if (message.TryGetValue("MsiFanPending", out object fanPendingObj) && fanPendingObj is string fanPending)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnHelperFanPending(fanPending); }
+                        catch (Exception ex) { Logger.Warn($"[PerGameFan] fan countdown failed: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper reports the Game Bar auto-jump slot it is actually applying — on connect and
+                // again whenever it changes, because Center's onboarding sets it helper-side while this
+                // widget may already be open. Deliberately NOT routed through the WidgetProperty: that
+                // path sends a Set straight back on every value change, so a helper push would bounce.
+                if (message.TryGetValue("GameBarWidgetPositionPush", out object posPushObj)
+                    && posPushObj is string posPush && int.TryParse(posPush, out int pushedPos))
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnHelperGameBarWidgetPosition(pushedPos); }
+                        catch (Exception ex) { Logger.Warn($"[GameBarAutoNav] adopt push failed: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper fires a tile hotkey that can't be executed directly (widget-side action)
+                if (message.TryGetValue("TileHotkeyFired", out object tileHotkeyIdObj)
+                    && tileHotkeyIdObj is string tileHotkeyId)
+                {
+                    Logger.Info($"TileHotkeyFired received for tile '{tileHotkeyId}'");
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { SimulateTileHotkeyFired(tileHotkeyId); }
+                        catch (Exception ex) { Logger.Error($"TileHotkeyFired dispatch error: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper pushes MSI fan EC read-back in response to a verify request.
+                if (message.TryGetValue("MsiFanStatus", out object msiFanStatusObj) && msiFanStatusObj is string msiFanStatus)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnMsiFanStatus(msiFanStatus); }
+                        catch (Exception ex) { Logger.Error($"OnMsiFanStatus dispatch error: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper pushes the Intel thermal stack (IPF/DTT) status for the experimental Fan-tab controls.
+                if (message.TryGetValue("IntelThermalStatus", out object intelThermalObj) && intelThermalObj is string intelThermalStatus)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnIntelThermalStatus(intelThermalStatus); }
+                        catch (Exception ex) { Logger.Error($"OnIntelThermalStatus dispatch error: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper pushes the fan-override probe read-back for the diagnostic register hunt.
+                if (message.TryGetValue("MsiFanRegStatus", out object fanRegObj) && fanRegObj is string fanRegStatus)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnFanRegStatus(fanRegStatus); }
+                        catch (Exception ex) { Logger.Error($"OnFanRegStatus dispatch error: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper pushes the live firmware button→keyboard map (Controller-status refresh).
+                if (message.TryGetValue("FwButtonMapResult", out object fwMapObj) && fwMapObj is string fwMapResult)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnFirmwareButtonMapResult(fwMapResult); }
+                        catch (Exception ex) { Logger.Error($"FwButtonMapResult dispatch error: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper reports a resolved Left-MSI button click ("single"/"double") so the
+                // double-click settings UI can flash a detection indicator for fine-tuning.
+                if (message.TryGetValue("ClawClick", out object clawClickObj) && clawClickObj is string clawClick)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnClawClickDetected(clawClick); }
+                        catch (Exception ex) { Logger.Error($"OnClawClickDetected dispatch error: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper pushes the persisted MSI fan preset/curve on connect (helper is the
+                // single source of truth). The widget reflects it WITHOUT echoing back.
+                if (message.TryGetValue("MsiFanState", out object msiFanStateObj) && msiFanStateObj is string msiFanState)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnMsiFanState(msiFanState); }
+                        catch (Exception ex) { Logger.Error($"OnMsiFanState dispatch error: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Same contract for the Left-MSI double-click config: the helper restored it at boot
+                // and owns it; we reflect it and do not echo it back.
+                if (message.TryGetValue("LeftMsiDoubleClickState", out object dcStateObj) && dcStateObj is string dcState)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnLeftMsiDoubleClickState(dcState); }
+                        catch (Exception ex) { Logger.Error($"OnLeftMsiDoubleClickState dispatch error: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // Helper pushes DriverUpdatesAvailable as an unsolicited message
+                // after its startup driver probe completes. Light up the Quick
+                // tab tile; no other state needs updating yet.
+                if (message.TryGetValue("DriverUpdatesAvailable", out object countObj))
+                {
+                    int count = 0;
+                    try { count = Convert.ToInt32(countObj); } catch { }
+                    TryRunForPipePush(owner, () => UpdateDriverUpdatesTile(owner, count));
+                    return;
+                }
+
+                // Helper pushes GoTweaksUpdate (JSON blob) after startup
+                // self-update probe. Also delivered as a response to an
+                // explicit CheckGoTweaksUpdate request.
+                if (message.TryGetValue("GoTweaksUpdate", out object goTweaksPayload)
+                    && goTweaksPayload is string gtJson)
+                {
+                    TryRunForPipePush(owner, () => HandleGoTweaksUpdatePush(gtJson));
+                    return;
+                }
+
+                // Helper pushes DriverInstallComplete after a large background
+                // download (e.g. Intel Arc 824 MB) finishes. Re-enables the
+                // install button and shows the final status message.
+                if (message.TryGetValue("DriverInstallComplete", out object driverCompleteObj)
+                    && driverCompleteObj is string driverCompleteJson)
+                {
+                    await DispatchPipePushAsync(owner, () =>
+                    {
+                        try { OnDriverInstallComplete(driverCompleteJson); }
+                        catch (Exception ex) { Logger.Error($"OnDriverInstallComplete dispatch error: {ex.Message}"); }
+                    });
+                    return;
+                }
+
+                // A "skip TDP/CurrentTDP while Sticky TDP is reapplying" filter used to sit here. It
+                // went with Sticky TDP itself (GoTweaks legacy, removed 2026-07-31). Note what it did:
+                // it dropped incoming TDP pushes from the helper entirely, so the widget could show a
+                // value the hardware no longer had. One less way for the two to disagree.
+
+                // Dispatch the whole property-update path to the UI thread. NamedPipeClient
+                // delivers MessageReceived on a background reader thread; GenericProperty.SetValue
+                // fires InvokePropertyChanged synchronously, and several subscribers (color picker
+                // sync, visibility toggles, ComboBox.SelectedIndex=...) touch XAML. Those throw
+                // RPC_E_WRONG_THREAD when invoked off the UI apartment (seen consistently in
+                // live logs around TDP / LightBrightness debounce-cancel paths). Dispatching
+                // here keeps the whole property tree on the UI thread.
+                if (Dispatcher == null)
+                {
+                    // Fallback: no dispatcher available (widget torn down); skip.
+                    return;
+                }
+
+                await DispatchPipePushAsync(owner, () =>
+                {
+                    isApplyingHelperUpdate = true;
+                    try
+                    {
+                        properties.HandlePipeMessage(message);
+                    }
+                    finally
+                    {
+                        isApplyingHelperUpdate = false;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error processing pipe message from helper: {ex.Message}");
+            }
+        }
+
+        private bool TryRunForPipePush(IPC.NamedPipeClient owner, Action action)
+        {
+            bool accepted = false;
+            App.TryRunForCurrentConnectedPipeClient(owner, () =>
+            {
+                var active = App.GetActiveGamingWidget();
+                if (isUnloading || (OnexFrontend.UsesOwnBackend ? active != this : active != null && active != this)) return;
+                action();
+                accepted = true;
+            });
+            return accepted;
+        }
+
+        private async Task DispatchPipePushAsync(IPC.NamedPipeClient owner, Action action)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => { TryRunForPipePush(owner, action); });
+        }
+
+        /// <summary>
+        /// Unescapes a JSON string value in a single pass. A chained .Replace() is WRONG:
+        /// un-doubling "\\" -> "\" first re-creates literal "\r"/"\n"/"\t" sequences from paths
+        /// like "...\re2.exe", which a later .Replace("\\r", "\r") then mangles into a control
+        /// character (this corrupted per-game controller-profile GameExePath values). Walking the
+        /// string once and consuming each escape exactly once avoids the ambiguity.
+        /// </summary>
+        private static string UnescapeJsonString(string s)
+        {
+            if (string.IsNullOrEmpty(s) || s.IndexOf('\\') < 0) return s;
+            var sb = new System.Text.StringBuilder(s.Length);
+            for (int i = 0; i < s.Length; i++)
+            {
+                char c = s[i];
+                if (c == '\\' && i + 1 < s.Length)
+                {
+                    char next = s[++i];
+                    switch (next)
+                    {
+                        case 'n': sb.Append('\n'); break;
+                        case 'r': sb.Append('\r'); break;
+                        case 't': sb.Append('\t'); break;
+                        case '"': sb.Append('"'); break;
+                        case '\\': sb.Append('\\'); break;
+                        default: sb.Append(next); break; // unknown escape: keep the char, drop backslash
+                    }
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Parses a pipe JSON message into a ValueSet.
+        /// </summary>
+        private Windows.Foundation.Collections.ValueSet ParsePipeMessageToValueSet(string json)
+        {
+            return OnexFrontend.ParseMessage(json);
+        }
+
+        /// <summary>
+        /// Handles Named Pipe disconnection from the helper.
+        /// </summary>
+        /// <remarks>
+        /// This handler is the second half of the post-hibernate blank-widget bug: it used to be an
+        /// async void with unguarded Dispatcher.RunAsync calls, so when a wedged instance saw the pipe
+        /// drop (e.g. the user restarting the helper from the tray to "fix" the blank widget) the
+        /// separated-RCW exception went UNHANDLED and took the process down. The Game Bar then re-hosted
+        /// a fresh widget - which is exactly why a helper restart appeared to cure the blank widget.
+        /// The dispatch is now guarded so that crash path is gone; the blank state itself still needs
+        /// the recovery step.
+        /// </remarks>
+        private void PipeClient_Disconnected(object sender, EventArgs e)
+        {
+            if (!(sender is IPC.NamedPipeClient owner) || isUnloading || App.GetActiveGamingWidget() != this)
+                return;
+
+            if (!App.TryRunForCurrentPipeClient(owner, () =>
+            {
+                App.PipeMessageReceived -= PipeClient_MessageReceived;
+                App.PipeDisconnected -= PipeClient_Disconnected;
+            }))
+                return;
+
+            TryRunOnDispatcher(() =>
+            {
+                App.TryRunForCurrentPipeClient(owner, () =>
+                {
+                    if (isUnloading || App.GetActiveGamingWidget() != this) return;
+                    if(OnexFrontend.UsesOwnBackend)ResetOnexProfileEdits();
+                    ShowConnectionBanner(BannerState.Reconnecting);
+                    // An EC override can leave the last RPM active when the helper drops (0xC6C8).
+                    if (legionUnlockFanCurve != null && legionUnlockFanCurve.Value &&
+                        FanCurveHelperDisconnectedWarning != null)
+                    {
+                        FanCurveHelperDisconnectedWarning.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                    }
+                    Logger.Info("Pipe disconnected - starting automatic helper reconnection");
+                    _ = LaunchHelperWithGuardsAsync("Pipe disconnected");
+                });
+            }, "PipeDisconnected/relaunch");
+        }
+
+    }
+}

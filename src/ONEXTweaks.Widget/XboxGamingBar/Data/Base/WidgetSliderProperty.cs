@@ -1,0 +1,250 @@
+using System;
+using Shared.Enums;
+using Windows.UI.Core;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+
+namespace XboxGamingBar.Data
+{
+    internal class WidgetSliderProperty : WidgetControlProperty<int, Slider>
+    {
+        private Windows.UI.Xaml.DispatcherTimer debounceTimer;
+        private int pendingValue;
+        private bool hasPendingValue;
+        internal bool HasPendingUserValue=>hasPendingValue;
+        internal Action<int> DeferredUserValue;
+        internal Func<int,bool> ReadbackAllowed;
+        private const int DEBOUNCE_DELAY_MS = 500; // Wait 500ms after last change before sending
+
+        /// <summary>
+        /// Static counter tracking how many widget properties are currently updating their UI
+        /// from helper pipe sync. Used by SettingChanged to skip auto-saves during sync.
+        /// Shared across WidgetSliderProperty, WidgetToggleProperty, and LegionPerformanceModeProperty.
+        /// </summary>
+        internal static int HelperSyncCount = 0;
+
+        /// <summary>
+        /// Flag to indicate when the UI is being updated programmatically (from helper sync or profile loading).
+        /// When true, ValueChanged events should not trigger profile saves or debounce timer.
+        /// </summary>
+        public bool IsUpdatingUI { get; internal set; }
+
+        /// <summary>
+        /// Raised ONLY when the user actually moved this slider — <see cref="Slider_ValueChanged"/>
+        /// discards everything else (helper sync, profile load) before this point.
+        ///
+        /// This is the one signal in the widget that is provably user-exclusive, which is why the
+        /// helper's own TDP persistence already anchors on it (only a real drag emits Function.TDP).
+        /// The widget's profile store now anchors on it too: it may only persist a TDP value that a
+        /// user actually dialled in, never one the helper pushed down for display.
+        /// </summary>
+        public Action UserInput;
+
+        public WidgetSliderProperty(int inValue, Function inFunction, Slider inControl, Page inOwner) : base(inValue, inFunction, inControl, inOwner)
+        {
+            if (UI != null)
+            {
+                UI.ValueChanged += Slider_ValueChanged;
+                if(OnexFrontend.UsesOwnBackend)OnexInputGuard.Wire(UI,()=>{if(!IsUpdatingUI&&HelperSyncCount==0)QueueSliderValue((int)UI.Value);});
+                if(OnexFrontend.UsesOwnBackend&&(Function==Shared.Enums.Function.TDP||Function==Shared.Enums.Function.TDPBoostFPPT))
+                    OnexInputGuard.SetCommit(UI,()=>{if(IsUpdatingUI||HelperSyncCount>0)return;StopDebounceTimer();if(DeferredUserValue!=null){DeferredUserValue((int)UI.Value);return;}OnexFrontend.MarkUserInput(Function,confirmed:true);SetValue((int)UI.Value);});
+                //UI.DragEnter += Slider_DragEnter;
+                //UI.DragStarting += Slider_DragStarting;
+                //UI.DragOver += Slider_DragOver;
+                //UI.DragLeave += Slider_DragLeave;
+                UI.Value = inValue;
+
+                // Initialize debounce timer
+                debounceTimer = new Windows.UI.Xaml.DispatcherTimer();
+                debounceTimer.Interval = TimeSpan.FromMilliseconds(DEBOUNCE_DELAY_MS);
+                debounceTimer.Tick += DebounceTimer_Tick;
+            }
+        }
+
+        public void StopDebounceTimer()
+        {
+            hasPendingValue = false;
+            if (debounceTimer == null || !debounceTimer.IsEnabled)
+            {
+                return;
+            }
+
+            // Clear pending state immediately to avoid stale sends
+            // DispatcherTimer must be stopped on the UI thread
+            if (Owner?.Dispatcher != null)
+            {
+                if (Owner.Dispatcher.HasThreadAccess)
+                {
+                    Logger.Info($"{Function} Stopping debounce timer.");
+                    debounceTimer.Stop();
+                }
+                else
+                {
+                    _ = Owner.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    {
+                        if (debounceTimer != null && debounceTimer.IsEnabled)
+                        {
+                            Logger.Info($"{Function} Stopping debounce timer (dispatched).");
+                            debounceTimer.Stop();
+                        }
+                    });
+                }
+            }
+            else
+            {
+                Logger.Info($"{Function} Stopping debounce timer (no dispatcher).");
+                debounceTimer.Stop();
+            }
+        }
+
+        /// <summary>
+        /// Override SetValue to cancel the debounce timer when receiving external updates.
+        /// This prevents stale pending values from being sent back to the helper after
+        /// a profile switch or AutoTDP adjustment.
+        /// </summary>
+        public override bool SetValue(object newValue, long updatedTime = 0)
+        {
+            // Cancel any pending debounce timer when receiving external updates
+            // This is critical to prevent stale widget values from corrupting profiles
+            // after a profile switch (e.g., game close -> global profile restore)
+            if (SuppressRemoteSync && hasPendingValue)
+            {
+                Logger.Info($"{Function} Cancelling debounce timer due to external update (pending={pendingValue}, new={newValue})");
+                StopDebounceTimer();
+            }
+
+            return base.SetValue(newValue, updatedTime);
+        }
+
+        public void Cleanup()
+        {
+            if (debounceTimer != null)
+            {
+                debounceTimer.Stop();
+                debounceTimer.Tick -= DebounceTimer_Tick;
+                debounceTimer = null;
+            }
+
+            if (UI != null)
+            {
+                UI.ValueChanged -= Slider_ValueChanged;
+            }
+        }
+
+        //private void Slider_DragLeave(object sender, Windows.UI.Xaml.DragEventArgs e)
+        //{
+        //    Logger.Info($"{Function} Slider drag leave {e.Data.ToString()}.");
+        //}
+
+        //private void Slider_DragOver(object sender, Windows.UI.Xaml.DragEventArgs e)
+        //{
+        //    Logger.Info($"{Function} Slider drag over {e.Data.ToString()}.");
+        //}
+
+        //private void Slider_DragStarting(Windows.UI.Xaml.UIElement sender, Windows.UI.Xaml.DragStartingEventArgs args)
+        //{
+        //    Logger.Info($"{Function} Slider drag starting {args.Data.ToString()}.");
+        //}
+
+        //private void Slider_DragEnter(object sender, Windows.UI.Xaml.DragEventArgs e)
+        //{
+        //    Logger.Info($"{Function} Slider drag enter {e.Data.ToString()}.");
+        //}
+
+        private void DebounceTimer_Tick(object sender, object e)
+        {
+            try
+            {
+                if (debounceTimer != null)
+                {
+                    debounceTimer.Stop();
+                }
+
+                // Check if connection is available before sending (supports both AppService and pipe)
+                if (!App.IsConnected)
+                {
+                    Logger.Debug($"{Function} Debounce timer tick - no connection yet, skipping send.");
+                    hasPendingValue = false;
+                    return;
+                }
+
+                if (hasPendingValue && pendingValue != Value)
+                {
+                    Logger.Info($"{Function} Debounce timer elapsed, applying pending value {pendingValue}.");
+                    hasPendingValue = false;
+                    OnexFrontend.MarkUserInput(Function,confirmed:true);
+                    SetValue(pendingValue);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"{Function} Error in debounce timer tick: {ex.Message}");
+            }
+        }
+
+        private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            // Skip if UI is being updated programmatically (from helper sync OR profile load).
+            // This prevents the debounce timer from being started with stale values and prevents
+            // loading a profile from pushing values back to the helper.
+            if (IsUpdatingUI || HelperSyncCount > 0)
+            {
+                return;
+            }
+
+            QueueSliderValue((int)e.NewValue);
+        }
+        private void QueueSliderValue(int newValue)
+        {
+            if(OnexFrontend.UsesOwnBackend&&OnexFrontend.IsOwnDisplayFunction(Function))return;
+            if(OnexFrontend.UsesOwnBackend&&!OnexInputGuard.IsActive(UI))return;
+            if(DeferredUserValue!=null){UserInput?.Invoke();DeferredUserValue(newValue);return;}
+            if (newValue != Value)
+            {
+                Logger.Info($"{Function} explicit slider value {newValue}, debouncing update.");
+
+                // Everything above filtered out helper sync and profile load, so this IS the user.
+                // Announced BEFORE the debounce on purpose: the send to the helper is delayed, but the
+                // profile save runs synchronously off this same ValueChanged (SettingChanged is the next
+                // subscriber), so the marker has to exist now, not in 500ms.
+                UserInput?.Invoke();
+
+                // Store the pending value - do NOT update internal value yet
+                // The timer will call SetValue() which updates the value and sends to helper
+                pendingValue = newValue;
+                hasPendingValue = true;
+
+                // Restart the debounce timer - this delays sending to helper
+                debounceTimer.Stop();
+                debounceTimer.Start();
+            }
+        }
+
+        protected override async void NotifyPropertyChanged(string propertyName = "")
+        {
+            if(OnexFrontend.UsesOwnBackend&&OnexFrontend.IsOwnDisplayFunction(Function))return;
+            var connection = TakeReadbackConnection();
+            base.NotifyPropertyChanged(propertyName);
+
+            if (UI != null && Owner != null)
+            {
+                Logger.Info($"Update {Function} slider value {Value}.");
+                await DispatchPropertyNotificationAsync(Owner.Dispatcher, connection, () =>
+                {
+                    // Set flags to prevent ValueChanged from triggering profile saves
+                    HelperSyncCount++;
+                    IsUpdatingUI = true;
+                    try
+                    {
+                        if(!OnexInputGuard.IsPreviewing(UI)&&(ReadbackAllowed?.Invoke(Value)??true))UI.Value = Value;
+                    }
+                    finally
+                    {
+                        IsUpdatingUI = false;
+                        HelperSyncCount--;
+                    }
+                });
+            }
+        }
+    }
+}

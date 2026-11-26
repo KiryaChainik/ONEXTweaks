@@ -1,0 +1,4977 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="OnexCaption0.Text" xml:space="preserve">
+    <value>LT</value>
+  </data>
+  <data name="OnexCaption1.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Main</value>
+  </data>
+  <data name="OnexCaption2.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Setup</value>
+  </data>
+  <data name="OnexCaption3.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="OnexCaption4.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="OnexCaption5.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Controls</value>
+  </data>
+  <data name="OnexCaption6.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Fan</value>
+  </data>
+  <data name="OnexCaption7.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tiny Center M</value>
+  </data>
+  <data name="OnexCaption8.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Lossless Scaling</value>
+  </data>
+  <data name="OnexCaption9.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Profiles (Performance &amp; Display)</value>
+  </data>
+  <data name="OnexCaption10.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="OnexCaption11.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Drivers</value>
+  </data>
+  <data name="OnexCaption12.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Graphics</value>
+  </data>
+  <data name="OnexCaption13.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Hotkeys</value>
+  </data>
+  <data name="OnexCaption14.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>GPD</value>
+  </data>
+  <data name="OnexCaption15.Text" xml:space="preserve">
+    <value>RT</value>
+  </data>
+  <data name="OnexCaption16.Text" xml:space="preserve">
+    <value>Driver updates available</value>
+  </data>
+  <data name="OnexCaption17.Text" xml:space="preserve">
+    <value>Tap to view on the Drivers tab</value>
+  </data>
+  <data name="OnexCaption18.Text" xml:space="preserve">
+    <value>GoTweaks update available</value>
+  </data>
+  <data name="OnexCaption19.Text" xml:space="preserve">
+    <value>Tap to install</value>
+  </data>
+  <data name="OnexCaption20.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Mute / unmute</value>
+  </data>
+  <data name="OnexCaption21.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Volume mixer</value>
+  </data>
+  <data name="OnexCaption21.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Volume mixer</value>
+  </data>
+  <data name="OnexCaption22.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Microphone mute / unmute</value>
+  </data>
+  <data name="OnexCaption23.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open ClawTweaks Center</value>
+  </data>
+  <data name="OnexCaption24.Text" xml:space="preserve">
+    <value>Customize Tiles and Hotkeys</value>
+  </data>
+  <data name="OnexCaption25.Text" xml:space="preserve">
+    <value>Customize Tiles and Hotkeys</value>
+  </data>
+  <data name="OnexCaption26.Text" xml:space="preserve">
+    <value>Tap a tile to select it, then tap another to swap positions. Use Show/Hide to toggle visibility. You can create custom tiles for any action — including OS shortcuts, TDP steps, and FPS limiter cycling — and assign controller button combinations to trigger or cycle through them directly without opening the widget.</value>
+  </data>
+  <data name="OnexCaption27.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="OnexCaption28.Text" xml:space="preserve">
+    <value>Close Customizations</value>
+  </data>
+  <data name="OnexCaption29.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="OnexCaption29.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Restore the default 23 tiles and their order. Custom tiles remain after them; columns and shortcuts are preserved.</value>
+  </data>
+  <data name="OnexCaption30.Text" xml:space="preserve">
+    <value>Add Custom Shortcut/Tile</value>
+  </data>
+  <data name="OnexCaption31.Text" xml:space="preserve">
+    <value>Keyboard</value>
+  </data>
+  <data name="OnexCaption32.Text" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="OnexCaption33.PlaceholderText" xml:space="preserve">
+    <value>Tile Name</value>
+  </data>
+  <data name="OnexCaption34.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption35.PlaceholderText" xml:space="preserve">
+    <value>Select action...</value>
+  </data>
+  <data name="OnexCaption36.Text" xml:space="preserve">
+    <value>Add Tile</value>
+  </data>
+  <data name="OnexCaption37.Text" xml:space="preserve">
+    <value>Columns:</value>
+  </data>
+  <data name="OnexCaption38.Text" xml:space="preserve">
+    <value>PROGRAM ACTIONS</value>
+  </data>
+  <data name="OnexCaption39.Text" xml:space="preserve">
+    <value>Manage Program Actions</value>
+  </data>
+  <data name="OnexCaption40.Text" xml:space="preserve">
+    <value>Add .exe or .ps1 files. They appear under "Program Actions (User)" when assigning tiles or the front buttons.</value>
+  </data>
+  <data name="OnexCaption41.PlaceholderText" xml:space="preserve">
+    <value>Path to .exe or .ps1</value>
+  </data>
+  <data name="OnexCaption42.Content" xml:space="preserve">
+    <value>Browse…</value>
+  </data>
+  <data name="OnexCaption43.Content" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="OnexCaption44.Text" xml:space="preserve">
+    <value>URL ACTIONS</value>
+  </data>
+  <data name="OnexCaption45.Text" xml:space="preserve">
+    <value>Manage URL Actions</value>
+  </data>
+  <data name="OnexCaption46.Text" xml:space="preserve">
+    <value>Add websites. They appear under "Launch Website (User)" when assigning tiles or the front buttons.</value>
+  </data>
+  <data name="OnexCaption47.Content" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="OnexCaption48.Text" xml:space="preserve">
+    <value>Show Metrics Row</value>
+  </data>
+  <data name="OnexCaption49.Text" xml:space="preserve">
+    <value>Select up to 6 metrics below</value>
+  </data>
+  <data name="OnexCaption50.Text" xml:space="preserve">
+    <value>Select Metrics (max 6)</value>
+  </data>
+  <data name="OnexCaption51.Content" xml:space="preserve">
+    <value>Battery Drain</value>
+  </data>
+  <data name="OnexCaption52.Content" xml:space="preserve">
+    <value>Battery Level</value>
+  </data>
+  <data name="OnexCaption53.Content" xml:space="preserve">
+    <value>CPU Usage</value>
+  </data>
+  <data name="OnexCaption54.Content" xml:space="preserve">
+    <value>CPU Temp</value>
+  </data>
+  <data name="OnexCaption55.Content" xml:space="preserve">
+    <value>CPU Wattage</value>
+  </data>
+  <data name="OnexCaption56.Content" xml:space="preserve">
+    <value>GPU Usage</value>
+  </data>
+  <data name="OnexCaption57.Content" xml:space="preserve">
+    <value>GPU Temp</value>
+  </data>
+  <data name="OnexCaption58.Content" xml:space="preserve">
+    <value>GPU Wattage</value>
+  </data>
+  <data name="OnexCaption59.Content" xml:space="preserve">
+    <value>Memory Usage</value>
+  </data>
+  <data name="OnexCaption60.Content" xml:space="preserve">
+    <value>Time Remaining</value>
+  </data>
+  <data name="OnexCaption61.Text" xml:space="preserve">
+    <value>0/6 selected</value>
+  </data>
+  <data name="OnexCaption62.Text" xml:space="preserve">
+    <value>Reorder (drag or use arrows)</value>
+  </data>
+  <data name="OnexCaption63.Text" xml:space="preserve">
+    <value>Close Customizations</value>
+  </data>
+  <data name="OnexCaption64.Text" xml:space="preserve">
+    <value>RTSS · Connecting…</value>
+  </data>
+  <data name="OnexCaption65.Text" xml:space="preserve">
+    <value>Overlay</value>
+  </data>
+  <data name="OnexCaption66.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption67.Content" xml:space="preserve">
+    <value>Basic</value>
+  </data>
+  <data name="OnexCaption68.Content" xml:space="preserve">
+    <value>Horizontal</value>
+  </data>
+  <data name="OnexCaption69.Content" xml:space="preserve">
+    <value>Horizontal Custom</value>
+  </data>
+  <data name="OnexCaption70.Content" xml:space="preserve">
+    <value>Vertical Custom</value>
+  </data>
+  <data name="OnexCaption71.Content" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption72.Content" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption73.Text" xml:space="preserve">
+    <value>Renderer</value>
+  </data>
+  <data name="OnexCaption74.Text" xml:space="preserve">
+    <value>RTSS draws inside games only. The built-in overlay also shows on the desktop.</value>
+  </data>
+  <data name="OnexCaption75.Content" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption76.Content" xml:space="preserve">
+    <value>ONEXTweaks (built-in)</value>
+  </data>
+  <data name="OnexCaption77.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="OnexCaption78.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="OnexCaption79.Content" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="OnexCaption80.Content" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="OnexCaption81.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="OnexCaption82.Content" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
+  <data name="OnexCaption83.Text" xml:space="preserve">
+    <value>Layout</value>
+  </data>
+  <data name="OnexCaption84.Text" xml:space="preserve">
+    <value>Columns</value>
+  </data>
+  <data name="OnexCaption85.Text" xml:space="preserve">
+    <value>Items per row (1 = vertical list)</value>
+  </data>
+  <data name="OnexCaption86.Text" xml:space="preserve">
+    <value>Overlay Size</value>
+  </data>
+  <data name="OnexCaption87.Content" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="OnexCaption88.Content" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="OnexCaption89.Content" xml:space="preserve">
+    <value>Medium-Large</value>
+  </data>
+  <data name="OnexCaption90.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="OnexCaption91.Content" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="OnexCaption92.Content" xml:space="preserve">
+    <value>X-Large</value>
+  </data>
+  <data name="OnexCaption93.Content" xml:space="preserve">
+    <value>XX-Large</value>
+  </data>
+  <data name="OnexCaption94.Content" xml:space="preserve">
+    <value>XXX-Large</value>
+  </data>
+  <data name="OnexCaption95.Text" xml:space="preserve">
+    <value>Overlay Font</value>
+  </data>
+  <data name="OnexCaption96.Content" xml:space="preserve">
+    <value>Bahnschrift</value>
+  </data>
+  <data name="OnexCaption97.Content" xml:space="preserve">
+    <value>Bahnschrift Light</value>
+  </data>
+  <data name="OnexCaption98.Content" xml:space="preserve">
+    <value>Bahnschrift SemiLight</value>
+  </data>
+  <data name="OnexCaption99.Content" xml:space="preserve">
+    <value>Bahnschrift SemiBold</value>
+  </data>
+  <data name="OnexCaption100.Content" xml:space="preserve">
+    <value>Bahnschrift Condensed</value>
+  </data>
+  <data name="OnexCaption101.Content" xml:space="preserve">
+    <value>Bahnschrift SemiCondensed</value>
+  </data>
+  <data name="OnexCaption102.Content" xml:space="preserve">
+    <value>Bahnschrift Light Condensed</value>
+  </data>
+  <data name="OnexCaption103.Content" xml:space="preserve">
+    <value>Bahnschrift Light SemiCondensed</value>
+  </data>
+  <data name="OnexCaption104.Content" xml:space="preserve">
+    <value>Bahnschrift SemiLight Condensed</value>
+  </data>
+  <data name="OnexCaption105.Content" xml:space="preserve">
+    <value>Bahnschrift SemiLight SemiCondensed</value>
+  </data>
+  <data name="OnexCaption106.Content" xml:space="preserve">
+    <value>Bahnschrift SemiBold Condensed</value>
+  </data>
+  <data name="OnexCaption107.Content" xml:space="preserve">
+    <value>Bahnschrift SemiBold SemiCondensed</value>
+  </data>
+  <data name="OnexCaption108.Content" xml:space="preserve">
+    <value>RTSS default (Unispace)</value>
+  </data>
+  <data name="OnexCaption109.Text" xml:space="preserve">
+    <value>Colors</value>
+  </data>
+  <data name="OnexCaption110.Text" xml:space="preserve">
+    <value>Text Color</value>
+  </data>
+  <data name="OnexCaption111.Content" xml:space="preserve">
+    <value>Dynamic</value>
+  </data>
+  <data name="OnexCaption112.Text" xml:space="preserve">
+    <value>Label Color</value>
+  </data>
+  <data name="OnexCaption113.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="OnexCaption114.Text" xml:space="preserve">
+    <value>OSD Opacity</value>
+  </data>
+  <data name="OnexCaption115.Text" xml:space="preserve">
+    <value>Reduce OSD brightness to protect OLED pixels</value>
+  </data>
+  <data name="OnexCaption116.Text" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="OnexCaption117.Text" xml:space="preserve">
+    <value>Adds a dark backdrop behind the overlay for better contrast</value>
+  </data>
+  <data name="OnexCaption118.Text" xml:space="preserve">
+    <value>Background Opacity</value>
+  </data>
+  <data name="OnexCaption119.Text" xml:space="preserve">
+    <value>Position Shift</value>
+  </data>
+  <data name="OnexCaption120.Text" xml:space="preserve">
+    <value>Shifts OSD every minute to prevent burn-in</value>
+  </data>
+  <data name="OnexCaption121.Text" xml:space="preserve">
+    <value>Pin Frametime Graph</value>
+  </data>
+  <data name="OnexCaption122.Text" xml:space="preserve">
+    <value>Always display graph on its own row at bottom</value>
+  </data>
+  <data name="OnexCaption123.Text" xml:space="preserve">
+    <value>Items to Display</value>
+  </data>
+  <data name="OnexCaption124.Text" xml:space="preserve">
+    <value>Pick which of the two custom presets to edit — the checkboxes below show what that preset displays, in its own order. Basic and Horizontal are fixed ONEXTweaks presets and are not editable.</value>
+  </data>
+  <data name="OnexCaption125.Text" xml:space="preserve">
+    <value>Preset</value>
+  </data>
+  <data name="OnexCaption126.Content" xml:space="preserve">
+    <value>Horizontal Custom</value>
+  </data>
+  <data name="OnexCaption127.Content" xml:space="preserve">
+    <value>Vertical Custom</value>
+  </data>
+  <data name="OnexCaption128.Text" xml:space="preserve">
+    <value>Editing the overlay that is active right now.</value>
+  </data>
+  <data name="OnexCaption129.Text" xml:space="preserve">
+    <value>Custom RTSS Tags</value>
+  </data>
+  <data name="OnexCaption130.Text" xml:space="preserve">
+    <value>Add custom RTSS tags (e.g. &lt;FR&gt; for FPS)</value>
+  </data>
+  <data name="OnexCaption131.PlaceholderText" xml:space="preserve">
+    <value>Enter custom RTSS tags...</value>
+  </data>
+  <data name="OnexCaption132.Text" xml:space="preserve">
+    <value>AMD Adrenaline Overlay</value>
+  </data>
+  <data name="OnexCaption133.Text" xml:space="preserve">
+    <value>The AMD overlay is controlled through Adrenaline software. Use Ctrl+Shift+O to toggle and Ctrl+Shift+X to cycle overlay levels.</value>
+  </data>
+  <data name="OnexCaption134.Text" xml:space="preserve">
+    <value>TDP Settings</value>
+  </data>
+  <data name="OnexCaption135.Text" xml:space="preserve">
+    <value>CPU Settings</value>
+  </data>
+  <data name="OnexCaption136.Text" xml:space="preserve">
+    <value>OS Power Mode</value>
+  </data>
+  <data name="OnexCaption137.Text" xml:space="preserve">
+    <value>FPS Limit</value>
+  </data>
+  <data name="OnexCaption138.Text" xml:space="preserve">
+    <value>Intel Settings</value>
+  </data>
+  <data name="OnexCaption139.Text" xml:space="preserve">
+    <value>Resolution &amp; Refresh Rate</value>
+  </data>
+  <data name="OnexCaption140.Text" xml:space="preserve">
+    <value>Fan Profile</value>
+  </data>
+  <data name="OnexCaption141.Text" xml:space="preserve">
+    <value>Screen Color Profile</value>
+  </data>
+  <data name="OnexCaption142.Text" xml:space="preserve">
+    <value>TDP Settings</value>
+  </data>
+  <data name="OnexCaption143.Text" xml:space="preserve">
+    <value>Power Limit (PL1)</value>
+  </data>
+  <data name="OnexCaption144.Text" xml:space="preserve">
+    <value>MSI Center M is active - TDP control unavailable. Disable it via the MSI Center tile in the Quick Tab.</value>
+  </data>
+  <data name="OnexCaption145.Text" xml:space="preserve">
+    <value>Limits:</value>
+  </data>
+  <data name="OnexCaption146.Text" xml:space="preserve">
+    <value>-- W</value>
+  </data>
+  <data name="OnexCaption147.Text" xml:space="preserve">
+    <value>Set TDP Mode to "Slider" to enable manual TDP control.</value>
+  </data>
+  <data name="OnexCaption148.Text" xml:space="preserve">
+    <value>Power Limit (PL2)</value>
+  </data>
+  <data name="OnexCaption149.Text" xml:space="preserve">
+    <value>Sets PL2 directly. Must be higher than PL1. Capped at 41W.</value>
+  </data>
+  <data name="OnexCaption150.Text" xml:space="preserve">
+    <value>PL2-Boost</value>
+  </data>
+  <data name="OnexCaption151.Text" xml:space="preserve">
+    <value>3W</value>
+  </data>
+  <data name="OnexCaption152.Text" xml:space="preserve">
+    <value>CPU Settings</value>
+  </data>
+  <data name="OnexCaption153.Text" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="OnexCaption154.Text" xml:space="preserve">
+    <value>Boost</value>
+  </data>
+  <data name="OnexCaption155.Text" xml:space="preserve">
+    <value>Toggle enables/disables CPU Boost. Expand for scheduling policy and P/E core max frequency.</value>
+  </data>
+  <data name="OnexCaption156.Text" xml:space="preserve">
+    <value>Processor Scheduling Policy</value>
+  </data>
+  <data name="OnexCaption157.Content" xml:space="preserve">
+    <value>Auto (default)</value>
+  </data>
+  <data name="OnexCaption158.Content" xml:space="preserve">
+    <value>Only E-Cores</value>
+  </data>
+  <data name="OnexCaption159.Text" xml:space="preserve">
+    <value>P-Core Max Frequency</value>
+  </data>
+  <data name="OnexCaption160.Content" xml:space="preserve">
+    <value>Unlimited</value>
+  </data>
+  <data name="OnexCaption161.Content" xml:space="preserve">
+    <value>4800 MHz</value>
+  </data>
+  <data name="OnexCaption162.Content" xml:space="preserve">
+    <value>4200 MHz</value>
+  </data>
+  <data name="OnexCaption163.Content" xml:space="preserve">
+    <value>3600 MHz</value>
+  </data>
+  <data name="OnexCaption164.Content" xml:space="preserve">
+    <value>3000 MHz</value>
+  </data>
+  <data name="OnexCaption165.Content" xml:space="preserve">
+    <value>2400 MHz</value>
+  </data>
+  <data name="OnexCaption166.Content" xml:space="preserve">
+    <value>1800 MHz</value>
+  </data>
+  <data name="OnexCaption167.Content" xml:space="preserve">
+    <value>1200 MHz</value>
+  </data>
+  <data name="OnexCaption168.Text" xml:space="preserve">
+    <value>E-Core Max Frequency</value>
+  </data>
+  <data name="OnexCaption169.Content" xml:space="preserve">
+    <value>Unlimited</value>
+  </data>
+  <data name="OnexCaption170.Content" xml:space="preserve">
+    <value>2900 MHz</value>
+  </data>
+  <data name="OnexCaption171.Content" xml:space="preserve">
+    <value>2400 MHz</value>
+  </data>
+  <data name="OnexCaption172.Content" xml:space="preserve">
+    <value>1800 MHz</value>
+  </data>
+  <data name="OnexCaption173.Content" xml:space="preserve">
+    <value>1200 MHz</value>
+  </data>
+  <data name="OnexCaption174.Content" xml:space="preserve">
+    <value>800 MHz</value>
+  </data>
+  <data name="OnexCaption175.Text" xml:space="preserve">
+    <value>OS Power Mode</value>
+  </data>
+  <data name="OnexCaption176.Text" xml:space="preserve">
+    <value>OS Power Mode</value>
+  </data>
+  <data name="OnexCaption177.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption178.Content" xml:space="preserve">
+    <value>Best Power Efficiency</value>
+  </data>
+  <data name="OnexCaption179.Content" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption180.Content" xml:space="preserve">
+    <value>Best Performance</value>
+  </data>
+  <data name="OnexCaption181.Text" xml:space="preserve">
+    <value>FPS Limit</value>
+  </data>
+  <data name="OnexCaption182.Text" xml:space="preserve">
+    <value>FPS Limit</value>
+  </data>
+  <data name="OnexCaption183.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption184.Text" xml:space="preserve">
+    <value>On / Off</value>
+  </data>
+  <data name="OnexCaption185.Content" xml:space="preserve">
+    <value>Stepless (1 FPS steps)</value>
+  </data>
+  <data name="OnexCaption186.Content" xml:space="preserve">
+    <value>Up to 180 FPS</value>
+  </data>
+  <data name="OnexCaption187.Text" xml:space="preserve">
+    <value>Intel Settings</value>
+  </data>
+  <data name="OnexCaption188.Text" xml:space="preserve">
+    <value>Frame Gen</value>
+  </data>
+  <data name="OnexCaption189.Text" xml:space="preserve">
+    <value>Intel XeSS MFG</value>
+  </data>
+  <data name="OnexCaption190.Content" xml:space="preserve">
+    <value>App Choice</value>
+  </data>
+  <data name="OnexCaption191.Content" xml:space="preserve">
+    <value>2X</value>
+  </data>
+  <data name="OnexCaption192.Content" xml:space="preserve">
+    <value>3X</value>
+  </data>
+  <data name="OnexCaption193.Content" xml:space="preserve">
+    <value>4X</value>
+  </data>
+  <data name="OnexCaption194.Text" xml:space="preserve">
+    <value>Restart the game to apply.</value>
+  </data>
+  <data name="OnexCaption195.Text" xml:space="preserve">
+    <value>A clean driver install clears these values.</value>
+  </data>
+  <data name="OnexCaption196.Text" xml:space="preserve">
+    <value>VRR</value>
+  </data>
+  <data name="OnexCaption197.Text" xml:space="preserve">
+    <value>Intel Arc Sync</value>
+  </data>
+  <data name="OnexCaption198.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption199.Content" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="OnexCaption200.Text" xml:space="preserve">
+    <value>VRR Mode</value>
+  </data>
+  <data name="OnexCaption201.Text" xml:space="preserve">
+    <value>Where VRR applies</value>
+  </data>
+  <data name="OnexCaption202.Content" xml:space="preserve">
+    <value>Fullscreen</value>
+  </data>
+  <data name="OnexCaption203.Content" xml:space="preserve">
+    <value>Full + Windowed</value>
+  </data>
+  <data name="OnexCaption204.Text" xml:space="preserve">
+    <value>Low Latency</value>
+  </data>
+  <data name="OnexCaption205.Text" xml:space="preserve">
+    <value>Intel Anti-Lag</value>
+  </data>
+  <data name="OnexCaption206.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption207.Content" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="OnexCaption208.Content" xml:space="preserve">
+    <value>On + Boost</value>
+  </data>
+  <data name="OnexCaption209.Text" xml:space="preserve">
+    <value>Frame Sync</value>
+  </data>
+  <data name="OnexCaption210.Text" xml:space="preserve">
+    <value>V-Sync behaviour</value>
+  </data>
+  <data name="OnexCaption211.Content" xml:space="preserve">
+    <value>App Default</value>
+  </data>
+  <data name="OnexCaption212.Content" xml:space="preserve">
+    <value>V-Sync Off</value>
+  </data>
+  <data name="OnexCaption213.Content" xml:space="preserve">
+    <value>V-Sync On</value>
+  </data>
+  <data name="OnexCaption214.Content" xml:space="preserve">
+    <value>Smooth Sync</value>
+  </data>
+  <data name="OnexCaption215.Content" xml:space="preserve">
+    <value>Speed Sync</value>
+  </data>
+  <data name="OnexCaption216.Content" xml:space="preserve">
+    <value>Match refresh rate (FPS cap)</value>
+  </data>
+  <data name="OnexCaption217.Text" xml:space="preserve">
+    <value>Scaling Mode</value>
+  </data>
+  <data name="OnexCaption218.Text" xml:space="preserve">
+    <value>Which device scales</value>
+  </data>
+  <data name="OnexCaption219.Content" xml:space="preserve">
+    <value>GPU Scaling</value>
+  </data>
+  <data name="OnexCaption220.Content" xml:space="preserve">
+    <value>Retro Scaling</value>
+  </data>
+  <data name="OnexCaption221.Text" xml:space="preserve">
+    <value>Scaling Method</value>
+  </data>
+  <data name="OnexCaption222.Text" xml:space="preserve">
+    <value>How it fits the panel</value>
+  </data>
+  <data name="OnexCaption223.Text" xml:space="preserve">
+    <value>Driver State</value>
+  </data>
+  <data name="OnexCaption224.Text" xml:space="preserve">
+    <value>Reads the actual Intel settings, since Intel's software may display older values.</value>
+  </data>
+  <data name="OnexCaption225.Content" xml:space="preserve">
+    <value>Fetch</value>
+  </data>
+  <data name="OnexCaption226.Text" xml:space="preserve">
+    <value>Resolution &amp; Refresh Rate</value>
+  </data>
+  <data name="OnexCaption227.Text" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="OnexCaption228.PlaceholderText" xml:space="preserve">
+    <value>1920x1080</value>
+  </data>
+  <data name="OnexCaption229.Text" xml:space="preserve">
+    <value>Refresh Rate</value>
+  </data>
+  <data name="OnexCaption230.PlaceholderText" xml:space="preserve">
+    <value>60 Hz</value>
+  </data>
+  <data name="OnexCaption231.Text" xml:space="preserve">
+    <value>Fan Profile</value>
+  </data>
+  <data name="OnexCaption232.Text" xml:space="preserve">
+    <value>Screen Color Profile</value>
+  </data>
+  <data name="OnexCaption233.Text" xml:space="preserve">
+    <value>Per Game performance &amp; display profile</value>
+  </data>
+  <data name="OnexCaption234.Text" xml:space="preserve">
+    <value>Global Profile</value>
+  </data>
+  <data name="OnexCaption235.Text" xml:space="preserve">
+    <value>No app/game detected</value>
+  </data>
+  <data name="OnexCaption236.Text" xml:space="preserve">
+    <value>Coming soon</value>
+  </data>
+  <data name="OnexCaption237.Text" xml:space="preserve">
+    <value>Fan Curve</value>
+  </data>
+  <data name="OnexCaption238.Text" xml:space="preserve">
+    <value>Fan: </value>
+  </data>
+  <data name="OnexCaption239.Text" xml:space="preserve">
+    <value>-- RPM</value>
+  </data>
+  <data name="OnexCaption240.Content" xml:space="preserve">
+    <value>Quiet</value>
+  </data>
+  <data name="OnexCaption241.Content" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption242.Content" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="OnexCaption243.Content" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="OnexCaption244.Text" xml:space="preserve">
+    <value>⚠ Helper disconnected with EC override active. Fan may be stuck at the last RPM until the helper reconnects, or reboot to clear.</value>
+  </data>
+  <data name="OnexCaption245.Text" xml:space="preserve">
+    <value>Unlock Fan Curve Override</value>
+  </data>
+  <data name="OnexCaption246.Text" xml:space="preserve">
+    <value>Bypass firmware minimums via direct EC write (per-mode)</value>
+  </data>
+  <data name="OnexCaption247.Text" xml:space="preserve">
+    <value>Info &amp; safety notes</value>
+  </data>
+  <data name="OnexCaption248.Text" xml:space="preserve">
+    <value>• Never 0% above ~50°C
+• 101°C software failsafe forces max RPM</value>
+  </data>
+  <data name="OnexCaption249.Text" xml:space="preserve">
+    <value>• Curves &amp; unlock state save per power mode
+• Dropdown selects which mode to edit, not the active one
+• Unlock OFF: firmware drives the fan (Custom only via WMI, with firmware-enforced floors)
+• Unlock ON: helper writes the curve directly to EC every 3s, in any mode
+• Axis labels (10°C–100°C) are how the curve is stored; firmware modes may map temps differently</value>
+  </data>
+  <data name="OnexCaption250.Text" xml:space="preserve">
+    <value>Fan %</value>
+  </data>
+  <data name="OnexCaption251.Text" xml:space="preserve">
+    <value>10°C</value>
+  </data>
+  <data name="OnexCaption252.Text" xml:space="preserve">
+    <value>100°C</value>
+  </data>
+  <data name="OnexCaption253.Text" xml:space="preserve">
+    <value>Fan Sensor Temp: </value>
+  </data>
+  <data name="OnexCaption254.Text" xml:space="preserve">
+    <value>--°C</value>
+  </data>
+  <data name="OnexCaption255.Text" xml:space="preserve">
+    <value> EC Protection Floor</value>
+  </data>
+  <data name="OnexCaption256.Text" xml:space="preserve">
+    <value>TDP Mode</value>
+  </data>
+  <data name="OnexCaption257.Text" xml:space="preserve">
+    <value>Controls power and thermal profile</value>
+  </data>
+  <data name="OnexCaption258.Content" xml:space="preserve">
+    <value>Max (30W)</value>
+  </data>
+  <data name="OnexCaption259.Content" xml:space="preserve">
+    <value>Standard (25W)</value>
+  </data>
+  <data name="OnexCaption260.Content" xml:space="preserve">
+    <value>Balanced (17W)</value>
+  </data>
+  <data name="OnexCaption261.Content" xml:space="preserve">
+    <value>Battery (12W)</value>
+  </data>
+  <data name="OnexCaption262.Content" xml:space="preserve">
+    <value>Super Battery (8W)</value>
+  </data>
+  <data name="OnexCaption263.Content" xml:space="preserve">
+    <value>Slider</value>
+  </data>
+  <data name="OnexCaption264.Text" xml:space="preserve">
+    <value>Device TDP Limits</value>
+  </data>
+  <data name="OnexCaption265.Text" xml:space="preserve">
+    <value>Increasing TDP beyond your device's thermal limits may cause overheating or throttling.</value>
+  </data>
+  <data name="OnexCaption266.Text" xml:space="preserve">
+    <value>Minimum TDP</value>
+  </data>
+  <data name="OnexCaption267.Text" xml:space="preserve">
+    <value>4W</value>
+  </data>
+  <data name="OnexCaption268.Text" xml:space="preserve">
+    <value>Maximum TDP</value>
+  </data>
+  <data name="OnexCaption269.Text" xml:space="preserve">
+    <value>30W</value>
+  </data>
+  <data name="OnexCaption270.Text" xml:space="preserve">
+    <value>TDP Boost Settings</value>
+  </data>
+  <data name="OnexCaption271.Text" xml:space="preserve">
+    <value>Sets PL2 (boost limit) directly to the chosen wattage. Must be higher than PL1 — automatically raised to PL1+1W if set too low.</value>
+  </data>
+  <data name="OnexCaption272.Text" xml:space="preserve">
+    <value>PL2-Boost</value>
+  </data>
+  <data name="OnexCaption273.Text" xml:space="preserve">
+    <value>3W</value>
+  </data>
+  <data name="OnexCaption274.Text" xml:space="preserve">
+    <value>Custom TDP Presets</value>
+  </data>
+  <data name="OnexCaption275.Text" xml:space="preserve">
+    <value>Use Custom Presets</value>
+  </data>
+  <data name="OnexCaption276.Text" xml:space="preserve">
+    <value>Override default TDP values for modes</value>
+  </data>
+  <data name="OnexCaption277.Text" xml:space="preserve">
+    <value>Use Lenovo Modes</value>
+  </data>
+  <data name="OnexCaption278.Text" xml:space="preserve">
+    <value>Use hardware modes for Quiet/Balanced/Performance</value>
+  </data>
+  <data name="OnexCaption279.Text" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="OnexCaption280.Content" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="OnexCaption281.Text" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="OnexCaption282.Text" xml:space="preserve">
+    <value>Add New Preset</value>
+  </data>
+  <data name="OnexCaption283.PlaceholderText" xml:space="preserve">
+    <value>Preset name</value>
+  </data>
+  <data name="OnexCaption284.Content" xml:space="preserve">
+    <value>Enable TDP Boost</value>
+  </data>
+  <data name="OnexCaption285.Content" xml:space="preserve">
+    <value>Add Preset</value>
+  </data>
+  <data name="OnexCaption286.Content" xml:space="preserve">
+    <value>Reset to Defaults</value>
+  </data>
+  <data name="OnexCaption287.Text" xml:space="preserve">
+    <value>Edit Preset</value>
+  </data>
+  <data name="OnexCaption288.Text" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="OnexCaption289.Text" xml:space="preserve">
+    <value>TDP (W):</value>
+  </data>
+  <data name="OnexCaption290.Text" xml:space="preserve">
+    <value>TDP Boost:</value>
+  </data>
+  <data name="OnexCaption291.Content" xml:space="preserve">
+    <value>Enable TDP Boost</value>
+  </data>
+  <data name="OnexCaption292.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="OnexCaption293.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="OnexCaption294.Text" xml:space="preserve">
+    <value>Game Detection</value>
+  </data>
+  <data name="OnexCaption295.Text" xml:space="preserve">
+    <value>Games with profiles always detect regardless of settings</value>
+  </data>
+  <data name="OnexCaption296.Text" xml:space="preserve">
+    <value>Prefer executable</value>
+  </data>
+  <data name="OnexCaption297.Text" xml:space="preserve">
+    <value>Use .exe name, fall back to window title if unavailable</value>
+  </data>
+  <data name="OnexCaption298.Text" xml:space="preserve">
+    <value>Games only</value>
+  </data>
+  <data name="OnexCaption299.Text" xml:space="preserve">
+    <value>Detect apps with FPS (RTSS) or added to Xbox Game Bar</value>
+  </data>
+  <data name="OnexCaption300.Text" xml:space="preserve">
+    <value>Adjust per Game Settings</value>
+  </data>
+  <data name="OnexCaption301.Text" xml:space="preserve">
+    <value>Choose which settings are saved per game</value>
+  </data>
+  <data name="OnexCaption302.Content" xml:space="preserve">
+    <value>TDP Power Limit</value>
+  </data>
+  <data name="OnexCaption303.Content" xml:space="preserve">
+    <value>CPU Boost</value>
+  </data>
+  <data name="OnexCaption304.Content" xml:space="preserve">
+    <value>CPU EPP</value>
+  </data>
+  <data name="OnexCaption305.Content" xml:space="preserve">
+    <value>CPU State</value>
+  </data>
+  <data name="OnexCaption306.Content" xml:space="preserve">
+    <value>AMD Features (FMF, Anti-Lag, Boost, Chill)</value>
+  </data>
+  <data name="OnexCaption307.Content" xml:space="preserve">
+    <value>FPS Limit</value>
+  </data>
+  <data name="OnexCaption308.Content" xml:space="preserve">
+    <value>OS Power Mode</value>
+  </data>
+  <data name="OnexCaption309.Content" xml:space="preserve">
+    <value>HDR</value>
+  </data>
+  <data name="OnexCaption310.Content" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="OnexCaption311.Content" xml:space="preserve">
+    <value>Refresh Rate</value>
+  </data>
+  <data name="OnexCaption312.Content" xml:space="preserve">
+    <value>Fan Curve</value>
+  </data>
+  <data name="OnexCaption313.Content" xml:space="preserve">
+    <value>Perf. Overlay</value>
+  </data>
+  <data name="OnexCaption314.Content" xml:space="preserve">
+    <value>CPU Affinity</value>
+  </data>
+  <data name="OnexCaption315.Text" xml:space="preserve">
+    <value>Global performance &amp; display profile</value>
+  </data>
+  <data name="OnexCaption316.Text" xml:space="preserve">
+    <value>TDP Mode</value>
+  </data>
+  <data name="OnexCaption317.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption318.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption319.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption320.Text" xml:space="preserve">
+    <value>TDP Overboost</value>
+  </data>
+  <data name="OnexCaption321.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption322.Text" xml:space="preserve">
+    <value>  PL2</value>
+  </data>
+  <data name="OnexCaption323.Text" xml:space="preserve">
+    <value>37W</value>
+  </data>
+  <data name="OnexCaption324.Text" xml:space="preserve">
+    <value>CPU Boost</value>
+  </data>
+  <data name="OnexCaption325.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption326.Text" xml:space="preserve">
+    <value>FPS Mode</value>
+  </data>
+  <data name="OnexCaption327.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption328.Text" xml:space="preserve">
+    <value>FPS Limit</value>
+  </data>
+  <data name="OnexCaption329.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption330.Text" xml:space="preserve">
+    <value>Power Mode</value>
+  </data>
+  <data name="OnexCaption331.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption332.Text" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption333.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption334.Text" xml:space="preserve">
+    <value>HDR</value>
+  </data>
+  <data name="OnexCaption335.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption336.Text" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="OnexCaption337.Text" xml:space="preserve">
+    <value>Native</value>
+  </data>
+  <data name="OnexCaption338.Text" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="OnexCaption339.Text" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="OnexCaption340.Text" xml:space="preserve">
+    <value>Plugged in ⚡</value>
+  </data>
+  <data name="OnexCaption341.Text" xml:space="preserve">
+    <value>On battery 🔋</value>
+  </data>
+  <data name="OnexCaption342.Text" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="OnexCaption343.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption344.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption345.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption346.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption347.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption348.Text" xml:space="preserve">
+    <value>TDP Overboost</value>
+  </data>
+  <data name="OnexCaption349.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption350.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption351.Text" xml:space="preserve">
+    <value>  PL2</value>
+  </data>
+  <data name="OnexCaption352.Text" xml:space="preserve">
+    <value>37W</value>
+  </data>
+  <data name="OnexCaption353.Text" xml:space="preserve">
+    <value>37W</value>
+  </data>
+  <data name="OnexCaption354.Text" xml:space="preserve">
+    <value>Boost</value>
+  </data>
+  <data name="OnexCaption355.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption356.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption357.Text" xml:space="preserve">
+    <value>Gyro</value>
+  </data>
+  <data name="OnexCaption358.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption359.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption360.Text" xml:space="preserve">
+    <value>FPS Mode</value>
+  </data>
+  <data name="OnexCaption361.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption362.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption363.Text" xml:space="preserve">
+    <value>FPS Lim</value>
+  </data>
+  <data name="OnexCaption364.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption365.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption366.Text" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="OnexCaption367.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption368.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption369.Text" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption370.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption371.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption372.Text" xml:space="preserve">
+    <value>Res</value>
+  </data>
+  <data name="OnexCaption373.Text" xml:space="preserve">
+    <value>Native</value>
+  </data>
+  <data name="OnexCaption374.Text" xml:space="preserve">
+    <value>Native</value>
+  </data>
+  <data name="OnexCaption375.Text" xml:space="preserve">
+    <value>Now Playing</value>
+  </data>
+  <data name="OnexCaption376.Text" xml:space="preserve">
+    <value>Game</value>
+  </data>
+  <data name="OnexCaption377.Text" xml:space="preserve">
+    <value>Plugged in ⚡</value>
+  </data>
+  <data name="OnexCaption378.Text" xml:space="preserve">
+    <value>On battery 🔋</value>
+  </data>
+  <data name="OnexCaption379.Text" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="OnexCaption380.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption381.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption382.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption383.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption384.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption385.Text" xml:space="preserve">
+    <value>TDP Overboost</value>
+  </data>
+  <data name="OnexCaption386.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption387.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption388.Text" xml:space="preserve">
+    <value>  PL2</value>
+  </data>
+  <data name="OnexCaption389.Text" xml:space="preserve">
+    <value>35W</value>
+  </data>
+  <data name="OnexCaption390.Text" xml:space="preserve">
+    <value>35W</value>
+  </data>
+  <data name="OnexCaption391.Text" xml:space="preserve">
+    <value>Boost</value>
+  </data>
+  <data name="OnexCaption392.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption393.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption394.Text" xml:space="preserve">
+    <value>Gyro</value>
+  </data>
+  <data name="OnexCaption395.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption396.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption397.Text" xml:space="preserve">
+    <value>FPS Mode</value>
+  </data>
+  <data name="OnexCaption398.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption399.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption400.Text" xml:space="preserve">
+    <value>FPS Lim</value>
+  </data>
+  <data name="OnexCaption401.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption402.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption403.Text" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="OnexCaption404.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption405.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption406.Text" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption407.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption408.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption409.Text" xml:space="preserve">
+    <value>Res</value>
+  </data>
+  <data name="OnexCaption410.Text" xml:space="preserve">
+    <value>Native</value>
+  </data>
+  <data name="OnexCaption411.Text" xml:space="preserve">
+    <value>Native</value>
+  </data>
+  <data name="OnexCaption412.Text" xml:space="preserve">
+    <value>Now Playing</value>
+  </data>
+  <data name="OnexCaption413.Text" xml:space="preserve">
+    <value>Game</value>
+  </data>
+  <data name="OnexCaption414.Text" xml:space="preserve">
+    <value>TDP Mode</value>
+  </data>
+  <data name="OnexCaption415.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption416.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption417.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption418.Text" xml:space="preserve">
+    <value>TDP Overboost</value>
+  </data>
+  <data name="OnexCaption419.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption420.Text" xml:space="preserve">
+    <value>  PL2</value>
+  </data>
+  <data name="OnexCaption421.Text" xml:space="preserve">
+    <value>37W</value>
+  </data>
+  <data name="OnexCaption422.Text" xml:space="preserve">
+    <value>CPU Boost</value>
+  </data>
+  <data name="OnexCaption423.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption424.Text" xml:space="preserve">
+    <value>CPU EPP</value>
+  </data>
+  <data name="OnexCaption425.Text" xml:space="preserve">
+    <value>CPU State</value>
+  </data>
+  <data name="OnexCaption426.Text" xml:space="preserve">
+    <value>FPS Limit</value>
+  </data>
+  <data name="OnexCaption427.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption428.Text" xml:space="preserve">
+    <value>Power Mode</value>
+  </data>
+  <data name="OnexCaption429.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption430.Text" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption431.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption432.Text" xml:space="preserve">
+    <value>HDR</value>
+  </data>
+  <data name="OnexCaption433.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption434.Text" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="OnexCaption435.Text" xml:space="preserve">
+    <value>Native</value>
+  </data>
+  <data name="OnexCaption436.Text" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="OnexCaption437.Text" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="OnexCaption438.Text" xml:space="preserve">
+    <value>Saved Profiles</value>
+  </data>
+  <data name="OnexCaption439.Text" xml:space="preserve">
+    <value>Your saved per-game performance &amp; display profiles</value>
+  </data>
+  <data name="OnexCaption440.Text" xml:space="preserve">
+    <value>Sort by</value>
+  </data>
+  <data name="OnexCaption441.Content" xml:space="preserve">
+    <value>Name (A→Z)</value>
+  </data>
+  <data name="OnexCaption442.Content" xml:space="preserve">
+    <value>Last Modified</value>
+  </data>
+  <data name="OnexCaption443.Content" xml:space="preserve">
+    <value>TDP (high → low)</value>
+  </data>
+  <data name="OnexCaption444.Text" xml:space="preserve">
+    <value>Use extra profile for battery and plugged in sessions</value>
+  </data>
+  <data name="OnexCaption445.Text" xml:space="preserve">
+    <value>Scope: Global profile</value>
+  </data>
+  <data name="OnexCaption446.Text" xml:space="preserve">
+    <value>No game detected</value>
+  </data>
+  <data name="OnexCaption447.Text" xml:space="preserve">
+    <value>App version &amp; updates</value>
+  </data>
+  <data name="OnexCaption448.Text" xml:space="preserve">
+    <value>Installed version: …</value>
+  </data>
+  <data name="OnexCaption449.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reload releases</value>
+  </data>
+  <data name="OnexCaption450.Text" xml:space="preserve">
+    <value>Only versions newer than yours are shown (no downgrades). Experimental test builds are flagged. The signed helper downloads and runs the installer — a PowerShell window shows the progress.</value>
+  </data>
+  <data name="OnexCaption451.Text" xml:space="preserve">
+    <value>Setup &amp; Onboarding</value>
+  </data>
+  <data name="OnexCaption452.Text" xml:space="preserve">
+    <value>ONEXTweaks needs a few small tools. One click checks what's present and installs anything missing.</value>
+  </data>
+  <data name="OnexCaption453.Text" xml:space="preserve">
+    <value>1. Required tools</value>
+  </data>
+  <data name="OnexCaption454.Text" xml:space="preserve">
+    <value>Install the missing ones with CTW Center — it links to each vendor's own installer. This page only shows what is already there.</value>
+  </data>
+  <data name="OnexCaption455.Text" xml:space="preserve">
+    <value>We're switching from the discontinued ViGEm to VIIPER (USBIP)</value>
+  </data>
+  <data name="OnexCaption456.Text" xml:space="preserve">
+    <value>usbip-win2: Checking...</value>
+  </data>
+  <data name="OnexCaption457.Content" xml:space="preserve">
+    <value>Re-check</value>
+  </data>
+  <data name="OnexCaption458.Text" xml:space="preserve">
+    <value>USB/IP kernel driver powering the default VIIPER controller emulation (button remapping, gyro-as-stick, Mouse Mode). Install it through CTW Center, then reboot once.</value>
+  </data>
+  <data name="OnexCaption459.Text" xml:space="preserve">
+    <value>These are checked together. „Re-check tools“ asks again after you installed something.</value>
+  </data>
+  <data name="OnexCaption460.Text" xml:space="preserve">
+    <value>HidHide: Checking...</value>
+  </data>
+  <data name="OnexCaption461.Text" xml:space="preserve">
+    <value>Hides the Claw's built-in controller while emulation runs, so games see only the virtual pad — prevents double input.</value>
+  </data>
+  <data name="OnexCaption462.Text" xml:space="preserve">
+    <value>RTSS: Checking...</value>
+  </data>
+  <data name="OnexCaption463.Text" xml:space="preserve">
+    <value>RivaTuner Statistics Server. Draws the on-screen overlay (FPS, TDP, temps) and enforces the FPS limiter.</value>
+  </data>
+  <data name="OnexCaption464.Text" xml:space="preserve">
+    <value>PawnIO: Checking...</value>
+  </data>
+  <data name="OnexCaption465.Text" xml:space="preserve">
+    <value>Kernel sensor driver. Exposes CPU/GPU power and temperature to the overlay — without it the power readout stays at 0 W.</value>
+  </data>
+  <data name="OnexCaption466.Content" xml:space="preserve">
+    <value>Re-check tools</value>
+  </data>
+  <data name="OnexCaption467.Text" xml:space="preserve">
+    <value>HidHide, RTSS and PawnIO are official, signed third-party tools installed via winget; usbip-win2 is the signed vendor driver, downloaded on demand. Individual install / download buttons live under System → Debug → Driver dependencies.</value>
+  </data>
+  <data name="OnexCaption468.Text" xml:space="preserve">
+    <value>2. Disable MSI Center M</value>
+  </data>
+  <data name="OnexCaption469.Text" xml:space="preserve">
+    <value>Checking MSI Center M...</value>
+  </data>
+  <data name="OnexCaption470.Content" xml:space="preserve">
+    <value>Disable</value>
+  </data>
+  <data name="OnexCaption471.Text" xml:space="preserve">
+    <value>3. Enable controller emulation</value>
+  </data>
+  <data name="OnexCaption472.Text" xml:space="preserve">
+    <value>Controller emulation: off</value>
+  </data>
+  <data name="OnexCaption473.Content" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="OnexCaption474.Text" xml:space="preserve">
+    <value>Set up Left MSI (Claw) button</value>
+  </data>
+  <data name="OnexCaption475.Text" xml:space="preserve">
+    <value>Assign a single-click action to the Left MSI (front) button — e.g. open the Steam menu. Opens the full setup in the Controls tab.</value>
+  </data>
+  <data name="OnexCaption476.Content" xml:space="preserve">
+    <value>Set up Left MSI button →</value>
+  </data>
+  <data name="OnexCaption477.Text" xml:space="preserve">
+    <value>Auto Jump to Clawtweaks on Gamebar Open</value>
+  </data>
+  <data name="OnexCaption478.Text" xml:space="preserve">
+    <value>The Right MSI button opens Game Bar (its press action is unchanged). When controller emulation is active, ONEXTweaks then auto-jumps to its widget slot on open. Set this to ONEXTweaks' actual position (usually #3 — Microsoft occupies the first two).</value>
+  </data>
+  <data name="OnexCaption479.Text" xml:space="preserve">
+    <value>ONEXTweaks widget position</value>
+  </data>
+  <data name="OnexCaption480.Text" xml:space="preserve">
+    <value>Legacy (ViGEm)</value>
+  </data>
+  <data name="OnexCaption481.Text" xml:space="preserve">
+    <value>ViGEmBus is the old controller-emulation driver. The default backend is now VIIPER (usbip-win2), so ViGEm is optional — only install it if you switch the backend to Legacy under System → Debug. It does not affect onboarding completion while VIIPER is active.</value>
+  </data>
+  <data name="OnexCaption482.Text" xml:space="preserve">
+    <value>ViGEmBus: Checking...</value>
+  </data>
+  <data name="OnexCaption483.Text" xml:space="preserve">
+    <value>Offboarding</value>
+  </data>
+  <data name="OnexCaption484.Text" xml:space="preserve">
+    <value>Remove individual tools. Each row shows the current status and lets you uninstall independently.</value>
+  </data>
+  <data name="OnexCaption485.Text" xml:space="preserve">
+    <value>usbip-win2: Checking...</value>
+  </data>
+  <data name="OnexCaption486.Content" xml:space="preserve">
+    <value>Install usbip-win2</value>
+  </data>
+  <data name="OnexCaption487.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="OnexCaption488.Text" xml:space="preserve">
+    <value>USB/IP kernel driver for VIIPER controller emulation.</value>
+  </data>
+  <data name="OnexCaption489.Text" xml:space="preserve">
+    <value>ViGEmBus: Checking...</value>
+  </data>
+  <data name="OnexCaption490.Content" xml:space="preserve">
+    <value>Install ViGEmBus</value>
+  </data>
+  <data name="OnexCaption491.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="OnexCaption492.Text" xml:space="preserve">
+    <value>Legacy controller emulation driver. Only needed when the VIIPER backend is off.</value>
+  </data>
+  <data name="OnexCaption493.Text" xml:space="preserve">
+    <value>HidHide: Checking...</value>
+  </data>
+  <data name="OnexCaption494.Content" xml:space="preserve">
+    <value>Install HidHide</value>
+  </data>
+  <data name="OnexCaption495.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="OnexCaption496.Text" xml:space="preserve">
+    <value>Hides the Claw's built-in controller while emulation runs — prevents double input.</value>
+  </data>
+  <data name="OnexCaption497.Text" xml:space="preserve">
+    <value>RTSS: Checking...</value>
+  </data>
+  <data name="OnexCaption498.Content" xml:space="preserve">
+    <value>Install RTSS</value>
+  </data>
+  <data name="OnexCaption499.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="OnexCaption500.Text" xml:space="preserve">
+    <value>RivaTuner Statistics Server — FPS limiter and on-screen overlay.</value>
+  </data>
+  <data name="OnexCaption501.Text" xml:space="preserve">
+    <value>PawnIO: Checking...</value>
+  </data>
+  <data name="OnexCaption502.Content" xml:space="preserve">
+    <value>Install PawnIO</value>
+  </data>
+  <data name="OnexCaption503.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="OnexCaption504.Text" xml:space="preserve">
+    <value>Kernel sensor driver — exposes CPU/GPU power and temperature to the overlay.</value>
+  </data>
+  <data name="OnexCaption505.Text" xml:space="preserve">
+    <value>Factory Reset</value>
+  </data>
+  <data name="OnexCaption506.Text" xml:space="preserve">
+    <value>Deletes all profiles, controller settings, custom tiles, TDP presets and Quick Settings. Charge limit is disabled and reset to 100 %. The app restarts with factory defaults.</value>
+  </data>
+  <data name="OnexCaption507.Content" xml:space="preserve">
+    <value>Reset all</value>
+  </data>
+  <data name="OnexCaption508.Text" xml:space="preserve">
+    <value>Uninstall ONEXTweaks</value>
+  </data>
+  <data name="OnexCaption509.Text" xml:space="preserve">
+    <value>Opens Windows Settings → Apps so you can remove ONEXTweaks. Run Factory Reset first to clean up all profiles and settings.</value>
+  </data>
+  <data name="OnexCaption510.Content" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="OnexCaption511.Text" xml:space="preserve">
+    <value>Tab Settings</value>
+  </data>
+  <data name="OnexCaption512.Text" xml:space="preserve">
+    <value>Reorder tabs, hide the ones you don't need, optionally pick a default tab.</value>
+  </data>
+  <data name="OnexCaption513.Text" xml:space="preserve">
+    <value>System and Setup can't be hidden.</value>
+  </data>
+  <data name="OnexCaption514.Text" xml:space="preserve">
+    <value>Open a specific tab on Game Bar open</value>
+  </data>
+  <data name="OnexCaption515.Text" xml:space="preserve">
+    <value>Off = reopen at the last tab (default).</value>
+  </data>
+  <data name="OnexCaption516.Text" xml:space="preserve">
+    <value>Controller Guide button</value>
+  </data>
+  <data name="OnexCaption517.Text" xml:space="preserve">
+    <value>Stops the virtual controller's Xbox/Guide button from opening the Windows Game Bar (turns off Windows' controller-to-Game-Bar shortcuts in the registry). Note: the Xbox button can currently still open the Xbox app, but it does not open Steam Big Picture or the Steam overlay — so this is geared toward Xbox-app users rather than Steam.</value>
+  </data>
+  <data name="OnexCaption518.Content" xml:space="preserve">
+    <value>Disable Game Bar on Guide button</value>
+  </data>
+  <data name="OnexCaption519.Text" xml:space="preserve">
+    <value>Start with Windows</value>
+  </data>
+  <data name="OnexCaption520.Text" xml:space="preserve">
+    <value>Connecting to the helper…</value>
+  </data>
+  <data name="OnexCaption521.Text" xml:space="preserve">
+    <value>Tab Settings</value>
+  </data>
+  <data name="OnexCaption522.Text" xml:space="preserve">
+    <value>Reorder tabs, hide the ones you don't need, optionally pick a default tab.</value>
+  </data>
+  <data name="OnexCaption523.Text" xml:space="preserve">
+    <value>System and Setup can't be hidden.</value>
+  </data>
+  <data name="OnexCaption524.Text" xml:space="preserve">
+    <value>Open a specific tab on Game Bar open</value>
+  </data>
+  <data name="OnexCaption525.Text" xml:space="preserve">
+    <value>Off = reopen at the last tab (default).</value>
+  </data>
+  <data name="OnexCaption526.Text" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="OnexCaption527.Text" xml:space="preserve">
+    <value>Theme, app font and glass effect for the widget UI</value>
+  </data>
+  <data name="OnexCaption528.Text" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="OnexCaption529.Text" xml:space="preserve">
+    <value>Change the widget appearance</value>
+  </data>
+  <data name="OnexCaption530.Content" xml:space="preserve">
+    <value>ONEXPLAYER</value>
+  </data>
+  <data name="OnexCaption531.Content" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="OnexCaption532.Content" xml:space="preserve">
+    <value>Next Gen Claw</value>
+  </data>
+  <data name="OnexCaption533.Content" xml:space="preserve">
+    <value>Claw Blue</value>
+  </data>
+  <data name="OnexCaption534.Content" xml:space="preserve">
+    <value>Box X</value>
+  </data>
+  <data name="OnexCaption535.Content" xml:space="preserve">
+    <value>Nintendon't</value>
+  </data>
+  <data name="OnexCaption536.Content" xml:space="preserve">
+    <value>Chrilleteur</value>
+  </data>
+  <data name="OnexCaption537.Content" xml:space="preserve">
+    <value>Candy</value>
+  </data>
+  <data name="OnexCaption538.Content" xml:space="preserve">
+    <value>Spot if i</value>
+  </data>
+  <data name="OnexCaption539.Content" xml:space="preserve">
+    <value>Cyberpunk</value>
+  </data>
+  <data name="OnexCaption540.Content" xml:space="preserve">
+    <value>Loius Vuittong</value>
+  </data>
+  <data name="OnexCaption541.Content" xml:space="preserve">
+    <value>Ferrar I</value>
+  </data>
+  <data name="OnexCaption542.Content" xml:space="preserve">
+    <value>Polar Ice</value>
+  </data>
+  <data name="OnexCaption543.Content" xml:space="preserve">
+    <value>Claw Tweaks</value>
+  </data>
+  <data name="OnexCaption544.Content" xml:space="preserve">
+    <value>ViscaBarca</value>
+  </data>
+  <data name="OnexCaption545.Content" xml:space="preserve">
+    <value>BVB</value>
+  </data>
+  <data name="OnexCaption546.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="OnexCaption547.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="OnexCaption548.Content" xml:space="preserve">
+    <value>OLED</value>
+  </data>
+  <data name="OnexCaption549.Content" xml:space="preserve">
+    <value>Dracula</value>
+  </data>
+  <data name="OnexCaption550.Content" xml:space="preserve">
+    <value>Nord</value>
+  </data>
+  <data name="OnexCaption551.Content" xml:space="preserve">
+    <value>Catppuccin</value>
+  </data>
+  <data name="OnexCaption552.Text" xml:space="preserve">
+    <value>App Font</value>
+  </data>
+  <data name="OnexCaption553.Text" xml:space="preserve">
+    <value>English / Русский</value>
+  </data>
+  <data name="OnexCaption554.Text" xml:space="preserve">
+    <value>The quick brown fox — Съешь ещё этих мягких булок. Ёё 0123456789</value>
+  </data>
+  <data name="OnexCaption555.Text" xml:space="preserve">
+    <value>Glass effect</value>
+  </data>
+  <data name="OnexCaption556.Text" xml:space="preserve">
+    <value>Soft reflections on cards and tiles. Changes apply immediately.</value>
+  </data>
+  <data name="OnexCaption557.Text" xml:space="preserve">
+    <value>Color Settings</value>
+  </data>
+  <data name="OnexCaption558.Text" xml:space="preserve">
+    <value>Adjust display color output</value>
+  </data>
+  <data name="OnexCaption559.Header" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="OnexCaption560.Header" xml:space="preserve">
+    <value>Contrast</value>
+  </data>
+  <data name="OnexCaption561.Header" xml:space="preserve">
+    <value>Saturation</value>
+  </data>
+  <data name="OnexCaption562.Header" xml:space="preserve">
+    <value>Color Temperature (K)</value>
+  </data>
+  <data name="OnexCaption563.Text" xml:space="preserve">
+    <value>TDP Settings have been moved to the Performance tab (TDP Mode card).</value>
+  </data>
+  <data name="OnexCaption564.Text" xml:space="preserve">
+    <value>Hotkeys</value>
+  </data>
+  <data name="OnexCaption565.Text" xml:space="preserve">
+    <value>Map controller combos to keyboard shortcuts</value>
+  </data>
+  <data name="OnexCaption566.Text" xml:space="preserve">
+    <value>View + A</value>
+  </data>
+  <data name="OnexCaption567.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption568.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption569.Content" xml:space="preserve">
+    <value>Toggle OSD</value>
+  </data>
+  <data name="OnexCaption570.Content" xml:space="preserve">
+    <value>Screenshot</value>
+  </data>
+  <data name="OnexCaption571.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption572.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption573.Content" xml:space="preserve">
+    <value>Open Keyboard</value>
+  </data>
+  <data name="OnexCaption574.Content" xml:space="preserve">
+    <value>Task Manager</value>
+  </data>
+  <data name="OnexCaption575.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption576.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption577.Text" xml:space="preserve">
+    <value>View + B</value>
+  </data>
+  <data name="OnexCaption578.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption579.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption580.Content" xml:space="preserve">
+    <value>Toggle OSD</value>
+  </data>
+  <data name="OnexCaption581.Content" xml:space="preserve">
+    <value>Screenshot</value>
+  </data>
+  <data name="OnexCaption582.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption583.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption584.Content" xml:space="preserve">
+    <value>Open Keyboard</value>
+  </data>
+  <data name="OnexCaption585.Content" xml:space="preserve">
+    <value>Task Manager</value>
+  </data>
+  <data name="OnexCaption586.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption587.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption588.Text" xml:space="preserve">
+    <value>View + X</value>
+  </data>
+  <data name="OnexCaption589.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption590.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption591.Content" xml:space="preserve">
+    <value>Toggle OSD</value>
+  </data>
+  <data name="OnexCaption592.Content" xml:space="preserve">
+    <value>Screenshot</value>
+  </data>
+  <data name="OnexCaption593.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption594.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption595.Content" xml:space="preserve">
+    <value>Open Keyboard</value>
+  </data>
+  <data name="OnexCaption596.Content" xml:space="preserve">
+    <value>Task Manager</value>
+  </data>
+  <data name="OnexCaption597.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption598.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption599.Text" xml:space="preserve">
+    <value>View + Y</value>
+  </data>
+  <data name="OnexCaption600.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption601.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption602.Content" xml:space="preserve">
+    <value>Toggle OSD</value>
+  </data>
+  <data name="OnexCaption603.Content" xml:space="preserve">
+    <value>Screenshot</value>
+  </data>
+  <data name="OnexCaption604.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption605.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption606.Content" xml:space="preserve">
+    <value>Open Keyboard</value>
+  </data>
+  <data name="OnexCaption607.Content" xml:space="preserve">
+    <value>Task Manager</value>
+  </data>
+  <data name="OnexCaption608.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption609.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption610.Text" xml:space="preserve">
+    <value>Menu + ↑</value>
+  </data>
+  <data name="OnexCaption611.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption612.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption613.Content" xml:space="preserve">
+    <value>Toggle OSD</value>
+  </data>
+  <data name="OnexCaption614.Content" xml:space="preserve">
+    <value>Screenshot</value>
+  </data>
+  <data name="OnexCaption615.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption616.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption617.Content" xml:space="preserve">
+    <value>Open Keyboard</value>
+  </data>
+  <data name="OnexCaption618.Content" xml:space="preserve">
+    <value>Task Manager</value>
+  </data>
+  <data name="OnexCaption619.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption620.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption621.Text" xml:space="preserve">
+    <value>Menu + ↓</value>
+  </data>
+  <data name="OnexCaption622.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption623.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption624.Content" xml:space="preserve">
+    <value>Toggle OSD</value>
+  </data>
+  <data name="OnexCaption625.Content" xml:space="preserve">
+    <value>Screenshot</value>
+  </data>
+  <data name="OnexCaption626.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption627.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption628.Content" xml:space="preserve">
+    <value>Open Keyboard</value>
+  </data>
+  <data name="OnexCaption629.Content" xml:space="preserve">
+    <value>Task Manager</value>
+  </data>
+  <data name="OnexCaption630.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption631.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption632.Text" xml:space="preserve">
+    <value>Menu + ←</value>
+  </data>
+  <data name="OnexCaption633.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption634.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption635.Content" xml:space="preserve">
+    <value>Toggle OSD</value>
+  </data>
+  <data name="OnexCaption636.Content" xml:space="preserve">
+    <value>Screenshot</value>
+  </data>
+  <data name="OnexCaption637.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption638.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption639.Content" xml:space="preserve">
+    <value>Open Keyboard</value>
+  </data>
+  <data name="OnexCaption640.Content" xml:space="preserve">
+    <value>Task Manager</value>
+  </data>
+  <data name="OnexCaption641.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption642.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption643.Text" xml:space="preserve">
+    <value>Menu + →</value>
+  </data>
+  <data name="OnexCaption644.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption645.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption646.Content" xml:space="preserve">
+    <value>Toggle OSD</value>
+  </data>
+  <data name="OnexCaption647.Content" xml:space="preserve">
+    <value>Screenshot</value>
+  </data>
+  <data name="OnexCaption648.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption649.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption650.Content" xml:space="preserve">
+    <value>Open Keyboard</value>
+  </data>
+  <data name="OnexCaption651.Content" xml:space="preserve">
+    <value>Task Manager</value>
+  </data>
+  <data name="OnexCaption652.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption653.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption654.Text" xml:space="preserve">
+    <value>Hotkeys work when the widget is running, even when not visible.</value>
+  </data>
+  <data name="OnexCaption655.Text" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="OnexCaption656.Text" xml:space="preserve">
+    <value>Troubleshooting and diagnostic tools</value>
+  </data>
+  <data name="OnexCaption657.Content" xml:space="preserve">
+    <value>Restart Helper</value>
+  </data>
+  <data name="OnexCaption658.Content" xml:space="preserve">
+    <value>Kill ONEXTweaks</value>
+  </data>
+  <data name="OnexCaption659.Content" xml:space="preserve">
+    <value>Export Logs</value>
+  </data>
+  <data name="OnexCaption660.Content" xml:space="preserve">
+    <value>Check for Update (Coming Soon)</value>
+  </data>
+  <data name="OnexCaption661.Content" xml:space="preserve">
+    <value>Check for updates on start (Coming Soon)</value>
+  </data>
+  <data name="OnexCaption662.Content" xml:space="preserve">
+    <value>Hide ONEXTweaks update banner on Quick tab</value>
+  </data>
+  <data name="OnexCaption663.Content" xml:space="preserve">
+    <value>Export All Data (Coming Soon)</value>
+  </data>
+  <data name="OnexCaption664.Content" xml:space="preserve">
+    <value>Import All Data (Coming Soon)</value>
+  </data>
+  <data name="OnexCaption665.Content" xml:space="preserve">
+    <value>Prepare for Uninstall</value>
+  </data>
+  <data name="OnexCaption666.Text" xml:space="preserve">
+    <value>Enable Debug Tools</value>
+  </data>
+  <data name="OnexCaption667.Text" xml:space="preserve">
+    <value>Enables Debug log level + PawnIO diagnostic tools</value>
+  </data>
+  <data name="OnexCaption668.Text" xml:space="preserve">
+    <value>Use VIIPER emulation (recommended)</value>
+  </data>
+  <data name="OnexCaption669.Text" xml:space="preserve">
+    <value>Replaces the legacy ViGEm controller emulation with VIIPER (USBIP-based). Requires usbip-win2. Toggling restarts controller emulation.</value>
+  </data>
+  <data name="OnexCaption670.Text" xml:space="preserve">
+    <value>usbip-win2 driver: checking...</value>
+  </data>
+  <data name="OnexCaption671.Text" xml:space="preserve">
+    <value>⚠ usbip-win2 required</value>
+  </data>
+  <data name="OnexCaption672.Text" xml:space="preserve">
+    <value>VIIPER emulation needs the usbip-win2 kernel driver. Download + install the signed driver, reboot, then come back here.</value>
+  </data>
+  <data name="OnexCaption673.Content" xml:space="preserve">
+    <value>Install usbip-win2</value>
+  </data>
+  <data name="OnexCaption674.Content" xml:space="preserve">
+    <value>Or open usbip-win2 releases</value>
+  </data>
+  <data name="OnexCaption675.Text" xml:space="preserve">
+    <value>Fan curve: allow 1–39 %</value>
+  </data>
+  <data name="OnexCaption676.Text" xml:space="preserve">
+    <value>The custom fan curve normally only rests at 0 (off) or 40 % and above, and the graph is drawn with a break across that gap. The reason: on both the Claw 8 AI+ and the Claw 8 EX the fan sits on its minimum-spin plateau below ~40, so 20 and 40 measured the same RPM — a slider that promises a difference it cannot deliver.</value>
+  </data>
+  <data name="OnexCaption677.Text" xml:space="preserve">
+    <value>Turn this on to lift the restriction: every value 1–39 becomes settable and the axis is drawn straight. Nothing about the EC write changes — those values were always sent as-is. Switching it back off snaps the curve onto the allowed values again.</value>
+  </data>
+  <data name="OnexCaption678.Text" xml:space="preserve">
+    <value>Per-game gyro engine</value>
+  </data>
+  <data name="OnexCaption679.Text" xml:space="preserve">
+    <value>Which engine a per-game controller profile's gyro uses. Auto reads the sensor over the COM Sensor API — the one path that works on the Claw 8 AI+ and the Claw 8 EX alike, confirmed on real hardware on both. If the Sensor API finds nothing, Auto falls back to the WinRT sensor by itself. Applies immediately.</value>
+  </data>
+  <data name="OnexCaption680.Text" xml:space="preserve">
+    <value>The other entries are for testing: 'Virtual (software)' forces the WinRT sensor (which finds nothing on the EX, whose gyro reports a different type ID), 'Firmware (SensorModule)' leaves motion to the controller itself, and 'Virtual (Sensor API)' pins the COM source with no fallback.</value>
+  </data>
+  <data name="OnexCaption681.Content" xml:space="preserve">
+    <value>Auto (Sensor API)</value>
+  </data>
+  <data name="OnexCaption682.Content" xml:space="preserve">
+    <value>Virtual (software)</value>
+  </data>
+  <data name="OnexCaption683.Content" xml:space="preserve">
+    <value>Firmware (SensorModule)</value>
+  </data>
+  <data name="OnexCaption684.Content" xml:space="preserve">
+    <value>Virtual (Sensor API)</value>
+  </data>
+  <data name="OnexCaption685.Text" xml:space="preserve">
+    <value>PawnIO SMU Tools</value>
+  </data>
+  <data name="OnexCaption686.Text" xml:space="preserve">
+    <value>Direct SMU commands - changes apply immediately</value>
+  </data>
+  <data name="OnexCaption687.Text" xml:space="preserve">
+    <value>CPU: Not detected</value>
+  </data>
+  <data name="OnexCaption688.Text" xml:space="preserve">
+    <value>Curve Optimizer (All Cores)</value>
+  </data>
+  <data name="OnexCaption689.Text" xml:space="preserve">
+    <value>Undervolt: negative, Overvolt: positive</value>
+  </data>
+  <data name="OnexCaption690.Text" xml:space="preserve">
+    <value>Curve Optimizer (iGPU)</value>
+  </data>
+  <data name="OnexCaption691.Text" xml:space="preserve">
+    <value>Undervolt: negative, Overvolt: positive</value>
+  </data>
+  <data name="OnexCaption692.Text" xml:space="preserve">
+    <value>iGPU Clock (MHz)</value>
+  </data>
+  <data name="OnexCaption693.Text" xml:space="preserve">
+    <value>Set iGPU frequency</value>
+  </data>
+  <data name="OnexCaption694.Text" xml:space="preserve">
+    <value>Tctl Temp Limit (°C)</value>
+  </data>
+  <data name="OnexCaption695.Text" xml:space="preserve">
+    <value>CPU temperature limit</value>
+  </data>
+  <data name="OnexCaption696.Content" xml:space="preserve">
+    <value>Apply All</value>
+  </data>
+  <data name="OnexCaption697.Content" xml:space="preserve">
+    <value>Reset to 0</value>
+  </data>
+  <data name="OnexCaption698.Text" xml:space="preserve">
+    <value>Intel thermal stack (IPF/DTT) — diagnostic only</value>
+  </data>
+  <data name="OnexCaption699.Text" xml:space="preserve">
+    <value>Does NOT fix the fan panic. The panic is an EC firmware latch that only a full shutdown clears. For investigation only — stopping these tasks can make a stuck fan worse.</value>
+  </data>
+  <data name="OnexCaption700.Content" xml:space="preserve">
+    <value>Stop Intel tasks</value>
+  </data>
+  <data name="OnexCaption701.Content" xml:space="preserve">
+    <value>Start Intel tasks</value>
+  </data>
+  <data name="OnexCaption702.Content" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="OnexCaption703.Text" xml:space="preserve">
+    <value>Press Refresh to read the Intel thermal stack status.</value>
+  </data>
+  <data name="OnexCaption704.Text" xml:space="preserve">
+    <value>Fan max test (Full Blast) — diagnostic only</value>
+  </data>
+  <data name="OnexCaption705.Text" xml:space="preserve">
+    <value>Forces the EC full-speed override to check whether 100% (EC 150) is really the absolute fan max. Turn ON, wait a few seconds, Read RPM; compare with Aggressive@100%. Turn OFF afterwards.</value>
+  </data>
+  <data name="OnexCaption706.Content" xml:space="preserve">
+    <value>Full Blast ON</value>
+  </data>
+  <data name="OnexCaption707.Content" xml:space="preserve">
+    <value>Full Blast OFF</value>
+  </data>
+  <data name="OnexCaption708.Content" xml:space="preserve">
+    <value>Read RPM</value>
+  </data>
+  <data name="OnexCaption709.Text" xml:space="preserve">
+    <value>Press Read RPM to read the live fan speed.</value>
+  </data>
+  <data name="OnexCaption710.Text" xml:space="preserve">
+    <value>Fan override probe — diagnostic only</value>
+  </data>
+  <data name="OnexCaption711.Text" xml:space="preserve">
+    <value>Writes a raw byte to an EC block (default 152) to find a proportional fan-duty register. Sweep + Write, then listen. Set value back to 0 when done.</value>
+  </data>
+  <data name="OnexCaption712.Text" xml:space="preserve">
+    <value>Block</value>
+  </data>
+  <data name="OnexCaption713.Text" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="OnexCaption714.Text" xml:space="preserve">
+    <value>0 (0x00)</value>
+  </data>
+  <data name="OnexCaption715.Content" xml:space="preserve">
+    <value>Write</value>
+  </data>
+  <data name="OnexCaption716.Content" xml:space="preserve">
+    <value>0x80|40</value>
+  </data>
+  <data name="OnexCaption717.Content" xml:space="preserve">
+    <value>0x80|80</value>
+  </data>
+  <data name="OnexCaption718.Text" xml:space="preserve">
+    <value>Write a value, then listen. Read-back confirms what landed in the EC.</value>
+  </data>
+  <data name="OnexCaption719.Content" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="OnexCaption720.Text" xml:space="preserve">
+    <value>Navigation guide</value>
+  </data>
+  <data name="OnexCaption721.Text" xml:space="preserve">
+    <value>Touch, gamepad and slider controls</value>
+  </data>
+  <data name="OnexCaption722.Text" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="OnexCaption723.Text" xml:space="preserve">
+    <value>Version and credits</value>
+  </data>
+  <data name="OnexCaption724.Text" xml:space="preserve">
+    <value>ONEXTweaks brings performance, display, fan, lighting and controller settings to your ONEXPLAYER Game Bar widget.</value>
+  </data>
+  <data name="OnexCaption725.Text" xml:space="preserve">
+    <value>Widget version</value>
+  </data>
+  <data name="OnexCaption726.Text" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="OnexCaption727.Text" xml:space="preserve">
+    <value>Author</value>
+  </data>
+  <data name="OnexCaption728.Text" xml:space="preserve">
+    <value>KiryaChainik</value>
+  </data>
+  <data name="OnexCaption729.Text" xml:space="preserve">
+    <value>How the parts work together</value>
+  </data>
+  <data name="OnexCaption730.Text" xml:space="preserve">
+    <value>Widget — the interface, tiles and profile editors.
+Bridge — actions, controller input and communication with Windows.
+Power Agent — applies and reads hardware power limits.
+Optional tools — VIIPER and HidHide for a virtual controller; RTSS for its overlay and FPS limiter.</value>
+  </data>
+  <data name="OnexCaption731.Text" xml:space="preserve">
+    <value>Special Thanks</value>
+  </data>
+  <data name="OnexCaption732.Text" xml:space="preserve">
+    <value>ClawTweaks — enterTheVoidCode (Riff_Lash)</value>
+  </data>
+  <data name="OnexCaption733.Text" xml:space="preserve">
+    <value>Built on the ClawTweaks / GoTweaks foundation. Thanks also to the GoTweaks and Handheld Companion authors and contributors.</value>
+  </data>
+  <data name="OnexCaption734.Text" xml:space="preserve">
+    <value>MSI Claw Driver Updates</value>
+  </data>
+  <data name="OnexCaption735.Text" xml:space="preserve">
+    <value>Driver &amp; firmware updates (MSI + Intel)</value>
+  </data>
+  <data name="OnexCaption736.Text" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="OnexCaption737.Text" xml:space="preserve">
+    <value>Installed BIOS</value>
+  </data>
+  <data name="OnexCaption738.Content" xml:space="preserve">
+    <value>Check for updates</value>
+  </data>
+  <data name="OnexCaption739.Content" xml:space="preserve">
+    <value>Open MSI driver page</value>
+  </data>
+  <data name="OnexCaption740.Content" xml:space="preserve">
+    <value>Intel DSA</value>
+  </data>
+  <data name="OnexCaption741.Text" xml:space="preserve">
+    <value>Tap 'Check for updates' to scan installed driver versions.</value>
+  </data>
+  <data name="OnexCaption742.Content" xml:space="preserve">
+    <value>Check for driver updates on start</value>
+  </data>
+  <data name="OnexCaption743.Content" xml:space="preserve">
+    <value>Use modded Wi-Fi driver (theboss619) — at your own risk</value>
+  </data>
+  <data name="OnexCaption744.Content" xml:space="preserve">
+    <value>Also offer Intel beta graphics drivers (not WHQL certified)</value>
+  </data>
+  <data name="OnexCaption745.Text" xml:space="preserve">
+    <value>BETA</value>
+  </data>
+  <data name="OnexCaption746.Text" xml:space="preserve">
+    <value>Installed:</value>
+  </data>
+  <data name="OnexCaption747.Text" xml:space="preserve">
+    <value>Latest:</value>
+  </data>
+  <data name="OnexCaption748.Content" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="OnexCaption749.Text" xml:space="preserve">
+    <value>Intel Graphics Software Settings</value>
+  </data>
+  <data name="OnexCaption750.Text" xml:space="preserve">
+    <value>Global Profile</value>
+  </data>
+  <data name="OnexCaption751.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Previous image</value>
+  </data>
+  <data name="OnexCaption752.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Next image</value>
+  </data>
+  <data name="OnexCaption753.Text" xml:space="preserve">
+    <value>Saturation</value>
+  </data>
+  <data name="OnexCaption754.Text" xml:space="preserve">
+    <value>Hue</value>
+  </data>
+  <data name="OnexCaption755.Text" xml:space="preserve">
+    <value>Contrast</value>
+  </data>
+  <data name="OnexCaption756.Text" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="OnexCaption757.Text" xml:space="preserve">
+    <value>Gamma</value>
+  </data>
+  <data name="OnexCaption758.Text" xml:space="preserve">
+    <value>Adaptive Sharpness</value>
+  </data>
+  <data name="OnexCaption759.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption760.Text" xml:space="preserve">
+    <value>0 — Off. Levels 1–5 sharpen SDR edges. For example, 1 is subtle and 5 is strong.</value>
+  </data>
+  <data name="OnexCaption761.Content" xml:space="preserve">
+    <value>Reset to neutral</value>
+  </data>
+  <data name="OnexCaption762.Text" xml:space="preserve">
+    <value>Fan Control</value>
+  </data>
+  <data name="OnexCaption763.Text" xml:space="preserve">
+    <value>Global Profile</value>
+  </data>
+  <data name="OnexCaption764.Text" xml:space="preserve">
+    <value>Separate Fan 1 / Fan 2</value>
+  </data>
+  <data name="OnexCaption765.Text" xml:space="preserve">
+    <value>Preset</value>
+  </data>
+  <data name="OnexCaption766.Content" xml:space="preserve">
+    <value>MSI Default</value>
+  </data>
+  <data name="OnexCaption767.Content" xml:space="preserve">
+    <value>Quiet Idle</value>
+  </data>
+  <data name="OnexCaption768.Content" xml:space="preserve">
+    <value>Cooling · Early Ramp</value>
+  </data>
+  <data name="OnexCaption769.Content" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="OnexCaption770.Content" xml:space="preserve">
+    <value>EC Sport default (debug)</value>
+  </data>
+  <data name="OnexCaption771.Content" xml:space="preserve">
+    <value>Fan 1 (CPU)</value>
+  </data>
+  <data name="OnexCaption772.Content" xml:space="preserve">
+    <value>Fan 2 (GPU)</value>
+  </data>
+  <data name="OnexCaption773.Text" xml:space="preserve">
+    <value>CPU:</value>
+  </data>
+  <data name="OnexCaption774.Text" xml:space="preserve">
+    <value>--°C</value>
+  </data>
+  <data name="OnexCaption775.Text" xml:space="preserve">
+    <value>Fan 1:</value>
+  </data>
+  <data name="OnexCaption776.Text" xml:space="preserve">
+    <value>0 RPM</value>
+  </data>
+  <data name="OnexCaption777.Text" xml:space="preserve">
+    <value>Fan 2:</value>
+  </data>
+  <data name="OnexCaption778.Text" xml:space="preserve">
+    <value>0 RPM</value>
+  </data>
+  <data name="OnexCaption779.Text" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="OnexCaption780.Text" xml:space="preserve">
+    <value>MSI max 75%</value>
+  </data>
+  <data name="OnexCaption781.Text" xml:space="preserve">
+    <value>Fan curve changing</value>
+  </data>
+  <data name="OnexCaption782.Text" xml:space="preserve">
+    <value>Editing is locked until the change has been written.</value>
+  </data>
+  <data name="OnexCaption783.Text" xml:space="preserve">
+    <value>Fan 1 &amp; 2 · Sync</value>
+  </data>
+  <data name="OnexCaption784.Text" xml:space="preserve">
+    <value>Apply fan curve</value>
+  </data>
+  <data name="OnexCaption785.Text" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="OnexCaption786.Content" xml:space="preserve">
+    <value>Check applied values</value>
+  </data>
+  <data name="OnexCaption787.Text" xml:space="preserve">
+    <value>Extended range (&gt;75%)</value>
+  </data>
+  <data name="OnexCaption788.Text" xml:space="preserve">
+    <value>Allow fan % beyond what MSI does</value>
+  </data>
+  <data name="OnexCaption789.Text" xml:space="preserve">
+    <value>Custom curve: drag a bar up/down for its fan %. With a controller: D-Pad left/right to pick a bar, A to grab, D-Pad up/down to adjust, A/B to release. The temperatures under the bars are the firmware's own breakpoints and are shown for reference — like MSI Center M, only the fan % is adjustable. The curve is written to the EC (both fans). Turn this off to return to MSI's firmware control.</value>
+  </data>
+  <data name="OnexCaption790.Text" xml:space="preserve">
+    <value>Tiny Center M</value>
+  </data>
+  <data name="OnexCaption791.Text" xml:space="preserve">
+    <value>Hardware controller settings, written straight to the controller and kept in sync with MSI Center M.</value>
+  </data>
+  <data name="OnexCaption792.Text" xml:space="preserve">
+    <value>Controller LED Color</value>
+  </data>
+  <data name="OnexCaption793.Text" xml:space="preserve">
+    <value>Set the controller LED color.</value>
+  </data>
+  <data name="OnexCaption794.Text" xml:space="preserve">
+    <value>Sync right stick, left stick &amp; buttons</value>
+  </data>
+  <data name="OnexCaption795.Text" xml:space="preserve">
+    <value>Off lets you give the right stick, left stick and buttons their own individual colors and effects.</value>
+  </data>
+  <data name="OnexCaption796.Text" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="OnexCaption797.Text" xml:space="preserve">
+    <value>Right stick</value>
+  </data>
+  <data name="OnexCaption798.Text" xml:space="preserve">
+    <value>Left stick</value>
+  </data>
+  <data name="OnexCaption799.Text" xml:space="preserve">
+    <value>Buttons</value>
+  </data>
+  <data name="OnexCaption800.Text" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="OnexCaption801.Text" xml:space="preserve">
+    <value>Static</value>
+  </data>
+  <data name="OnexCaption802.Text" xml:space="preserve">
+    <value>Breathing</value>
+  </data>
+  <data name="OnexCaption803.Text" xml:space="preserve">
+    <value>Color Cycle</value>
+  </data>
+  <data name="OnexCaption804.Text" xml:space="preserve">
+    <value>Wave</value>
+  </data>
+  <data name="OnexCaption805.Text" xml:space="preserve">
+    <value>Battery</value>
+  </data>
+  <data name="OnexCaption806.Text" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="OnexCaption807.Text" xml:space="preserve">
+    <value>Rainbow</value>
+  </data>
+  <data name="OnexCaption808.Text" xml:space="preserve">
+    <value>On = rainbow. Off = your colour(s).</value>
+  </data>
+  <data name="OnexCaption809.Text" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="OnexCaption810.Content" xml:space="preserve">
+    <value>Slow</value>
+  </data>
+  <data name="OnexCaption811.Content" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="OnexCaption812.Content" xml:space="preserve">
+    <value>Fast</value>
+  </data>
+  <data name="OnexCaption813.Text" xml:space="preserve">
+    <value>Direction</value>
+  </data>
+  <data name="OnexCaption814.Content" xml:space="preserve">
+    <value>Clockwise</value>
+  </data>
+  <data name="OnexCaption815.Content" xml:space="preserve">
+    <value>Counter-clockwise</value>
+  </data>
+  <data name="OnexCaption816.Text" xml:space="preserve">
+    <value>Color Cycle sweeps smoothly through a colour spectrum. Custom cycle colours are coming in a follow-up.</value>
+  </data>
+  <data name="OnexCaption817.Text" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="OnexCaption818.Text" xml:space="preserve">
+    <value>Applies to all zones</value>
+  </data>
+  <data name="OnexCaption819.Text" xml:space="preserve">
+    <value>Battery: the LED hue follows the charge level (≥90% blue → &lt;20% purple), updated when it crosses a 10% band. The slider above sets its brightness.</value>
+  </data>
+  <data name="OnexCaption820.Text" xml:space="preserve">
+    <value>Charge Limit</value>
+  </data>
+  <data name="OnexCaption821.Text" xml:space="preserve">
+    <value>Limit battery charging to extend long-term lifespan</value>
+  </data>
+  <data name="OnexCaption822.Text" xml:space="preserve">
+    <value>Enable charge limit</value>
+  </data>
+  <data name="OnexCaption823.Text" xml:space="preserve">
+    <value>Stop charging once the battery reaches the level below.</value>
+  </data>
+  <data name="OnexCaption824.Text" xml:space="preserve">
+    <value>Charge to at most</value>
+  </data>
+  <data name="OnexCaption825.Content" xml:space="preserve">
+    <value>Verify</value>
+  </data>
+  <data name="OnexCaption826.Text" xml:space="preserve">
+    <value>Note: the limit is enforced by the controller (EC) itself, so it keeps working while the Claw is asleep or shut down but plugged in. The EC value can be cleared by an EC reset, BIOS update or a full battery drain — use Verify to re-check the live value after sleep / hibernation.</value>
+  </data>
+  <data name="OnexCaption827.Text" xml:space="preserve">
+    <value>Stick &amp; Trigger Settings</value>
+  </data>
+  <data name="OnexCaption828.Text" xml:space="preserve">
+    <value>Deadzones and limits for both sticks and triggers, written straight to the controller.</value>
+  </data>
+  <data name="OnexCaption829.Text" xml:space="preserve">
+    <value>No unsaved changes</value>
+  </data>
+  <data name="OnexCaption830.Content" xml:space="preserve">
+    <value>Reset sticks &amp; triggers to default</value>
+  </data>
+  <data name="OnexCaption831.Text" xml:space="preserve">
+    <value>Left stick</value>
+  </data>
+  <data name="OnexCaption832.Text" xml:space="preserve">
+    <value>Inner deadzone</value>
+  </data>
+  <data name="OnexCaption833.Text" xml:space="preserve">
+    <value>Outer threshold</value>
+  </data>
+  <data name="OnexCaption834.Text" xml:space="preserve">
+    <value>Right stick</value>
+  </data>
+  <data name="OnexCaption835.Text" xml:space="preserve">
+    <value>Inner deadzone</value>
+  </data>
+  <data name="OnexCaption836.Text" xml:space="preserve">
+    <value>Outer threshold</value>
+  </data>
+  <data name="OnexCaption837.Text" xml:space="preserve">
+    <value>Left trigger</value>
+  </data>
+  <data name="OnexCaption838.Text" xml:space="preserve">
+    <value>Deadzone</value>
+  </data>
+  <data name="OnexCaption839.Text" xml:space="preserve">
+    <value>Limit</value>
+  </data>
+  <data name="OnexCaption840.Text" xml:space="preserve">
+    <value>Right trigger</value>
+  </data>
+  <data name="OnexCaption841.Text" xml:space="preserve">
+    <value>Deadzone</value>
+  </data>
+  <data name="OnexCaption842.Text" xml:space="preserve">
+    <value>Limit</value>
+  </data>
+  <data name="OnexCaption843.Text" xml:space="preserve">
+    <value>Hardware Gyro (global)</value>
+  </data>
+  <data name="OnexCaption844.Text" xml:space="preserve">
+    <value>MSI's firmware gyro, applied globally — enable it, pick right stick or mouse, and how it turns on. Per-game gyro is set in the Controller tab.</value>
+  </data>
+  <data name="OnexCaption845.Text" xml:space="preserve">
+    <value>No unsaved changes</value>
+  </data>
+  <data name="OnexCaption846.Text" xml:space="preserve">
+    <value>Current state</value>
+  </data>
+  <data name="OnexCaption847.Text" xml:space="preserve">
+    <value>Enable firmware gyro</value>
+  </data>
+  <data name="OnexCaption848.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="OnexCaption848.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption849.Text" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="OnexCaption850.Content" xml:space="preserve">
+    <value>Right stick</value>
+  </data>
+  <data name="OnexCaption851.Content" xml:space="preserve">
+    <value>Mouse</value>
+  </data>
+  <data name="OnexCaption852.Text" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="OnexCaption853.Content" xml:space="preserve">
+    <value>Always on</value>
+  </data>
+  <data name="OnexCaption854.Content" xml:space="preserve">
+    <value>Hold a button</value>
+  </data>
+  <data name="OnexCaption855.Content" xml:space="preserve">
+    <value>Toggle a button</value>
+  </data>
+  <data name="OnexCaption856.Text" xml:space="preserve">
+    <value>Hold button</value>
+  </data>
+  <data name="OnexCaption857.Content" xml:space="preserve">
+    <value>L2</value>
+  </data>
+  <data name="OnexCaption858.Content" xml:space="preserve">
+    <value>R2</value>
+  </data>
+  <data name="OnexCaption859.Content" xml:space="preserve">
+    <value>M1</value>
+  </data>
+  <data name="OnexCaption860.Content" xml:space="preserve">
+    <value>M2</value>
+  </data>
+  <data name="OnexCaption861.Text" xml:space="preserve">
+    <value>Sensitivity</value>
+  </data>
+  <data name="OnexCaption862.Text" xml:space="preserve">
+    <value>Deadzone</value>
+  </data>
+  <data name="OnexCaption863.Text" xml:space="preserve">
+    <value>Lossless Scaling Status</value>
+  </data>
+  <data name="OnexCaption864.Content" xml:space="preserve">
+    <value>Show Window</value>
+  </data>
+  <data name="OnexCaption865.Text" xml:space="preserve">
+    <value>Launch</value>
+  </data>
+  <data name="OnexCaption866.Text" xml:space="preserve">
+    <value>Not Installed</value>
+  </data>
+  <data name="OnexCaption867.Text" xml:space="preserve">
+    <value>Current Profile</value>
+  </data>
+  <data name="OnexCaption868.Text" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="OnexCaption869.Content" xml:space="preserve">
+    <value>Create Profile</value>
+  </data>
+  <data name="OnexCaption870.Text" xml:space="preserve">
+    <value>Lossless Scaling</value>
+  </data>
+  <data name="OnexCaption871.Content" xml:space="preserve">
+    <value>Apply and Restart</value>
+  </data>
+  <data name="OnexCaption872.Content" xml:space="preserve">
+    <value>Reset to Defaults</value>
+  </data>
+  <data name="OnexCaption873.Text" xml:space="preserve">
+    <value>AutoScale</value>
+  </data>
+  <data name="OnexCaption874.Text" xml:space="preserve">
+    <value>Automatically detect and scale games</value>
+  </data>
+  <data name="OnexCaption875.Text" xml:space="preserve">
+    <value>AutoScale Delay (s)</value>
+  </data>
+  <data name="OnexCaption876.Text" xml:space="preserve">
+    <value>Scaling Algorithm</value>
+  </data>
+  <data name="OnexCaption877.PlaceholderText" xml:space="preserve">
+    <value>Select Type</value>
+  </data>
+  <data name="OnexCaption878.Text" xml:space="preserve">
+    <value>Sharpness</value>
+  </data>
+  <data name="OnexCaption879.Text" xml:space="preserve">
+    <value>Optimize</value>
+  </data>
+  <data name="OnexCaption880.Text" xml:space="preserve">
+    <value>LS1 Type</value>
+  </data>
+  <data name="OnexCaption881.PlaceholderText" xml:space="preserve">
+    <value>Select Type</value>
+  </data>
+  <data name="OnexCaption882.Text" xml:space="preserve">
+    <value>Resize Before Scale</value>
+  </data>
+  <data name="OnexCaption883.Text" xml:space="preserve">
+    <value>Snap window to integer ratio before upscale</value>
+  </data>
+  <data name="OnexCaption884.Text" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="OnexCaption885.PlaceholderText" xml:space="preserve">
+    <value>Select Size</value>
+  </data>
+  <data name="OnexCaption886.Text" xml:space="preserve">
+    <value>VRS</value>
+  </data>
+  <data name="OnexCaption887.Text" xml:space="preserve">
+    <value>Scale Mode</value>
+  </data>
+  <data name="OnexCaption888.PlaceholderText" xml:space="preserve">
+    <value>Select Mode</value>
+  </data>
+  <data name="OnexCaption889.Text" xml:space="preserve">
+    <value>Aspect</value>
+  </data>
+  <data name="OnexCaption890.PlaceholderText" xml:space="preserve">
+    <value>Select Aspect</value>
+  </data>
+  <data name="OnexCaption891.Text" xml:space="preserve">
+    <value>Scale Factor</value>
+  </data>
+  <data name="OnexCaption892.Text" xml:space="preserve">
+    <value>Frame Generation</value>
+  </data>
+  <data name="OnexCaption893.PlaceholderText" xml:space="preserve">
+    <value>Select Type</value>
+  </data>
+  <data name="OnexCaption894.Text" xml:space="preserve">
+    <value>LSFG3 Settings</value>
+  </data>
+  <data name="OnexCaption895.Text" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="OnexCaption896.PlaceholderText" xml:space="preserve">
+    <value>Select Mode</value>
+  </data>
+  <data name="OnexCaption897.Text" xml:space="preserve">
+    <value>Multiplier</value>
+  </data>
+  <data name="OnexCaption898.PlaceholderText" xml:space="preserve">
+    <value>Select Multiplier</value>
+  </data>
+  <data name="OnexCaption899.Text" xml:space="preserve">
+    <value>Target FPS</value>
+  </data>
+  <data name="OnexCaption900.Text" xml:space="preserve">
+    <value>Flow Scale</value>
+  </data>
+  <data name="OnexCaption901.Text" xml:space="preserve">
+    <value>Performance Mode</value>
+  </data>
+  <data name="OnexCaption902.Text" xml:space="preserve">
+    <value>Lighter model for less input lag</value>
+  </data>
+  <data name="OnexCaption903.Text" xml:space="preserve">
+    <value>LSFG2 Settings</value>
+  </data>
+  <data name="OnexCaption904.Text" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="OnexCaption905.PlaceholderText" xml:space="preserve">
+    <value>Select Mode</value>
+  </data>
+  <data name="OnexCaption906.Text" xml:space="preserve">
+    <value>Sync &amp; Display</value>
+  </data>
+  <data name="OnexCaption907.Text" xml:space="preserve">
+    <value>Sync Mode</value>
+  </data>
+  <data name="OnexCaption908.PlaceholderText" xml:space="preserve">
+    <value>Select Mode</value>
+  </data>
+  <data name="OnexCaption909.Text" xml:space="preserve">
+    <value>Max Frame Latency</value>
+  </data>
+  <data name="OnexCaption910.Text" xml:space="preserve">
+    <value>HDR Support</value>
+  </data>
+  <data name="OnexCaption911.Text" xml:space="preserve">
+    <value>Preserve HDR through scaling/FG</value>
+  </data>
+  <data name="OnexCaption912.Text" xml:space="preserve">
+    <value>G-Sync / VRR Support</value>
+  </data>
+  <data name="OnexCaption913.Text" xml:space="preserve">
+    <value>Improves pacing on VRR displays</value>
+  </data>
+  <data name="OnexCaption914.Text" xml:space="preserve">
+    <value>Capture &amp; Overlay</value>
+  </data>
+  <data name="OnexCaption915.Text" xml:space="preserve">
+    <value>Capture API</value>
+  </data>
+  <data name="OnexCaption916.PlaceholderText" xml:space="preserve">
+    <value>Select API</value>
+  </data>
+  <data name="OnexCaption917.Text" xml:space="preserve">
+    <value>WGC = best compat, DXGI = lower latency, GDI = legacy</value>
+  </data>
+  <data name="OnexCaption918.Text" xml:space="preserve">
+    <value>Draw FPS Overlay</value>
+  </data>
+  <data name="OnexCaption919.Text" xml:space="preserve">
+    <value>LS draws fps counter on top-left of scaled output</value>
+  </data>
+  <data name="OnexCaption920.Text" xml:space="preserve">
+    <value>Conflict Detected</value>
+  </data>
+  <data name="OnexCaption921.Text" xml:space="preserve">
+    <value>AMD Fluid Motion Frames has been automatically disabled because it conflicts with Lossless Scaling Frame Generation.</value>
+  </data>
+  <data name="OnexCaption922.Text" xml:space="preserve">
+    <value>MSI Center M is active — controller emulation and gyro unavailable. Disable it via the MSI Center tile in the Quick Tab.</value>
+  </data>
+  <data name="OnexCaption923.Text" xml:space="preserve">
+    <value>Steam's "Xbox Extended Feature Support" driver is active. It intercepts HID reports and prevents virtual controller emulation. Disable it in Steam → Settings → Controller → uncheck "Xbox Extended Feature Support".</value>
+  </data>
+  <data name="OnexCaption924.Text" xml:space="preserve">
+    <value>Main Controller Mode</value>
+  </data>
+  <data name="OnexCaption925.Text" xml:space="preserve">
+    <value>Main mode for all games. Hardware = native XInput + firmware remaps. Virtual = emulated pad, gyro, Mouse Mode &amp; macros. Per game: enable the Controller Profile to set the opposite mode as an exception.</value>
+  </data>
+  <data name="OnexCaption926.Text" xml:space="preserve">
+    <value>Hardware Controller</value>
+  </data>
+  <data name="OnexCaption927.Text" xml:space="preserve">
+    <value>Virtual Controller</value>
+  </data>
+  <data name="OnexCaption928.Text" xml:space="preserve">
+    <value>Per-Game Controller Profile</value>
+  </data>
+  <data name="OnexCaption929.Text" xml:space="preserve">
+    <value>Global Profile</value>
+  </data>
+  <data name="OnexCaption930.Text" xml:space="preserve">
+    <value>No app/game detected</value>
+  </data>
+  <data name="OnexCaption931.Text" xml:space="preserve">
+    <value>Start a game to enable a per-game controller profile.</value>
+  </data>
+  <data name="OnexCaption932.Text" xml:space="preserve">
+    <value>Customize per-game capture</value>
+  </data>
+  <data name="OnexCaption933.Content" xml:space="preserve">
+    <value>Nintendo Layout</value>
+  </data>
+  <data name="OnexCaption934.Content" xml:space="preserve">
+    <value>Vibration</value>
+  </data>
+  <data name="OnexCaption935.Content" xml:space="preserve">
+    <value>Lighting</value>
+  </data>
+  <data name="OnexCaption936.Content" xml:space="preserve">
+    <value>Button Mappings</value>
+  </data>
+  <data name="OnexCaption937.Text" xml:space="preserve">
+    <value>Front Buttons</value>
+  </data>
+  <data name="OnexCaption938.Text" xml:space="preserve">
+    <value>Choose what pressing the MSI button does, and which widget the Quick Settings button jumps to.</value>
+  </data>
+  <data name="OnexCaption939.Text" xml:space="preserve">
+    <value>MSI Button</value>
+  </data>
+  <data name="OnexCaption940.Text" xml:space="preserve">
+    <value>Single
+click</value>
+  </data>
+  <data name="OnexCaption941.PlaceholderText" xml:space="preserve">
+    <value>Select action...</value>
+  </data>
+  <data name="OnexCaption942.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption943.Text" xml:space="preserve">
+    <value>Double-click action</value>
+  </data>
+  <data name="OnexCaption944.Text" xml:space="preserve">
+    <value>Runs a second action on a quick double-press.</value>
+  </data>
+  <data name="OnexCaption945.Text" xml:space="preserve">
+    <value>Double
+click</value>
+  </data>
+  <data name="OnexCaption946.PlaceholderText" xml:space="preserve">
+    <value>Select double-click action...</value>
+  </data>
+  <data name="OnexCaption947.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption948.Text" xml:space="preserve">
+    <value>Detection window</value>
+  </data>
+  <data name="OnexCaption949.Text" xml:space="preserve">
+    <value>220 ms</value>
+  </data>
+  <data name="OnexCaption950.Text" xml:space="preserve">
+    <value>Press the Left MSI button to test…</value>
+  </data>
+  <data name="OnexCaption951.Text" xml:space="preserve">
+    <value>Quick Settings Button</value>
+  </data>
+  <data name="OnexCaption952.Text" xml:space="preserve">
+    <value>When the virtual controller is active, ONEXTweaks jumps to a specific widget.</value>
+  </data>
+  <data name="OnexCaption953.Text" xml:space="preserve">
+    <value>Define widget position to autojump to ONEXTweaks</value>
+  </data>
+  <data name="OnexCaption954.Text" xml:space="preserve">
+    <value>Improved Controller Emulation</value>
+  </data>
+  <data name="OnexCaption955.Text" xml:space="preserve">
+    <value>Use Legion HID gamepad reads instead of stock XInput reads (Legion Go / Go 2)</value>
+  </data>
+  <data name="OnexCaption956.Text" xml:space="preserve">
+    <value>Hide Stock Controller</value>
+  </data>
+  <data name="OnexCaption957.Text" xml:space="preserve">
+    <value>Hide physical input when virtual controller modes are active</value>
+  </data>
+  <data name="OnexCaption958.Text" xml:space="preserve">
+    <value>Hide Target</value>
+  </data>
+  <data name="OnexCaption959.Text" xml:space="preserve">
+    <value>Select which physical gamepad family to cloak</value>
+  </data>
+  <data name="OnexCaption960.Content" xml:space="preserve">
+    <value>Auto (Native handheld only)</value>
+  </data>
+  <data name="OnexCaption961.Content" xml:space="preserve">
+    <value>Native handheld controller</value>
+  </data>
+  <data name="OnexCaption962.Content" xml:space="preserve">
+    <value>Xbox 360 bridge (VID 045E:028E)</value>
+  </data>
+  <data name="OnexCaption963.Content" xml:space="preserve">
+    <value>Native + Xbox 360 bridge</value>
+  </data>
+  <data name="OnexCaption964.Text" xml:space="preserve">
+    <value>Gyro Activation</value>
+  </data>
+  <data name="OnexCaption965.Text" xml:space="preserve">
+    <value>Source, simulation mode, and activation settings</value>
+  </data>
+  <data name="OnexCaption966.Text" xml:space="preserve">
+    <value>Gyroscope Source</value>
+  </data>
+  <data name="OnexCaption967.Text" xml:space="preserve">
+    <value>Select which gyroscope to use</value>
+  </data>
+  <data name="OnexCaption968.Content" xml:space="preserve">
+    <value>Internal Handheld</value>
+  </data>
+  <data name="OnexCaption969.Content" xml:space="preserve">
+    <value>Controller (Right)</value>
+  </data>
+  <data name="OnexCaption970.Content" xml:space="preserve">
+    <value>Controller (Left)</value>
+  </data>
+  <data name="OnexCaption971.Content" xml:space="preserve">
+    <value>Controller (Mixed)</value>
+  </data>
+  <data name="OnexCaption972.Text" xml:space="preserve">
+    <value>Calibrate Gyro</value>
+  </data>
+  <data name="OnexCaption973.Text" xml:space="preserve">
+    <value>Hold controllers still during calibration</value>
+  </data>
+  <data name="OnexCaption974.Content" xml:space="preserve">
+    <value>Calibrate</value>
+  </data>
+  <data name="OnexCaption975.Text" xml:space="preserve">
+    <value>Gyro Simulation</value>
+  </data>
+  <data name="OnexCaption976.Text" xml:space="preserve">
+    <value>Choose how gyro motion is emulated</value>
+  </data>
+  <data name="OnexCaption977.Content" xml:space="preserve">
+    <value>Mouse</value>
+  </data>
+  <data name="OnexCaption978.Content" xml:space="preserve">
+    <value>Xbox (Stick)</value>
+  </data>
+  <data name="OnexCaption979.Content" xml:space="preserve">
+    <value>PS4 (Motion)</value>
+  </data>
+  <data name="OnexCaption980.Content" xml:space="preserve">
+    <value>PS4 (Stick)</value>
+  </data>
+  <data name="OnexCaption981.Text" xml:space="preserve">
+    <value>Gyro Activation</value>
+  </data>
+  <data name="OnexCaption982.Text" xml:space="preserve">
+    <value>Always on, hold, or toggle by button</value>
+  </data>
+  <data name="OnexCaption983.Content" xml:space="preserve">
+    <value>Always On</value>
+  </data>
+  <data name="OnexCaption984.Content" xml:space="preserve">
+    <value>Hold</value>
+  </data>
+  <data name="OnexCaption985.Content" xml:space="preserve">
+    <value>Toggle</value>
+  </data>
+  <data name="OnexCaption986.Text" xml:space="preserve">
+    <value>Activation Button</value>
+  </data>
+  <data name="OnexCaption987.Text" xml:space="preserve">
+    <value>Button used for hold or toggle activation</value>
+  </data>
+  <data name="OnexCaption988.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption989.Content" xml:space="preserve">
+    <value>Right Trigger</value>
+  </data>
+  <data name="OnexCaption990.Content" xml:space="preserve">
+    <value>Left Trigger</value>
+  </data>
+  <data name="OnexCaption991.Content" xml:space="preserve">
+    <value>Right Bumper</value>
+  </data>
+  <data name="OnexCaption992.Content" xml:space="preserve">
+    <value>Left Bumper</value>
+  </data>
+  <data name="OnexCaption993.Content" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption994.Content" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption995.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption996.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption997.Content" xml:space="preserve">
+    <value>Right Stick Click</value>
+  </data>
+  <data name="OnexCaption998.Content" xml:space="preserve">
+    <value>Left Stick Click</value>
+  </data>
+  <data name="OnexCaption999.Content" xml:space="preserve">
+    <value>D-Pad Up</value>
+  </data>
+  <data name="OnexCaption1000.Content" xml:space="preserve">
+    <value>D-Pad Down</value>
+  </data>
+  <data name="OnexCaption1001.Content" xml:space="preserve">
+    <value>D-Pad Left</value>
+  </data>
+  <data name="OnexCaption1002.Content" xml:space="preserve">
+    <value>D-Pad Right</value>
+  </data>
+  <data name="OnexCaption1003.Content" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="OnexCaption1004.Content" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="OnexCaption1005.Content" xml:space="preserve">
+    <value>M3 (back R lower)</value>
+  </data>
+  <data name="OnexCaption1006.Content" xml:space="preserve">
+    <value>M1 (side grip L)</value>
+  </data>
+  <data name="OnexCaption1007.Content" xml:space="preserve">
+    <value>M2 (side grip R)</value>
+  </data>
+  <data name="OnexCaption1008.Content" xml:space="preserve">
+    <value>Y1 (back L upper)</value>
+  </data>
+  <data name="OnexCaption1009.Content" xml:space="preserve">
+    <value>Y2 (back L lower)</value>
+  </data>
+  <data name="OnexCaption1010.Content" xml:space="preserve">
+    <value>Y3 (back R upper)</value>
+  </data>
+  <data name="OnexCaption1011.Text" xml:space="preserve">
+    <value>DS4 Orientation</value>
+  </data>
+  <data name="OnexCaption1012.Text" xml:space="preserve">
+    <value>Parallel or Orthogonal handheld posture</value>
+  </data>
+  <data name="OnexCaption1013.Content" xml:space="preserve">
+    <value>Parallel</value>
+  </data>
+  <data name="OnexCaption1014.Content" xml:space="preserve">
+    <value>Orthogonal</value>
+  </data>
+  <data name="OnexCaption1015.Text" xml:space="preserve">
+    <value>Features</value>
+  </data>
+  <data name="OnexCaption1016.Text" xml:space="preserve">
+    <value>Touchpad, LED, rumble, and button layout</value>
+  </data>
+  <data name="OnexCaption1017.Text" xml:space="preserve">
+    <value>Touchpad Emulation</value>
+  </data>
+  <data name="OnexCaption1018.Text" xml:space="preserve">
+    <value>Forward right touchpad input to virtual DS4 touchpad</value>
+  </data>
+  <data name="OnexCaption1019.Text" xml:space="preserve">
+    <value>LED Forwarding</value>
+  </data>
+  <data name="OnexCaption1020.Text" xml:space="preserve">
+    <value>Forward game LED requests to physical controller</value>
+  </data>
+  <data name="OnexCaption1021.Text" xml:space="preserve">
+    <value>Rumble Profile</value>
+  </data>
+  <data name="OnexCaption1022.Text" xml:space="preserve">
+    <value>Tune vibration response for virtual gamepad rumble</value>
+  </data>
+  <data name="OnexCaption1023.Content" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption1024.Content" xml:space="preserve">
+    <value>Sharp</value>
+  </data>
+  <data name="OnexCaption1025.Content" xml:space="preserve">
+    <value>Soft</value>
+  </data>
+  <data name="OnexCaption1026.Content" xml:space="preserve">
+    <value>Impact</value>
+  </data>
+  <data name="OnexCaption1027.Content" xml:space="preserve">
+    <value>Boosted</value>
+  </data>
+  <data name="OnexCaption1028.Text" xml:space="preserve">
+    <value>Virtual ABXY Layout</value>
+  </data>
+  <data name="OnexCaption1029.Content" xml:space="preserve">
+    <value>Xbox</value>
+  </data>
+  <data name="OnexCaption1030.Content" xml:space="preserve">
+    <value>Nintendo</value>
+  </data>
+  <data name="OnexCaption1031.Text" xml:space="preserve">
+    <value>Only Joystick Data</value>
+  </data>
+  <data name="OnexCaption1032.Text" xml:space="preserve">
+    <value>Joystick Output</value>
+  </data>
+  <data name="OnexCaption1033.Text" xml:space="preserve">
+    <value>Gyro-to-stick pipeline settings</value>
+  </data>
+  <data name="OnexCaption1034.Text" xml:space="preserve">
+    <value>Send to Joystick</value>
+  </data>
+  <data name="OnexCaption1035.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="OnexCaption1036.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="OnexCaption1037.Text" xml:space="preserve">
+    <value>3DOF to 2D Conversion</value>
+  </data>
+  <data name="OnexCaption1038.Text" xml:space="preserve">
+    <value>Map gyro axes to stick output</value>
+  </data>
+  <data name="OnexCaption1039.Content" xml:space="preserve">
+    <value>Yaw</value>
+  </data>
+  <data name="OnexCaption1040.Content" xml:space="preserve">
+    <value>Roll</value>
+  </data>
+  <data name="OnexCaption1041.Content" xml:space="preserve">
+    <value>Yaw + Roll</value>
+  </data>
+  <data name="OnexCaption1042.Text" xml:space="preserve">
+    <value>Gyro Orientation</value>
+  </data>
+  <data name="OnexCaption1043.Text" xml:space="preserve">
+    <value>Handheld posture for stick output</value>
+  </data>
+  <data name="OnexCaption1044.Content" xml:space="preserve">
+    <value>Parallel</value>
+  </data>
+  <data name="OnexCaption1045.Content" xml:space="preserve">
+    <value>Orthogonal</value>
+  </data>
+  <data name="OnexCaption1046.Text" xml:space="preserve">
+    <value>Invert X Output</value>
+  </data>
+  <data name="OnexCaption1047.Text" xml:space="preserve">
+    <value>Invert Y Output</value>
+  </data>
+  <data name="OnexCaption1048.Text" xml:space="preserve">
+    <value>Sensitivity</value>
+  </data>
+  <data name="OnexCaption1049.Text" xml:space="preserve">
+    <value>1.00x</value>
+  </data>
+  <data name="OnexCaption1050.Text" xml:space="preserve">
+    <value>Min Gyro Input Speed</value>
+  </data>
+  <data name="OnexCaption1051.Text" xml:space="preserve">
+    <value>Ignore motion below this speed</value>
+  </data>
+  <data name="OnexCaption1052.Text" xml:space="preserve">
+    <value>0°/s</value>
+  </data>
+  <data name="OnexCaption1053.Text" xml:space="preserve">
+    <value>Max Gyro Input Speed</value>
+  </data>
+  <data name="OnexCaption1054.Text" xml:space="preserve">
+    <value>Speed for full stick deflection</value>
+  </data>
+  <data name="OnexCaption1055.Text" xml:space="preserve">
+    <value>220°/s</value>
+  </data>
+  <data name="OnexCaption1056.Text" xml:space="preserve">
+    <value>Min Joystick Output</value>
+  </data>
+  <data name="OnexCaption1057.Text" xml:space="preserve">
+    <value>Anti-deadzone: minimum output when moving</value>
+  </data>
+  <data name="OnexCaption1058.Text" xml:space="preserve">
+    <value>Max Joystick Output</value>
+  </data>
+  <data name="OnexCaption1059.Text" xml:space="preserve">
+    <value>Power Curve</value>
+  </data>
+  <data name="OnexCaption1060.Text" xml:space="preserve">
+    <value>0.1 = aggressive, 1.0 = linear, 4.0 = relaxed</value>
+  </data>
+  <data name="OnexCaption1061.Text" xml:space="preserve">
+    <value>Gyro Speed Deadzone</value>
+  </data>
+  <data name="OnexCaption1062.Text" xml:space="preserve">
+    <value>Smooth recovery above threshold</value>
+  </data>
+  <data name="OnexCaption1063.Text" xml:space="preserve">
+    <value>2°/s</value>
+  </data>
+  <data name="OnexCaption1064.Text" xml:space="preserve">
+    <value>Precision Speed</value>
+  </data>
+  <data name="OnexCaption1065.Text" xml:space="preserve">
+    <value>Reduces sensitivity below this speed</value>
+  </data>
+  <data name="OnexCaption1066.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption1067.Text" xml:space="preserve">
+    <value>Output Mix</value>
+  </data>
+  <data name="OnexCaption1068.Text" xml:space="preserve">
+    <value>Balance between vertical and horizontal output</value>
+  </data>
+  <data name="OnexCaption1069.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption1070.Content" xml:space="preserve">
+    <value>Reset gyro settings to recommended defaults</value>
+  </data>
+  <data name="OnexCaption1071.Text" xml:space="preserve">
+    <value>Input source</value>
+  </data>
+  <data name="OnexCaption1072.Content" xml:space="preserve">
+    <value>XInput (any controller)</value>
+  </data>
+  <data name="OnexCaption1073.Content" xml:space="preserve">
+    <value>Legion Go HID (native)</value>
+  </data>
+  <data name="OnexCaption1074.Text" xml:space="preserve">
+    <value>Gyro source</value>
+  </data>
+  <data name="OnexCaption1075.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1076.Content" xml:space="preserve">
+    <value>Left controller</value>
+  </data>
+  <data name="OnexCaption1077.Content" xml:space="preserve">
+    <value>Right controller</value>
+  </data>
+  <data name="OnexCaption1078.Content" xml:space="preserve">
+    <value>Mixed (L+R averaged)</value>
+  </data>
+  <data name="OnexCaption1079.Content" xml:space="preserve">
+    <value>Handheld (device IMU)</value>
+  </data>
+  <data name="OnexCaption1080.Text" xml:space="preserve">
+    <value>IMU axis mapping</value>
+  </data>
+  <data name="OnexCaption1081.Text" xml:space="preserve">
+    <value>X→</value>
+  </data>
+  <data name="OnexCaption1082.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1083.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1084.Content" xml:space="preserve">
+    <value>Z</value>
+  </data>
+  <data name="OnexCaption1085.Content" xml:space="preserve">
+    <value>-X</value>
+  </data>
+  <data name="OnexCaption1086.Content" xml:space="preserve">
+    <value>-Y</value>
+  </data>
+  <data name="OnexCaption1087.Content" xml:space="preserve">
+    <value>-Z</value>
+  </data>
+  <data name="OnexCaption1088.Text" xml:space="preserve">
+    <value>Y→</value>
+  </data>
+  <data name="OnexCaption1089.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1090.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1091.Content" xml:space="preserve">
+    <value>Z</value>
+  </data>
+  <data name="OnexCaption1092.Content" xml:space="preserve">
+    <value>-X</value>
+  </data>
+  <data name="OnexCaption1093.Content" xml:space="preserve">
+    <value>-Y</value>
+  </data>
+  <data name="OnexCaption1094.Content" xml:space="preserve">
+    <value>-Z</value>
+  </data>
+  <data name="OnexCaption1095.Text" xml:space="preserve">
+    <value>Z→</value>
+  </data>
+  <data name="OnexCaption1096.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1097.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1098.Content" xml:space="preserve">
+    <value>Z</value>
+  </data>
+  <data name="OnexCaption1099.Content" xml:space="preserve">
+    <value>-X</value>
+  </data>
+  <data name="OnexCaption1100.Content" xml:space="preserve">
+    <value>-Y</value>
+  </data>
+  <data name="OnexCaption1101.Content" xml:space="preserve">
+    <value>-Z</value>
+  </data>
+  <data name="OnexCaption1102.Text" xml:space="preserve">
+    <value>Gyro → Right Stick</value>
+  </data>
+  <data name="OnexCaption1103.Text" xml:space="preserve">
+    <value>OFF</value>
+  </data>
+  <data name="OnexCaption1104.Text" xml:space="preserve">
+    <value>Synthesizes a stick contribution from gyro motion for emulated targets without a native motion field (Xbox 360, Xbox Elite 2, Switch Pro).</value>
+  </data>
+  <data name="OnexCaption1105.Text" xml:space="preserve">
+    <value>Enable gyro → stick</value>
+  </data>
+  <data name="OnexCaption1106.Text" xml:space="preserve">
+    <value>Off = raw stick passthrough; processor short-circuits.</value>
+  </data>
+  <data name="OnexCaption1107.Text" xml:space="preserve">
+    <value>Activation mode</value>
+  </data>
+  <data name="OnexCaption1108.Content" xml:space="preserve">
+    <value>Always On</value>
+  </data>
+  <data name="OnexCaption1109.Content" xml:space="preserve">
+    <value>Hold</value>
+  </data>
+  <data name="OnexCaption1110.Content" xml:space="preserve">
+    <value>Toggle</value>
+  </data>
+  <data name="OnexCaption1111.Text" xml:space="preserve">
+    <value>Activation button</value>
+  </data>
+  <data name="OnexCaption1112.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1113.Content" xml:space="preserve">
+    <value>Right Trigger</value>
+  </data>
+  <data name="OnexCaption1114.Content" xml:space="preserve">
+    <value>Left Trigger</value>
+  </data>
+  <data name="OnexCaption1115.Content" xml:space="preserve">
+    <value>Right Bumper</value>
+  </data>
+  <data name="OnexCaption1116.Content" xml:space="preserve">
+    <value>Left Bumper</value>
+  </data>
+  <data name="OnexCaption1117.Content" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption1118.Content" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption1119.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1120.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1121.Content" xml:space="preserve">
+    <value>Right Stick Click</value>
+  </data>
+  <data name="OnexCaption1122.Content" xml:space="preserve">
+    <value>Left Stick Click</value>
+  </data>
+  <data name="OnexCaption1123.Content" xml:space="preserve">
+    <value>D-Pad Up</value>
+  </data>
+  <data name="OnexCaption1124.Content" xml:space="preserve">
+    <value>D-Pad Down</value>
+  </data>
+  <data name="OnexCaption1125.Content" xml:space="preserve">
+    <value>D-Pad Left</value>
+  </data>
+  <data name="OnexCaption1126.Content" xml:space="preserve">
+    <value>D-Pad Right</value>
+  </data>
+  <data name="OnexCaption1127.Content" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="OnexCaption1128.Content" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="OnexCaption1129.Content" xml:space="preserve">
+    <value>M3 (back R lower)</value>
+  </data>
+  <data name="OnexCaption1130.Content" xml:space="preserve">
+    <value>M1 (side grip L)</value>
+  </data>
+  <data name="OnexCaption1131.Content" xml:space="preserve">
+    <value>M2 (side grip R)</value>
+  </data>
+  <data name="OnexCaption1132.Content" xml:space="preserve">
+    <value>Y1 (back L upper)</value>
+  </data>
+  <data name="OnexCaption1133.Content" xml:space="preserve">
+    <value>Y2 (back L lower)</value>
+  </data>
+  <data name="OnexCaption1134.Content" xml:space="preserve">
+    <value>Y3 (back R upper)</value>
+  </data>
+  <data name="OnexCaption1135.Text" xml:space="preserve">
+    <value>Sensitivity</value>
+  </data>
+  <data name="OnexCaption1136.Text" xml:space="preserve">
+    <value>1.00x</value>
+  </data>
+  <data name="OnexCaption1137.Text" xml:space="preserve">
+    <value>Deadzone</value>
+  </data>
+  <data name="OnexCaption1138.Text" xml:space="preserve">
+    <value>2°/s</value>
+  </data>
+  <data name="OnexCaption1139.Text" xml:space="preserve">
+    <value>Advanced gyro → stick options</value>
+  </data>
+  <data name="OnexCaption1140.Text" xml:space="preserve">
+    <value>Send to joystick</value>
+  </data>
+  <data name="OnexCaption1141.Text" xml:space="preserve">
+    <value>Which emulated stick receives the gyro contribution.</value>
+  </data>
+  <data name="OnexCaption1142.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="OnexCaption1143.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="OnexCaption1144.Text" xml:space="preserve">
+    <value>3DOF to 2D conversion</value>
+  </data>
+  <data name="OnexCaption1145.Text" xml:space="preserve">
+    <value>Which gyro axes drive the stick. Yaw = look L/R, Roll = tilt L/R, Yaw+Roll = both.</value>
+  </data>
+  <data name="OnexCaption1146.Content" xml:space="preserve">
+    <value>Yaw</value>
+  </data>
+  <data name="OnexCaption1147.Content" xml:space="preserve">
+    <value>Roll</value>
+  </data>
+  <data name="OnexCaption1148.Content" xml:space="preserve">
+    <value>Yaw + Roll</value>
+  </data>
+  <data name="OnexCaption1149.Text" xml:space="preserve">
+    <value>Gyro orientation</value>
+  </data>
+  <data name="OnexCaption1150.Text" xml:space="preserve">
+    <value>Handheld posture. Switch to Orthogonal if your IMU axes feel rotated 90°.</value>
+  </data>
+  <data name="OnexCaption1151.Content" xml:space="preserve">
+    <value>Parallel</value>
+  </data>
+  <data name="OnexCaption1152.Content" xml:space="preserve">
+    <value>Orthogonal</value>
+  </data>
+  <data name="OnexCaption1153.Text" xml:space="preserve">
+    <value>Invert X output</value>
+  </data>
+  <data name="OnexCaption1154.Text" xml:space="preserve">
+    <value>Invert Y output</value>
+  </data>
+  <data name="OnexCaption1155.Text" xml:space="preserve">
+    <value>Min gyro input speed</value>
+  </data>
+  <data name="OnexCaption1156.Text" xml:space="preserve">
+    <value>Ignore motion below this speed (filters drift / micro-shake).</value>
+  </data>
+  <data name="OnexCaption1157.Text" xml:space="preserve">
+    <value>0°/s</value>
+  </data>
+  <data name="OnexCaption1158.Text" xml:space="preserve">
+    <value>Max gyro input speed</value>
+  </data>
+  <data name="OnexCaption1159.Text" xml:space="preserve">
+    <value>Speed at which the stick reaches full deflection.</value>
+  </data>
+  <data name="OnexCaption1160.Text" xml:space="preserve">
+    <value>220°/s</value>
+  </data>
+  <data name="OnexCaption1161.Text" xml:space="preserve">
+    <value>Min joystick output</value>
+  </data>
+  <data name="OnexCaption1162.Text" xml:space="preserve">
+    <value>Anti-deadzone: minimum stick magnitude when any motion is detected.</value>
+  </data>
+  <data name="OnexCaption1163.Text" xml:space="preserve">
+    <value>Max joystick output</value>
+  </data>
+  <data name="OnexCaption1164.Text" xml:space="preserve">
+    <value>Cap the synthesized stick magnitude. Lower for slower, calmer aim.</value>
+  </data>
+  <data name="OnexCaption1165.Text" xml:space="preserve">
+    <value>Power curve</value>
+  </data>
+  <data name="OnexCaption1166.Text" xml:space="preserve">
+    <value>0.1 = aggressive (small motion → big stick), 1.0 = linear, 4.0 = relaxed.</value>
+  </data>
+  <data name="OnexCaption1167.Text" xml:space="preserve">
+    <value>Precision speed</value>
+  </data>
+  <data name="OnexCaption1168.Text" xml:space="preserve">
+    <value>Slow-tilt damping. 0 = off.</value>
+  </data>
+  <data name="OnexCaption1169.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption1170.Text" xml:space="preserve">
+    <value>Output mix</value>
+  </data>
+  <data name="OnexCaption1171.Text" xml:space="preserve">
+    <value>Negative bias = vertical, positive = horizontal, 0 = balanced.</value>
+  </data>
+  <data name="OnexCaption1172.Text" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption1173.Content" xml:space="preserve">
+    <value>Reset to recommended defaults</value>
+  </data>
+  <data name="OnexCaption1174.Text" xml:space="preserve">
+    <value>Guide/Mode button</value>
+  </data>
+  <data name="OnexCaption1175.Content" xml:space="preserve">
+    <value>Native (emulated device Guide/PS)</value>
+  </data>
+  <data name="OnexCaption1176.Content" xml:space="preserve">
+    <value>Open Xbox Game Bar (Win+G)</value>
+  </data>
+  <data name="OnexCaption1177.Text" xml:space="preserve">
+    <value>Legion L is disabled in Special Remapping — set it to "Guide" to route the Xbox button through the emulated device.</value>
+  </data>
+  <data name="OnexCaption1178.Text" xml:space="preserve">
+    <value>Swap rumble motors</value>
+  </data>
+  <data name="OnexCaption1179.Text" xml:space="preserve">
+    <value>Mirror emulated lightbar to stick lights</value>
+  </data>
+  <data name="OnexCaption1180.Text" xml:space="preserve">
+    <value>DualShock 4 / DualSense Edge only — when on, game-driven LED color overrides the picker color you chose for the Legion Go sticks. Off keeps your saved stick color.</value>
+  </data>
+  <data name="OnexCaption1181.Text" xml:space="preserve">
+    <value>Rumble intensity</value>
+  </data>
+  <data name="OnexCaption1182.Text" xml:space="preserve">
+    <value>Mouse Settings</value>
+  </data>
+  <data name="OnexCaption1183.Text" xml:space="preserve">
+    <value>Mouse Mode sensitivity, buttons and sticks</value>
+  </data>
+  <data name="OnexCaption1184.Text" xml:space="preserve">
+    <value>Mouse Emulation</value>
+  </data>
+  <data name="OnexCaption1185.Text" xml:space="preserve">
+    <value>Fine-tune mouse behavior</value>
+  </data>
+  <data name="OnexCaption1186.Text" xml:space="preserve">
+    <value>Sensitivity</value>
+  </data>
+  <data name="OnexCaption1187.Text" xml:space="preserve">
+    <value>Threshold</value>
+  </data>
+  <data name="OnexCaption1188.Text" xml:space="preserve">
+    <value>Acceleration</value>
+  </data>
+  <data name="OnexCaption1189.Text" xml:space="preserve">
+    <value>0 = off (linear). Held deflection ramps up speed over time.</value>
+  </data>
+  <data name="OnexCaption1190.Text" xml:space="preserve">
+    <value>Button Mapping</value>
+  </data>
+  <data name="OnexCaption1191.Text" xml:space="preserve">
+    <value>Left Click</value>
+  </data>
+  <data name="OnexCaption1192.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1193.Content" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption1194.Content" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption1195.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1196.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1197.Content" xml:space="preserve">
+    <value>LB</value>
+  </data>
+  <data name="OnexCaption1198.Content" xml:space="preserve">
+    <value>RB</value>
+  </data>
+  <data name="OnexCaption1199.Content" xml:space="preserve">
+    <value>LS</value>
+  </data>
+  <data name="OnexCaption1200.Content" xml:space="preserve">
+    <value>RS</value>
+  </data>
+  <data name="OnexCaption1201.Content" xml:space="preserve">
+    <value>LT</value>
+  </data>
+  <data name="OnexCaption1202.Content" xml:space="preserve">
+    <value>RT</value>
+  </data>
+  <data name="OnexCaption1203.Text" xml:space="preserve">
+    <value>Right Click</value>
+  </data>
+  <data name="OnexCaption1204.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1205.Content" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption1206.Content" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption1207.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1208.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1209.Content" xml:space="preserve">
+    <value>LB</value>
+  </data>
+  <data name="OnexCaption1210.Content" xml:space="preserve">
+    <value>RB</value>
+  </data>
+  <data name="OnexCaption1211.Content" xml:space="preserve">
+    <value>LS</value>
+  </data>
+  <data name="OnexCaption1212.Content" xml:space="preserve">
+    <value>RS</value>
+  </data>
+  <data name="OnexCaption1213.Content" xml:space="preserve">
+    <value>LT</value>
+  </data>
+  <data name="OnexCaption1214.Content" xml:space="preserve">
+    <value>RT</value>
+  </data>
+  <data name="OnexCaption1215.Text" xml:space="preserve">
+    <value>Cursor</value>
+  </data>
+  <data name="OnexCaption1216.Content" xml:space="preserve">
+    <value>Right Stick</value>
+  </data>
+  <data name="OnexCaption1217.Content" xml:space="preserve">
+    <value>Left Stick</value>
+  </data>
+  <data name="OnexCaption1218.Text" xml:space="preserve">
+    <value>Scroll</value>
+  </data>
+  <data name="OnexCaption1219.Content" xml:space="preserve">
+    <value>Left Stick</value>
+  </data>
+  <data name="OnexCaption1220.Content" xml:space="preserve">
+    <value>Right Stick</value>
+  </data>
+  <data name="OnexCaption1221.Text" xml:space="preserve">
+    <value>Extra Actions</value>
+  </data>
+  <data name="OnexCaption1222.Text" xml:space="preserve">
+    <value>Assign a button to a browser/window shortcut or cursor nudge</value>
+  </data>
+  <data name="OnexCaption1223.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1224.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1225.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1226.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1227.Content" xml:space="preserve">
+    <value>Alt+Left (Back)</value>
+  </data>
+  <data name="OnexCaption1228.Content" xml:space="preserve">
+    <value>Alt+Right (Forward)</value>
+  </data>
+  <data name="OnexCaption1229.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1230.Content" xml:space="preserve">
+    <value>Ctrl+Tab (Next Tab)</value>
+  </data>
+  <data name="OnexCaption1231.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (Prev Tab)</value>
+  </data>
+  <data name="OnexCaption1232.Content" xml:space="preserve">
+    <value>Win+D (Show Desktop)</value>
+  </data>
+  <data name="OnexCaption1233.Content" xml:space="preserve">
+    <value>Win+Tab (Task View)</value>
+  </data>
+  <data name="OnexCaption1234.Content" xml:space="preserve">
+    <value>Cursor Nudge Up</value>
+  </data>
+  <data name="OnexCaption1235.Content" xml:space="preserve">
+    <value>Cursor Nudge Down</value>
+  </data>
+  <data name="OnexCaption1236.Content" xml:space="preserve">
+    <value>Cursor Nudge Left</value>
+  </data>
+  <data name="OnexCaption1237.Content" xml:space="preserve">
+    <value>Cursor Nudge Right</value>
+  </data>
+  <data name="OnexCaption1238.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1239.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1240.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1241.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1242.Content" xml:space="preserve">
+    <value>Alt+Left (Back)</value>
+  </data>
+  <data name="OnexCaption1243.Content" xml:space="preserve">
+    <value>Alt+Right (Forward)</value>
+  </data>
+  <data name="OnexCaption1244.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1245.Content" xml:space="preserve">
+    <value>Ctrl+Tab (Next Tab)</value>
+  </data>
+  <data name="OnexCaption1246.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (Prev Tab)</value>
+  </data>
+  <data name="OnexCaption1247.Content" xml:space="preserve">
+    <value>Win+D (Show Desktop)</value>
+  </data>
+  <data name="OnexCaption1248.Content" xml:space="preserve">
+    <value>Win+Tab (Task View)</value>
+  </data>
+  <data name="OnexCaption1249.Content" xml:space="preserve">
+    <value>Cursor Nudge Up</value>
+  </data>
+  <data name="OnexCaption1250.Content" xml:space="preserve">
+    <value>Cursor Nudge Down</value>
+  </data>
+  <data name="OnexCaption1251.Content" xml:space="preserve">
+    <value>Cursor Nudge Left</value>
+  </data>
+  <data name="OnexCaption1252.Content" xml:space="preserve">
+    <value>Cursor Nudge Right</value>
+  </data>
+  <data name="OnexCaption1253.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1254.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1255.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1256.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1257.Content" xml:space="preserve">
+    <value>Alt+Left (Back)</value>
+  </data>
+  <data name="OnexCaption1258.Content" xml:space="preserve">
+    <value>Alt+Right (Forward)</value>
+  </data>
+  <data name="OnexCaption1259.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1260.Content" xml:space="preserve">
+    <value>Ctrl+Tab (Next Tab)</value>
+  </data>
+  <data name="OnexCaption1261.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (Prev Tab)</value>
+  </data>
+  <data name="OnexCaption1262.Content" xml:space="preserve">
+    <value>Win+D (Show Desktop)</value>
+  </data>
+  <data name="OnexCaption1263.Content" xml:space="preserve">
+    <value>Win+Tab (Task View)</value>
+  </data>
+  <data name="OnexCaption1264.Content" xml:space="preserve">
+    <value>Cursor Nudge Up</value>
+  </data>
+  <data name="OnexCaption1265.Content" xml:space="preserve">
+    <value>Cursor Nudge Down</value>
+  </data>
+  <data name="OnexCaption1266.Content" xml:space="preserve">
+    <value>Cursor Nudge Left</value>
+  </data>
+  <data name="OnexCaption1267.Content" xml:space="preserve">
+    <value>Cursor Nudge Right</value>
+  </data>
+  <data name="OnexCaption1268.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1269.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1270.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1271.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1272.Content" xml:space="preserve">
+    <value>Alt+Left (Back)</value>
+  </data>
+  <data name="OnexCaption1273.Content" xml:space="preserve">
+    <value>Alt+Right (Forward)</value>
+  </data>
+  <data name="OnexCaption1274.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1275.Content" xml:space="preserve">
+    <value>Ctrl+Tab (Next Tab)</value>
+  </data>
+  <data name="OnexCaption1276.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (Prev Tab)</value>
+  </data>
+  <data name="OnexCaption1277.Content" xml:space="preserve">
+    <value>Win+D (Show Desktop)</value>
+  </data>
+  <data name="OnexCaption1278.Content" xml:space="preserve">
+    <value>Win+Tab (Task View)</value>
+  </data>
+  <data name="OnexCaption1279.Content" xml:space="preserve">
+    <value>Cursor Nudge Up</value>
+  </data>
+  <data name="OnexCaption1280.Content" xml:space="preserve">
+    <value>Cursor Nudge Down</value>
+  </data>
+  <data name="OnexCaption1281.Content" xml:space="preserve">
+    <value>Cursor Nudge Left</value>
+  </data>
+  <data name="OnexCaption1282.Content" xml:space="preserve">
+    <value>Cursor Nudge Right</value>
+  </data>
+  <data name="OnexCaption1283.Text" xml:space="preserve">
+    <value>D-Pad</value>
+  </data>
+  <data name="OnexCaption1284.Text" xml:space="preserve">
+    <value>None = normal D-Pad press (default)</value>
+  </data>
+  <data name="OnexCaption1285.Text" xml:space="preserve">
+    <value>Up</value>
+  </data>
+  <data name="OnexCaption1286.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1287.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1288.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1289.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1290.Content" xml:space="preserve">
+    <value>Alt+Left (Back)</value>
+  </data>
+  <data name="OnexCaption1291.Content" xml:space="preserve">
+    <value>Alt+Right (Forward)</value>
+  </data>
+  <data name="OnexCaption1292.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1293.Content" xml:space="preserve">
+    <value>Ctrl+Tab (Next Tab)</value>
+  </data>
+  <data name="OnexCaption1294.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (Prev Tab)</value>
+  </data>
+  <data name="OnexCaption1295.Content" xml:space="preserve">
+    <value>Win+D (Show Desktop)</value>
+  </data>
+  <data name="OnexCaption1296.Content" xml:space="preserve">
+    <value>Win+Tab (Task View)</value>
+  </data>
+  <data name="OnexCaption1297.Content" xml:space="preserve">
+    <value>Cursor Nudge Up</value>
+  </data>
+  <data name="OnexCaption1298.Content" xml:space="preserve">
+    <value>Cursor Nudge Down</value>
+  </data>
+  <data name="OnexCaption1299.Content" xml:space="preserve">
+    <value>Cursor Nudge Left</value>
+  </data>
+  <data name="OnexCaption1300.Content" xml:space="preserve">
+    <value>Cursor Nudge Right</value>
+  </data>
+  <data name="OnexCaption1301.Text" xml:space="preserve">
+    <value>Down</value>
+  </data>
+  <data name="OnexCaption1302.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1303.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1304.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1305.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1306.Content" xml:space="preserve">
+    <value>Alt+Left (Back)</value>
+  </data>
+  <data name="OnexCaption1307.Content" xml:space="preserve">
+    <value>Alt+Right (Forward)</value>
+  </data>
+  <data name="OnexCaption1308.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1309.Content" xml:space="preserve">
+    <value>Ctrl+Tab (Next Tab)</value>
+  </data>
+  <data name="OnexCaption1310.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (Prev Tab)</value>
+  </data>
+  <data name="OnexCaption1311.Content" xml:space="preserve">
+    <value>Win+D (Show Desktop)</value>
+  </data>
+  <data name="OnexCaption1312.Content" xml:space="preserve">
+    <value>Win+Tab (Task View)</value>
+  </data>
+  <data name="OnexCaption1313.Content" xml:space="preserve">
+    <value>Cursor Nudge Up</value>
+  </data>
+  <data name="OnexCaption1314.Content" xml:space="preserve">
+    <value>Cursor Nudge Down</value>
+  </data>
+  <data name="OnexCaption1315.Content" xml:space="preserve">
+    <value>Cursor Nudge Left</value>
+  </data>
+  <data name="OnexCaption1316.Content" xml:space="preserve">
+    <value>Cursor Nudge Right</value>
+  </data>
+  <data name="OnexCaption1317.Text" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="OnexCaption1318.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1319.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1320.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1321.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1322.Content" xml:space="preserve">
+    <value>Alt+Left (Back)</value>
+  </data>
+  <data name="OnexCaption1323.Content" xml:space="preserve">
+    <value>Alt+Right (Forward)</value>
+  </data>
+  <data name="OnexCaption1324.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1325.Content" xml:space="preserve">
+    <value>Ctrl+Tab (Next Tab)</value>
+  </data>
+  <data name="OnexCaption1326.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (Prev Tab)</value>
+  </data>
+  <data name="OnexCaption1327.Content" xml:space="preserve">
+    <value>Win+D (Show Desktop)</value>
+  </data>
+  <data name="OnexCaption1328.Content" xml:space="preserve">
+    <value>Win+Tab (Task View)</value>
+  </data>
+  <data name="OnexCaption1329.Content" xml:space="preserve">
+    <value>Cursor Nudge Up</value>
+  </data>
+  <data name="OnexCaption1330.Content" xml:space="preserve">
+    <value>Cursor Nudge Down</value>
+  </data>
+  <data name="OnexCaption1331.Content" xml:space="preserve">
+    <value>Cursor Nudge Left</value>
+  </data>
+  <data name="OnexCaption1332.Content" xml:space="preserve">
+    <value>Cursor Nudge Right</value>
+  </data>
+  <data name="OnexCaption1333.Text" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="OnexCaption1334.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1335.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1336.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1337.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1338.Content" xml:space="preserve">
+    <value>Alt+Left (Back)</value>
+  </data>
+  <data name="OnexCaption1339.Content" xml:space="preserve">
+    <value>Alt+Right (Forward)</value>
+  </data>
+  <data name="OnexCaption1340.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1341.Content" xml:space="preserve">
+    <value>Ctrl+Tab (Next Tab)</value>
+  </data>
+  <data name="OnexCaption1342.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (Prev Tab)</value>
+  </data>
+  <data name="OnexCaption1343.Content" xml:space="preserve">
+    <value>Win+D (Show Desktop)</value>
+  </data>
+  <data name="OnexCaption1344.Content" xml:space="preserve">
+    <value>Win+Tab (Task View)</value>
+  </data>
+  <data name="OnexCaption1345.Content" xml:space="preserve">
+    <value>Cursor Nudge Up</value>
+  </data>
+  <data name="OnexCaption1346.Content" xml:space="preserve">
+    <value>Cursor Nudge Down</value>
+  </data>
+  <data name="OnexCaption1347.Content" xml:space="preserve">
+    <value>Cursor Nudge Left</value>
+  </data>
+  <data name="OnexCaption1348.Content" xml:space="preserve">
+    <value>Cursor Nudge Right</value>
+  </data>
+  <data name="OnexCaption1349.Text" xml:space="preserve">
+    <value>Nudge Step</value>
+  </data>
+  <data name="OnexCaption1350.Text" xml:space="preserve">
+    <value>10 px</value>
+  </data>
+  <data name="OnexCaption1351.Text" xml:space="preserve">
+    <value>Axis Select</value>
+  </data>
+  <data name="OnexCaption1352.Text" xml:space="preserve">
+    <value>Choose gyro axes for mouse</value>
+  </data>
+  <data name="OnexCaption1353.Content" xml:space="preserve">
+    <value>Yaw / Pitch</value>
+  </data>
+  <data name="OnexCaption1354.Content" xml:space="preserve">
+    <value>Yaw / Roll</value>
+  </data>
+  <data name="OnexCaption1355.Content" xml:space="preserve">
+    <value>Roll / Pitch</value>
+  </data>
+  <data name="OnexCaption1356.Text" xml:space="preserve">
+    <value>Invert Horizontal</value>
+  </data>
+  <data name="OnexCaption1357.Text" xml:space="preserve">
+    <value>Invert Vertical</value>
+  </data>
+  <data name="OnexCaption1358.Text" xml:space="preserve">
+    <value>Horizontal Gain</value>
+  </data>
+  <data name="OnexCaption1359.Text" xml:space="preserve">
+    <value>Vertical Gain</value>
+  </data>
+  <data name="OnexCaption1360.Text" xml:space="preserve">
+    <value>Touchpad &amp; Vibration</value>
+  </data>
+  <data name="OnexCaption1361.Text" xml:space="preserve">
+    <value>Touchpad and haptic feedback settings</value>
+  </data>
+  <data name="OnexCaption1362.Text" xml:space="preserve">
+    <value>Touchpad Enabled</value>
+  </data>
+  <data name="OnexCaption1363.Text" xml:space="preserve">
+    <value>Vibration Intensity</value>
+  </data>
+  <data name="OnexCaption1364.Text" xml:space="preserve">
+    <value>Vibration Mode</value>
+  </data>
+  <data name="OnexCaption1365.Text" xml:space="preserve">
+    <value>Touchpad Haptics</value>
+  </data>
+  <data name="OnexCaption1366.Text" xml:space="preserve">
+    <value>Editing global controller profile. Launch a game to use per-game settings.</value>
+  </data>
+  <data name="OnexCaption1367.Text" xml:space="preserve">
+    <value>Button Remapping and Macros</value>
+  </data>
+  <data name="OnexCaption1368.Text" xml:space="preserve">
+    <value>Map buttons to gamepad, keyboard, or mouse</value>
+  </data>
+  <data name="OnexCaption1369.Text" xml:space="preserve">
+    <value>Hardware Controller mode: remaps are written to the controller firmware. Keyboard shortcuts and Gamepad→Gamepad remaps apply directly in games. Mouse and Macro types need the Virtual Controller.</value>
+  </data>
+  <data name="OnexCaption1370.Text" xml:space="preserve">
+    <value>Back Buttons</value>
+  </data>
+  <data name="OnexCaption1371.Text" xml:space="preserve">
+    <value>Y1</value>
+  </data>
+  <data name="OnexCaption1372.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1373.Text" xml:space="preserve">
+    <value>Y2</value>
+  </data>
+  <data name="OnexCaption1374.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1375.Text" xml:space="preserve">
+    <value>Y3</value>
+  </data>
+  <data name="OnexCaption1376.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1377.Text" xml:space="preserve">
+    <value>M1</value>
+  </data>
+  <data name="OnexCaption1378.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1379.Text" xml:space="preserve">
+    <value>Delay (ms)</value>
+  </data>
+  <data name="OnexCaption1380.Text" xml:space="preserve">
+    <value>Press (ms)</value>
+  </data>
+  <data name="OnexCaption1381.Text" xml:space="preserve">
+    <value>M2</value>
+  </data>
+  <data name="OnexCaption1382.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1383.Text" xml:space="preserve">
+    <value>Delay (ms)</value>
+  </data>
+  <data name="OnexCaption1384.Text" xml:space="preserve">
+    <value>Press (ms)</value>
+  </data>
+  <data name="OnexCaption1385.Text" xml:space="preserve">
+    <value>Macros simulate rapid, automated button presses and may be flagged by some games' anti-cheat systems.</value>
+  </data>
+  <data name="OnexCaption1386.Text" xml:space="preserve">
+    <value>M3</value>
+  </data>
+  <data name="OnexCaption1387.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1388.Text" xml:space="preserve">
+    <value>Re-Map Specific Buttons to Another Button</value>
+  </data>
+  <data name="OnexCaption1389.Content" xml:space="preserve">
+    <value>Reset All Re-Mappings Below</value>
+  </data>
+  <data name="OnexCaption1390.Text" xml:space="preserve">
+    <value>Remapped: </value>
+  </data>
+  <data name="OnexCaption1391.Text" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="OnexCaption1392.Text" xml:space="preserve">
+    <value>Create new remappings</value>
+  </data>
+  <data name="OnexCaption1393.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1394.Text" xml:space="preserve">
+    <value>Gyro</value>
+  </data>
+  <data name="OnexCaption1395.Text" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="OnexCaption1396.Text" xml:space="preserve">
+    <value>Button</value>
+  </data>
+  <data name="OnexCaption1397.Text" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="OnexCaption1398.Text" xml:space="preserve">
+    <value>Gyro Engine</value>
+  </data>
+  <data name="OnexCaption1399.Text" xml:space="preserve">
+    <value>Accelerometer</value>
+  </data>
+  <data name="OnexCaption1400.Text" xml:space="preserve">
+    <value>Invert X</value>
+  </data>
+  <data name="OnexCaption1401.Text" xml:space="preserve">
+    <value>Invert Y</value>
+  </data>
+  <data name="OnexCaption1402.Text" xml:space="preserve">
+    <value>Boost button</value>
+  </data>
+  <data name="OnexCaption1403.Text" xml:space="preserve">
+    <value>Sensitivity X</value>
+  </data>
+  <data name="OnexCaption1404.Text" xml:space="preserve">
+    <value>Sensitivity Y</value>
+  </data>
+  <data name="OnexCaption1405.Text" xml:space="preserve">
+    <value>Gyro gate</value>
+  </data>
+  <data name="OnexCaption1406.Text" xml:space="preserve">
+    <value>0.0°/s</value>
+  </data>
+  <data name="OnexCaption1407.Text" xml:space="preserve">
+    <value>Anti-deadzone</value>
+  </data>
+  <data name="OnexCaption1408.Text" xml:space="preserve">
+    <value>Smoothing</value>
+  </data>
+  <data name="OnexCaption1409.Text" xml:space="preserve">
+    <value>Hold-boost</value>
+  </data>
+  <data name="OnexCaption1410.Content" xml:space="preserve">
+    <value>Calibrate gyro</value>
+  </data>
+  <data name="OnexCaption1411.Text" xml:space="preserve">
+    <value>Hold the controllers still and press the button — bias is captured by the controller firmware.</value>
+  </data>
+  <data name="OnexCaption1412.Text" xml:space="preserve">
+    <value>Vibration &amp; Deadzone</value>
+  </data>
+  <data name="OnexCaption1413.Text" xml:space="preserve">
+    <value>Rumble strength + stick deadzones</value>
+  </data>
+  <data name="OnexCaption1414.Text" xml:space="preserve">
+    <value>Vibration Intensity</value>
+  </data>
+  <data name="OnexCaption1415.Content" xml:space="preserve">
+    <value>Test Vibration</value>
+  </data>
+  <data name="OnexCaption1416.Text" xml:space="preserve">
+    <value>Stick Deadzones</value>
+  </data>
+  <data name="OnexCaption1417.Text" xml:space="preserve">
+    <value>Left Stick</value>
+  </data>
+  <data name="OnexCaption1418.Text" xml:space="preserve">
+    <value>Right Stick</value>
+  </data>
+  <data name="OnexCaption1419.Text" xml:space="preserve">
+    <value>Nintendo Layout</value>
+  </data>
+  <data name="OnexCaption1420.Text" xml:space="preserve">
+    <value>Swap A↔B and X↔Y face buttons</value>
+  </data>
+  <data name="OnexCaption1421.Text" xml:space="preserve">
+    <value>Desktop Controls</value>
+  </data>
+  <data name="OnexCaption1422.Text" xml:space="preserve">
+    <value>RS→Mouse, DPAD/LS→Arrows, A→Enter, B→Esc (Ctrl+Shift+D)</value>
+  </data>
+  <data name="OnexCaption1423.Text" xml:space="preserve">
+    <value>Joystick as Mouse</value>
+  </data>
+  <data name="OnexCaption1424.Text" xml:space="preserve">
+    <value>Use a joystick to control mouse cursor</value>
+  </data>
+  <data name="OnexCaption1425.Text" xml:space="preserve">
+    <value>Stick</value>
+  </data>
+  <data name="OnexCaption1426.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption1427.Content" xml:space="preserve">
+    <value>Left Stick</value>
+  </data>
+  <data name="OnexCaption1428.Content" xml:space="preserve">
+    <value>Right Stick</value>
+  </data>
+  <data name="OnexCaption1429.Text" xml:space="preserve">
+    <value>Sensitivity</value>
+  </data>
+  <data name="OnexCaption1430.Text" xml:space="preserve">
+    <value>Deadzones</value>
+  </data>
+  <data name="OnexCaption1431.Text" xml:space="preserve">
+    <value>Trigger Travel</value>
+  </data>
+  <data name="OnexCaption1432.Text" xml:space="preserve">
+    <value>Hair Triggers</value>
+  </data>
+  <data name="OnexCaption1433.Text" xml:space="preserve">
+    <value>Left Trigger</value>
+  </data>
+  <data name="OnexCaption1434.Text" xml:space="preserve">
+    <value>Dead Zone</value>
+  </data>
+  <data name="OnexCaption1435.Text" xml:space="preserve">
+    <value>Full Press</value>
+  </data>
+  <data name="OnexCaption1436.Text" xml:space="preserve">
+    <value>Right Trigger</value>
+  </data>
+  <data name="OnexCaption1437.Text" xml:space="preserve">
+    <value>Dead Zone</value>
+  </data>
+  <data name="OnexCaption1438.Text" xml:space="preserve">
+    <value>Full Press</value>
+  </data>
+  <data name="OnexCaption1439.Text" xml:space="preserve">
+    <value>Saved Controller Profiles</value>
+  </data>
+  <data name="OnexCaption1440.Text" xml:space="preserve">
+    <value>No saved game profiles</value>
+  </data>
+  <data name="OnexCaption1441.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete profile</value>
+  </data>
+  <data name="OnexCaption1442.Text" xml:space="preserve">
+    <value>Special Remapping</value>
+  </data>
+  <data name="OnexCaption1443.Text" xml:space="preserve">
+    <value>Map Legion L/R buttons and scroll wheel to custom actions</value>
+  </data>
+  <data name="OnexCaption1444.Text" xml:space="preserve">
+    <value>LEGION BUTTONS</value>
+  </data>
+  <data name="OnexCaption1445.Text" xml:space="preserve">
+    <value>Legion L:</value>
+  </data>
+  <data name="OnexCaption1446.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption1447.Content" xml:space="preserve">
+    <value>Guide</value>
+  </data>
+  <data name="OnexCaption1448.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption1449.Content" xml:space="preserve">
+    <value>Run Command</value>
+  </data>
+  <data name="OnexCaption1450.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption1451.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1452.PlaceholderText" xml:space="preserve">
+    <value>e.g. C:\path\app.exe -arg1</value>
+  </data>
+  <data name="OnexCaption1453.Content" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="OnexCaption1454.Text" xml:space="preserve">
+    <value>Legion R:</value>
+  </data>
+  <data name="OnexCaption1455.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption1456.Content" xml:space="preserve">
+    <value>Xbox Guide</value>
+  </data>
+  <data name="OnexCaption1457.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption1458.Content" xml:space="preserve">
+    <value>Run Command</value>
+  </data>
+  <data name="OnexCaption1459.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption1460.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1461.PlaceholderText" xml:space="preserve">
+    <value>e.g. C:\path\app.exe -arg1</value>
+  </data>
+  <data name="OnexCaption1462.Content" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="OnexCaption1463.Text" xml:space="preserve">
+    <value>SCROLL WHEEL</value>
+  </data>
+  <data name="OnexCaption1464.Text" xml:space="preserve">
+    <value>Scroll:</value>
+  </data>
+  <data name="OnexCaption1465.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption1466.Content" xml:space="preserve">
+    <value>Xbox Guide</value>
+  </data>
+  <data name="OnexCaption1467.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption1468.Content" xml:space="preserve">
+    <value>Run Command</value>
+  </data>
+  <data name="OnexCaption1469.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption1470.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1471.PlaceholderText" xml:space="preserve">
+    <value>e.g. C:\path\app.exe -arg1</value>
+  </data>
+  <data name="OnexCaption1472.Content" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="OnexCaption1473.Text" xml:space="preserve">
+    <value>Scroll Click:</value>
+  </data>
+  <data name="OnexCaption1474.Content" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption1475.Content" xml:space="preserve">
+    <value>Xbox Guide</value>
+  </data>
+  <data name="OnexCaption1476.Content" xml:space="preserve">
+    <value>Keyboard Shortcut</value>
+  </data>
+  <data name="OnexCaption1477.Content" xml:space="preserve">
+    <value>Run Command</value>
+  </data>
+  <data name="OnexCaption1478.Content" xml:space="preserve">
+    <value>Focus GoTweaks</value>
+  </data>
+  <data name="OnexCaption1479.Content" xml:space="preserve">
+    <value>+ Key  ▾</value>
+  </data>
+  <data name="OnexCaption1480.PlaceholderText" xml:space="preserve">
+    <value>e.g. C:\path\app.exe -arg1</value>
+  </data>
+  <data name="OnexCaption1481.Content" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="OnexCaption1482.Text" xml:space="preserve">
+    <value>Xbox Guide remap requires ViGEmBus driver</value>
+  </data>
+  <data name="OnexCaption1483.Text" xml:space="preserve">
+    <value>Status: Checking...</value>
+  </data>
+  <data name="OnexCaption1484.Content" xml:space="preserve">
+    <value>Install ViGEmBus</value>
+  </data>
+  <data name="OnexCaption1485.Text" xml:space="preserve">
+    <value>LIGHTING</value>
+  </data>
+  <data name="OnexCaption1486.Text" xml:space="preserve">
+    <value>Lighting</value>
+  </data>
+  <data name="OnexCaption1487.Text" xml:space="preserve">
+    <value>Controller RGB and power button lighting</value>
+  </data>
+  <data name="OnexCaption1488.Text" xml:space="preserve">
+    <value>Light Mode</value>
+  </data>
+  <data name="OnexCaption1489.Text" xml:space="preserve">
+    <value>Light Color</value>
+  </data>
+  <data name="OnexCaption1490.Text" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="OnexCaption1491.Text" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="OnexCaption1492.Text" xml:space="preserve">
+    <value>Power Light</value>
+  </data>
+  <data name="OnexCaption1493.Text" xml:space="preserve">
+    <value>PERFORMANCE MODE</value>
+  </data>
+  <data name="OnexCaption1494.Text" xml:space="preserve">
+    <value>Power Profile</value>
+  </data>
+  <data name="OnexCaption1495.Text" xml:space="preserve">
+    <value>Controls TDP and thermal limits</value>
+  </data>
+  <data name="OnexCaption1496.Content" xml:space="preserve">
+    <value>Quiet</value>
+  </data>
+  <data name="OnexCaption1497.Content" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption1498.Content" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="OnexCaption1499.Content" xml:space="preserve">
+    <value>Slider</value>
+  </data>
+  <data name="OnexCaption1500.Text" xml:space="preserve">
+    <value>Slow TDP (SPL)</value>
+  </data>
+  <data name="OnexCaption1501.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption1502.Text" xml:space="preserve">
+    <value>Fast TDP (SPPL)</value>
+  </data>
+  <data name="OnexCaption1503.Text" xml:space="preserve">
+    <value>25W</value>
+  </data>
+  <data name="OnexCaption1504.Text" xml:space="preserve">
+    <value>Peak TDP (FPPT)</value>
+  </data>
+  <data name="OnexCaption1505.Text" xml:space="preserve">
+    <value>35W</value>
+  </data>
+  <data name="OnexCaption1506.Text" xml:space="preserve">
+    <value>Use Hardware Controller for this Game</value>
+  </data>
+  <data name="OnexCaption1507.Text" xml:space="preserve">
+    <value>Override the standard controller mode for this game only. Helps with titles that have issues with the virtual controller (e.g. NBA 2K26).</value>
+  </data>
+  <data name="OnexCaption1508.Text" xml:space="preserve">
+    <value>Close and restart the game to apply — the controller is only swapped at game start.</value>
+  </data>
+  <data name="OnexCaption1509.Text" xml:space="preserve">
+    <value>Controller Status</value>
+  </data>
+  <data name="OnexCaption1510.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="OnexCaption1511.Text" xml:space="preserve">
+    <value>Status unknown</value>
+  </data>
+  <data name="OnexCaption1512.Text" xml:space="preserve">
+    <value>Tap Refresh to check the current state.</value>
+  </data>
+  <data name="OnexCaption1513.Text" xml:space="preserve">
+    <value>CONNECTED CONTROLLERS</value>
+  </data>
+  <data name="OnexCaption1514.Text" xml:space="preserve">
+    <value>scanning...</value>
+  </data>
+  <data name="OnexCaption1515.Text" xml:space="preserve">
+    <value>Virtual ViGEm controller</value>
+  </data>
+  <data name="OnexCaption1516.Text" xml:space="preserve">
+    <value>Virtual VIIPER controller</value>
+  </data>
+  <data name="OnexCaption1517.Text" xml:space="preserve">
+    <value>Game controllers</value>
+  </data>
+  <data name="OnexCaption1518.Text" xml:space="preserve">
+    <value>MSI Claw DInput (PID_1902)</value>
+  </data>
+  <data name="OnexCaption1519.Text" xml:space="preserve">
+    <value>HidHide blocked devices</value>
+  </data>
+  <data name="OnexCaption1520.Text" xml:space="preserve">
+    <value>XInput slots connected</value>
+  </data>
+  <data name="OnexCaption1521.Text" xml:space="preserve">
+    <value>VIIPER Device</value>
+  </data>
+  <data name="OnexCaption1522.Text" xml:space="preserve">
+    <value>Active backend: VIIPER (USBIP). Changes take effect immediately (hot-swap). Note: any virtual device other than Xbox 360 can cause problems due to Game Bar incompatibilities — please test it and report back with feedback.</value>
+  </data>
+  <data name="OnexCaption1523.Text" xml:space="preserve">
+    <value>Virtual device</value>
+  </data>
+  <data name="OnexCaption1524.Content" xml:space="preserve">
+    <value>Xbox 360</value>
+  </data>
+  <data name="OnexCaption1525.Content" xml:space="preserve">
+    <value>DualShock 4</value>
+  </data>
+  <data name="OnexCaption1526.Content" xml:space="preserve">
+    <value>DualSense Edge</value>
+  </data>
+  <data name="OnexCaption1527.Content" xml:space="preserve">
+    <value>Xbox Elite 2</value>
+  </data>
+  <data name="OnexCaption1528.Content" xml:space="preserve">
+    <value>Steam Controller</value>
+  </data>
+  <data name="OnexCaption1529.Content" xml:space="preserve">
+    <value>Switch Pro</value>
+  </data>
+  <data name="OnexCaption1530.Text" xml:space="preserve">
+    <value>Steam sub-device</value>
+  </data>
+  <data name="OnexCaption1531.Content" xml:space="preserve">
+    <value>Generic</value>
+  </data>
+  <data name="OnexCaption1532.Content" xml:space="preserve">
+    <value>Steam Deck</value>
+  </data>
+  <data name="OnexCaption1533.Content" xml:space="preserve">
+    <value>Legion Go</value>
+  </data>
+  <data name="OnexCaption1534.Content" xml:space="preserve">
+    <value>Legion Go S</value>
+  </data>
+  <data name="OnexCaption1535.Content" xml:space="preserve">
+    <value>Legion Go 2</value>
+  </data>
+  <data name="OnexCaption1536.Content" xml:space="preserve">
+    <value>ROG Ally</value>
+  </data>
+  <data name="OnexCaption1537.Content" xml:space="preserve">
+    <value>MSI Claw</value>
+  </data>
+  <data name="OnexCaption1538.Content" xml:space="preserve">
+    <value>Zotac Zone</value>
+  </data>
+  <data name="OnexCaption1539.Text" xml:space="preserve">
+    <value>Auto-switch to Xbox in Game Bar (experimental)</value>
+  </data>
+  <data name="OnexCaption1540.Text" xml:space="preserve">
+    <value>When a non-Xbox device (e.g. DualShock 4) is emulated, temporarily present it as an Xbox 360 pad while the Game Bar is open so the overlay navigates cleanly (some pads spam the right trigger). Swaps back on close. Briefly disconnects the virtual controller — a running game may notice.</value>
+  </data>
+  <data name="OnexCaption1541.Text" xml:space="preserve">
+    <value>Keyboard remaps via firmware (works in games)</value>
+  </data>
+  <data name="OnexCaption1542.Text" xml:space="preserve">
+    <value>Firmware key remaps run entirely on the controller hardware, so they work reliably — including inside games. When off, keystrokes are generated virtually (software), which can stop in-game shortcuts from working; turn this on to use the firmware remaps instead. MSI Claw 8/7 AI+ (A2VM) only.</value>
+  </data>
+  <data name="OnexCaption1543.Text" xml:space="preserve">
+    <value>Show current firmware keyboard mappings</value>
+  </data>
+  <data name="OnexCaption1544.Content" xml:space="preserve">
+    <value>Re-read firmware</value>
+  </data>
+  <data name="OnexCaption1545.Text" xml:space="preserve">
+    <value>Tap Refresh to read the controller.</value>
+  </data>
+  <data name="OnexCaption1546.Text" xml:space="preserve">
+    <value>GPD Device</value>
+  </data>
+  <data name="OnexCaption1547.Text" xml:space="preserve">
+    <value>Detecting...</value>
+  </data>
+  <data name="OnexCaption1548.Text" xml:space="preserve">
+    <value>FAN CONTROL</value>
+  </data>
+  <data name="OnexCaption1549.Text" xml:space="preserve">
+    <value>Fan Settings</value>
+  </data>
+  <data name="OnexCaption1550.Text" xml:space="preserve">
+    <value>Fan: </value>
+  </data>
+  <data name="OnexCaption1551.Text" xml:space="preserve">
+    <value>-- RPM</value>
+  </data>
+  <data name="OnexCaption1552.Text" xml:space="preserve">
+    <value>Fan Curve</value>
+  </data>
+  <data name="OnexCaption1553.Text" xml:space="preserve">
+    <value>Software-controlled fan curve based on CPU temperature</value>
+  </data>
+  <data name="OnexCaption1554.Text" xml:space="preserve">
+    <value>Fan Mode</value>
+  </data>
+  <data name="OnexCaption1555.Text" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="OnexCaption1556.Text" xml:space="preserve">
+    <value>Fan Speed</value>
+  </data>
+  <data name="OnexCaption1557.Content" xml:space="preserve">
+    <value>Silent</value>
+  </data>
+  <data name="OnexCaption1558.Content" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption1559.Content" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="OnexCaption1560.Content" xml:space="preserve">
+    <value>Max Cooling</value>
+  </data>
+  <data name="OnexCaption1561.Content" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="OnexCaption1562.Text" xml:space="preserve">
+    <value>Fan %</value>
+  </data>
+  <data name="OnexCaption1563.Text" xml:space="preserve">
+    <value>30°C</value>
+  </data>
+  <data name="OnexCaption1564.Text" xml:space="preserve">
+    <value>46°C</value>
+  </data>
+  <data name="OnexCaption1565.Text" xml:space="preserve">
+    <value>62°C</value>
+  </data>
+  <data name="OnexCaption1566.Text" xml:space="preserve">
+    <value>78°C</value>
+  </data>
+  <data name="OnexCaption1567.Text" xml:space="preserve">
+    <value>100°C</value>
+  </data>
+  <data name="OnexCaption1568.Text" xml:space="preserve">
+    <value>CPU Temp: </value>
+  </data>
+  <data name="OnexCaption1569.Text" xml:space="preserve">
+    <value>--°C</value>
+  </data>
+  <data name="OnexCaption1570.Text" xml:space="preserve">
+    <value>BUTTON REMAPPING</value>
+  </data>
+  <data name="OnexCaption1571.Text" xml:space="preserve">
+    <value>Button Remapping</value>
+  </data>
+  <data name="OnexCaption1572.Text" xml:space="preserve">
+    <value>Remap controller buttons to keyboard or mouse</value>
+  </data>
+  <data name="OnexCaption1573.Text" xml:space="preserve">
+    <value>Face Buttons</value>
+  </data>
+  <data name="OnexCaption1574.Text" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption1575.Text" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption1576.Text" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1577.Text" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1578.Text" xml:space="preserve">
+    <value>D-Pad</value>
+  </data>
+  <data name="OnexCaption1579.Text" xml:space="preserve">
+    <value>Up</value>
+  </data>
+  <data name="OnexCaption1580.Text" xml:space="preserve">
+    <value>Down</value>
+  </data>
+  <data name="OnexCaption1581.Text" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="OnexCaption1582.Text" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="OnexCaption1583.Text" xml:space="preserve">
+    <value>Stick Buttons</value>
+  </data>
+  <data name="OnexCaption1584.Text" xml:space="preserve">
+    <value>L3</value>
+  </data>
+  <data name="OnexCaption1585.Text" xml:space="preserve">
+    <value>R3</value>
+  </data>
+  <data name="OnexCaption1586.Text" xml:space="preserve">
+    <value>Left Stick</value>
+  </data>
+  <data name="OnexCaption1587.Text" xml:space="preserve">
+    <value>LS Left</value>
+  </data>
+  <data name="OnexCaption1588.Text" xml:space="preserve">
+    <value>LS Right</value>
+  </data>
+  <data name="OnexCaption1589.Text" xml:space="preserve">
+    <value>Back Paddles</value>
+  </data>
+  <data name="OnexCaption1590.Text" xml:space="preserve">
+    <value>L4</value>
+  </data>
+  <data name="OnexCaption1591.Text" xml:space="preserve">
+    <value>R4</value>
+  </data>
+  <data name="OnexCaption1592.Content" xml:space="preserve">
+    <value>Apply Mappings</value>
+  </data>
+  <data name="OnexCaption1593.Content" xml:space="preserve">
+    <value>Restore Defaults</value>
+  </data>
+  <data name="OnexCaption1594.Text" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="OnexCaption1595.Text" xml:space="preserve">
+    <value>Update Available: v0.0.0</value>
+  </data>
+  <data name="OnexCaption1596.Content" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="OnexCaption1597.Text" xml:space="preserve">
+    <value>HOTKEYS</value>
+  </data>
+  <data name="OnexCaption1598.Text" xml:space="preserve">
+    <value>Hotkeys</value>
+  </data>
+  <data name="OnexCaption1599.Text" xml:space="preserve">
+    <value>Assign controller button combinations that trigger keyboard shortcuts or Actions defined below.</value>
+  </data>
+  <data name="OnexCaption1600.Text" xml:space="preserve">
+    <value>No hotkeys configured yet.</value>
+  </data>
+  <data name="OnexCaption1601.Text" xml:space="preserve">
+    <value>ACTIONS</value>
+  </data>
+  <data name="OnexCaption1602.Text" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="OnexCaption1603.Text" xml:space="preserve">
+    <value>Define reusable actions — e.g. launch Steam Big Picture, open Playnite, show Alt+Tab overview — that can be assigned to Hotkeys above.</value>
+  </data>
+  <data name="OnexCaption1604.Text" xml:space="preserve">
+    <value>No actions defined yet.</value>
+  </data>
+  <data name="OnexCaption1605.Text" xml:space="preserve">
+    <value>Auto Start RTSS</value>
+  </data>
+  <data name="OnexCaption1606.OffContent" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="OnexCaption1606.OnContent" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="OnexCaption1607.Header" xml:space="preserve">
+    <value>OSD Method</value>
+  </data>
+  <data name="OnexCaption1608.Content" xml:space="preserve">
+    <value>Rivatuner Statistics Server</value>
+  </data>
+  <data name="OnexCaption1609.Content" xml:space="preserve">
+    <value>ONEXTweaks overlay (no game needed)</value>
+  </data>
+  <data name="OnexCaption1610.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption1611.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Separate PL2 controls</value>
+  </data>
+  <data name="OnexCaption1611.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show a separate PL2 slider</value>
+  </data>
+  <data name="OnexCaption1612.Text" xml:space="preserve">
+    <value>PL2</value>
+  </data>
+  <data name="OnexCaption1613.Text" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="OnexCaption1614.Text" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="OnexCaption1615.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sustained power limit PL1</value>
+  </data>
+  <data name="OnexCaption1616.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Short power limit PL2</value>
+  </data>
+  <data name="OnexCaption1617.Text" xml:space="preserve">
+    <value>FPS Limit</value>
+  </data>
+  <data name="OnexCaption1618.Content" xml:space="preserve">
+    <value>stepped</value>
+  </data>
+  <data name="OnexCaption1619.Content" xml:space="preserve">
+    <value>free</value>
+  </data>
+  <data name="OnexCaption1620.Content" xml:space="preserve">
+    <value>Intel</value>
+  </data>
+  <data name="OnexCaption1621.Content" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption1622.Text" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption1623.Text" xml:space="preserve">
+    <value>Overlay</value>
+  </data>
+  <data name="OnexCaption1624.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OnexCaption1625.Content" xml:space="preserve">
+    <value>Mango</value>
+  </data>
+  <data name="OnexCaption1626.Content" xml:space="preserve">
+    <value>Horizontal</value>
+  </data>
+  <data name="OnexCaption1627.Content" xml:space="preserve">
+    <value>Vertical</value>
+  </data>
+  <data name="OnexCaption1628.Text" xml:space="preserve">
+    <value>CPU boost</value>
+  </data>
+  <data name="OnexCaption1629.Text" xml:space="preserve">
+    <value>OS power mode</value>
+  </data>
+  <data name="OnexCaption1630.Content" xml:space="preserve">
+    <value>Efficiency</value>
+  </data>
+  <data name="OnexCaption1631.Content" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="OnexCaption1632.Content" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="OnexCaption1633.Text" xml:space="preserve">
+    <value>Fan</value>
+  </data>
+  <data name="OnexCaption1634.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="OnexCaption1635.Content" xml:space="preserve">
+    <value>Quiet</value>
+  </data>
+  <data name="OnexCaption1636.Content" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="OnexCaption1637.Content" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="OnexCaption1638.Text" xml:space="preserve">
+    <value>PL2</value>
+  </data>
+  <data name="OnexCaption1639.Text" xml:space="preserve">
+    <value>A second knob on the power slider for the short-term boost.</value>
+  </data>
+  <data name="OnexCaption1640.Text" xml:space="preserve">
+    <value>Tiles</value>
+  </data>
+  <data name="OnexCaption1641.Text" xml:space="preserve">
+    <value>Show the four tiles at the top.</value>
+  </data>
+  <data name="OnexCaption1642.Text" xml:space="preserve">
+    <value>Global profile</value>
+  </data>
+  <data name="OnexCaption1643.Text" xml:space="preserve">
+    <value>Global profile</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>ONEXTweaks widget for changing system settings during game sessions with gamepad.</value>
+  </data>
+  <data name="OnexSupportAuthorCaption.Text" xml:space="preserve"><value>Support author</value></data>
+  <data name="OnexSupportAuthorQr.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Support author QR code</value></data>
+</root>

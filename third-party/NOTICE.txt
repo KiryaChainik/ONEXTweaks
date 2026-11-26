@@ -1,0 +1,17 @@
+IGCL API declarations: Copyright (C) 2025 Intel Corporation.
+Source: https://github.com/intel/drivers.gpu.control-library
+Interop declarations in src/ONEXTweaks.Backend/IgclNative.cs are based on this public interface.
+Use of these declarations is subject to Intel-IGCL-LICENSE.txt. This project targets an Intel platform.
+The driver-provided ControlLib.dll is not redistributed.
+
+ClawTweaks frontend and Shared models: Copyright (C) 2025 enterTheVoidCode and contributors.
+Upstream: https://github.com/enterTheVoidCode/ClawTweaks
+Commit: 7eaaf0573a9e783735ef7a84dad0f59d23230261
+Location: src/ONEXTweaks.Widget. AGPL-3.0 and retained MIT notices are included there.
+ONEXTweaks changes and WidgetBridge protocol adapter are AGPL-3.0; complete source is included.
+ONEXTweaks uses its own name and artwork and is not endorsed by ClawTweaks or MSI.
+No private ClawTweaks helper, OneXConsole source or OneXConsole binaries are redistributed.
+
+System.Management 10.0.12 and transitive System.CodeDom: Microsoft/.NET Foundation, MIT.
+Source: https://github.com/dotnet/runtime
+Packages are resolved through NuGet; package license notices are retained by the package distribution.

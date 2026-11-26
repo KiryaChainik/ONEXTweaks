@@ -1,0 +1,42 @@
+{
+  "source": "Official ClawTweaks 1.0.1.0 MSIX / embedded GamingWidget.xbf",
+  "originalPackageSha256": "ae05f2ede268a41624fc040fb4c6ea95706d29162f189ced22b9fa6e51c56f80",
+  "elements": [
+    "LightScrollViewer",
+    "MediaRailH",
+    "QuickSettingsScrollViewer"
+  ],
+  "resources": [
+    "CardBackgroundBrush",
+    "CardBorderBrush",
+    "CardStyle",
+    "HintTextBrush",
+    "LightGlassCardStyle",
+    "LightMediaSliderStyle",
+    "LightMediaThumbStyle",
+    "LightPowerSliderStyle",
+    "LightSegmentStyle",
+    "LightSubSegmentStyle",
+    "LightThumbStyle",
+    "LightToggleStyle",
+    "QuickSettingsTileCleanStyle",
+    "QuickSettingsTileStyle",
+    "ThemeAccentBrush"
+  ],
+  "tool": "https://github.com/chausner/XbfTools",
+  "toolLicense": "Apache-2.0",
+  "adaptations": [
+    "Readable XAML reconstructed from release XBF",
+    "Restored attached-property and template-content syntax",
+    "Own backend wiring; original release code-behind was not available",
+    "Release quick screen and clean tile template imported; existing functional customization panel retained pending release-editor integration",
+    "Dual standard Slider controls share the native release power track; PL2 uses a transparent track and native thumb",
+    "Release clean tile template, horizontal media on both Home and Quick, Running game navigation icon",
+    "Own confirmation dialog for WM_CLOSE and disabled unsupported hardware panels",
+    "Owner-requested combined Home: media -> TDP/PL2 -> tiles; CPU Boost/Overlay/Power Mode/FPS/Fan only as tiles; seven navigation tabs.",
+    "Final owner order: stats -> TDP -> brightness/volume -> tiles.",
+    "Owner: statistics CPU/GPU/memory/system/APU/battery above TDP, then media and tiles; separate Power/profiles navigation restored.",
+    "Owner: remove GPU Load/Temp from Home; seven stats in a single row with unchanged fonts, live estimated battery time immediately before Battery."
+  ],
+  "status": "Widget 0.15.1: combined Home, seven single-row metrics including approximate Time Left; separate Power/profiles tab retained. GPU fields removed from Home; remaining runtime-generated release panels/editor pending."
+}

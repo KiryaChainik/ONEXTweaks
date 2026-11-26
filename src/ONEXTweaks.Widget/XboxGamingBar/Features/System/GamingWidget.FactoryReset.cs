@@ -1,0 +1,149 @@
+using NLog;
+using System;
+using System.Linq;
+using Windows.Storage;
+using Windows.System;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+
+namespace XboxGamingBar
+{
+    public sealed partial class GamingWidget
+    {
+        private async void FactoryResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Confirmation dialog before wiping everything
+            var dialog = new ContentDialog
+            {
+                Title = global::XboxGamingBar.OnexStrings.Get("Factory Reset"),
+                Content = global::XboxGamingBar.OnexStrings.Get("This will delete ALL profiles, controller settings, TDP presets, custom tiles, Quick Settings and all other user data.\n\nThe app will restart with factory defaults.\n\nThis cannot be undone."),
+                PrimaryButtonText = global::XboxGamingBar.OnexStrings.Get("Reset everything"),
+                CloseButtonText = global::XboxGamingBar.OnexStrings.Get("Cancel"),
+                DefaultButton = ContentDialogButton.Close
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result != ContentDialogResult.Primary)
+                return;
+
+            try
+            {
+                Logger.Info("FactoryReset: starting — clearing all LocalSettings");
+
+                var settings = ApplicationData.Current.LocalSettings;
+
+                // 1. Delete all profile containers (Global, AC, DC, Game_*)
+                var containerKeys = settings.Containers.Keys.ToList();
+                foreach (var key in containerKeys)
+                {
+                    settings.DeleteContainer(key);
+                    Logger.Info($"FactoryReset: deleted container '{key}'");
+                }
+
+                // 2. Clear all flat LocalSettings values (QS_*, Hotkey_*, TdpPresets_*, etc.)
+                settings.Values.Clear();
+                Logger.Info("FactoryReset: cleared all LocalSettings values");
+
+                // 3. Delete LocalFolder files and subfolders (logs are kept).
+                //    This includes the helper's profiles/ subfolder which contains per-game
+                //    XML files (e.g. re2.xml, mgsvtpp.xml). These survived previous resets
+                //    because GetFilesAsync() is not recursive — causing stale DGP preferences
+                //    (DgpEnabledOnAC=true + TDP=16W) to persist across factory resets.
+                try
+                {
+                    var localFolder = ApplicationData.Current.LocalFolder;
+
+                    // Delete all non-log files in the root
+                    var files = await localFolder.GetFilesAsync();
+                    foreach (var file in files)
+                    {
+                        if (file.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase))
+                            continue;
+                        await file.DeleteAsync();
+                        Logger.Info($"FactoryReset: deleted file '{file.Name}'");
+                    }
+
+                    // Delete ALL subfolders (profiles/, etc.) recursively
+                    var folders = await localFolder.GetFoldersAsync();
+                    foreach (var folder in folders)
+                    {
+                        await folder.DeleteAsync(Windows.Storage.StorageDeleteOption.PermanentDelete);
+                        Logger.Info($"FactoryReset: deleted folder '{folder.Name}'");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn($"FactoryReset: could not clear local folder: {ex.Message}");
+                }
+
+                // 4. Disable charge limit and reset it to 100 % so the battery charges fully after reset.
+                try
+                {
+                    if (App.IsConnected)
+                    {
+                        await App.SendMessageAsync(new Windows.Foundation.Collections.ValueSet { { "MsiChargeLimit", "False:100" } });
+                        Logger.Info("FactoryReset: charge limit disabled (reset to 100 %)");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn($"FactoryReset: failed to reset charge limit: {ex.Message}");
+                }
+
+                // 5. Tell the helper to reset its OWN global controller profile (gyro + Legion
+                //    controller settings). These are persisted in the helper's profile store
+                //    (global.xml), which this widget-side reset does not touch — otherwise gyro
+                //    stays active after a reset. Gyro must default to OFF.
+                try
+                {
+                    if (App.IsConnected)
+                    {
+                        await App.SendMessageAsync(new Windows.Foundation.Collections.ValueSet { { "FactoryReset", "1" } });
+                        Logger.Info("FactoryReset: sent reset command to helper (global controller profile)");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn($"FactoryReset: failed to notify helper: {ex.Message}");
+                }
+
+                Logger.Info("FactoryReset: complete — requesting app restart");
+
+                // Show brief success notice then exit (Xbox Game Bar will relaunch on next open)
+                var doneDialog = new ContentDialog
+                {
+                    Title = global::XboxGamingBar.OnexStrings.Get("Reset complete"),
+                    Content = global::XboxGamingBar.OnexStrings.Get("All settings have been cleared. The app will now close.\n\nReopen Game Bar to start fresh."),
+                    CloseButtonText = global::XboxGamingBar.OnexStrings.Get("Close")
+                };
+                await doneDialog.ShowAsync();
+
+                // Exit the app — Game Bar will reopen the widget on next invocation
+                Application.Current.Exit();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"FactoryReset: unexpected error: {ex.Message}");
+
+                var errDialog = new ContentDialog
+                {
+                    Title = global::XboxGamingBar.OnexStrings.Get("Reset failed"),
+                    Content = global::XboxGamingBar.OnexStrings.Format("An error occurred during reset:\n{0}",ex.Message),
+                    CloseButtonText = global::XboxGamingBar.OnexStrings.Get("OK")
+                };
+                await errDialog.ShowAsync();
+            }
+        }
+        private async void UninstallClawTweaks_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                await Launcher.LaunchUriAsync(new Uri("ms-settings:appsfeatures"));
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"UninstallClawTweaks: could not open Settings: {ex.Message}");
+            }
+        }
+    }
+}

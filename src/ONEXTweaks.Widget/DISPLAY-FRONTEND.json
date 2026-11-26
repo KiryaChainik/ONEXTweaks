@@ -1,0 +1,45 @@
+{
+  "source": "Official ClawTweaks 1.0.1.0 MSIX / GamingWidget.xbf",
+  "sourceRelease": "https://github.com/enterTheVoidCode/ClawTweaks/releases/tag/1.0.1",
+  "sourceCommit": "c728eaa3553a4a5b8804bda87ddb0ef0181e5e10",
+  "packageSha256": "ae05f2ede268a41624fc040fb4c6ea95706d29162f189ced22b9fa6e51c56f80",
+  "parts": [
+    "DisplayScrollViewer",
+    "PerfColorDetail",
+    "PerfGpuDetail",
+    "PerfResDetail"
+  ],
+  "resourcesAdded": [
+    "LightMediaThumbStyle",
+    "LightMediaSliderStyle"
+  ],
+  "tool": "https://github.com/chausner/XbfTools",
+  "adaptations": [
+    "Restore attached property owners/internal template content",
+    "Attach original release detail blocks to their original Display tab hosts before control creation",
+    "Use ONEXTweaks backend and existing ONEXPLAYER palette",
+    "Replace CTW name in driver-readback description"
+  ],
+  "status": "Completed and installed Widget0.29.116 / Bridge0.29.115; native UI, profiles, controller navigation and Intel API writes verified with documented hardware limits",
+  "controls": {
+    "colorSliders": 6,
+    "gpuSelectors": 7,
+    "referenceImages": 3,
+    "releaseSections": 3
+  },
+  "backend": "ONEXTweaks.WidgetBridge DisplayController / Intel public IGCL + Windows display modes; profile schema3",
+  "hardwareLimits": [
+    "Adaptive Sharpness: active Intel display returns 0x48000003, control disabled with Unavailable label",
+    "Intel cannot read current color matrix/LUT on this driver; sliders show own saved values, native Set accepted; physical color output not tested"
+  ],
+  "evidence": [
+    "outputs/ONEXTweaks/reports/display-ui-integration-0.29.116.json",
+    "outputs/ONEXTweaks/reports/tile-revision-46-0.29.116.0.json",
+    "outputs/ONEXTweaks/reports/gamepad-input-0.29.116.json",
+    "outputs/ONEXTweaks/reports/display-native-integration-0.29.115.json",
+    "outputs/ONEXTweaks/reports/display-native-recovery-0.29.115.json",
+    "outputs/ONEXTweaks/reports/display-profile-model-0.29.112.json",
+    "outputs/ONEXTweaks/reports/display-bridge-migration-0.29.112.json",
+    "outputs/ONEXTweaks/reports/display-bridge-upgrade-0.29.115.json"
+  ]
+}

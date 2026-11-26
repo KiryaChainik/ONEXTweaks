@@ -1,0 +1,13 @@
+{
+  "cpuClockMhz": 0,
+  "lightingEnabled": true,
+  "zones": [
+    { "id": 1, "name": "Left stick", "enabled": true, "brightness": 2, "mode": 2, "preset": 0, "r": 110, "g": 205, "b": 230, "breathing": false, "animationSpeed": 0 },
+    { "id": 2, "name": "Right stick", "enabled": true, "brightness": 2, "mode": 2, "preset": 0, "r": 110, "g": 205, "b": 230, "breathing": false, "animationSpeed": 0 },
+    { "id": 5, "name": "Menu button", "enabled": true, "brightness": 2, "mode": 2, "preset": 0, "r": 110, "g": 205, "b": 230, "breathing": false, "animationSpeed": 0 },
+    { "id": 6, "name": "Top zone", "enabled": true, "brightness": 2, "mode": 2, "preset": 0, "r": 110, "g": 205, "b": 230, "breathing": false, "animationSpeed": 0 },
+    { "id": 7, "name": "Controller connector", "enabled": true, "brightness": 2, "mode": 2, "preset": 0, "r": 110, "g": 205, "b": 230, "breathing": false, "animationSpeed": 0 }
+  ],
+  "fanPreset1": [[45, 0.3], [55, 0.35], [65, 0.4], [75, 0.45], [85, 0.6]],
+  "fanPreset2": [[45, 0.35], [55, 0.45], [65, 0.6], [75, 0.75], [85, 0.85]]
+}

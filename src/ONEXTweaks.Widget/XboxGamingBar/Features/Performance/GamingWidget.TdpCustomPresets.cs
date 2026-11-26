@@ -1,0 +1,721 @@
+using Microsoft.Gaming.XboxGameBar;
+using Microsoft.Gaming.XboxGameBar.Input;
+using Microsoft.UI.Xaml.Controls;
+using NLog;
+using Shared.Data;
+using Shared.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.Data.Json;
+using Windows.Foundation;
+using Windows.Foundation.Metadata;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Navigation;
+using Windows.System.Power;
+using Windows.Storage;
+using Windows.System;
+using Windows.UI.Xaml.Input;
+using System.Runtime.InteropServices;
+using Windows.UI;
+using XboxGamingBar.Data;
+using XboxGamingBar.Event;
+using XboxGamingBar.IPC;
+using XboxGamingBar.QuickSettings;
+using Shared.Enums;
+
+namespace XboxGamingBar
+{
+    public sealed partial class GamingWidget
+    {
+        private void UseCustomTDPPresetsToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (UseCustomTDPPresetsToggle == null) return;
+
+            useCustomTDPPresets = UseCustomTDPPresetsToggle.IsOn;
+
+            // Show/hide the presets list panel
+            if (TDPPresetsListPanel != null)
+            {
+                TDPPresetsListPanel.Visibility = useCustomTDPPresets ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            // Update Lenovo modes panel visibility (only visible on Legion when custom presets enabled)
+            UpdateUseLenovoModesPanelVisibility();
+
+            // Save the setting
+            SaveTdpPresetsSettings();
+
+            // Rebuild the TDP Mode ComboBox with the appropriate items
+            PopulateTdpModeComboBox();
+
+            Logger.Info($"Custom TDP Presets: {(useCustomTDPPresets ? "enabled" : "disabled")}");
+        }
+
+        private void UseLenovoModesToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (UseLenovoModesToggle == null) return;
+
+            useLenovoModes = UseLenovoModesToggle.IsOn;
+
+            // Update built-in presets' LegionModeValue based on toggle
+            // When "Use Lenovo modes" is ON: built-in presets use hardware modes (1, 2, 3)
+            // When OFF: built-in presets use software TDP control (LegionModeValue = null)
+            for (int i = 0; i < tdpPresets.Count; i++)
+            {
+                var preset = tdpPresets[i];
+                if (preset.IsBuiltIn)
+                {
+                    if (useLenovoModes)
+                    {
+                        // Restore hardware mode values for Legion Go built-in presets
+                        // Max→Performance(3), Standard→Performance(3), Balanced→Balanced(2), Battery/Super Battery→Quiet(1)
+                        if (preset.Name == "Max") preset.LegionModeValue = 3;
+                        else if (preset.Name == "Standard") preset.LegionModeValue = 3;
+                        else if (preset.Name == "Balanced") preset.LegionModeValue = 2;
+                        else if (preset.Name == "Battery") preset.LegionModeValue = 1;
+                        else if (preset.Name == "Super Battery") preset.LegionModeValue = 1;
+                        // Legacy preset names (kept for backwards compat)
+                        else if (preset.Name == "Quiet") preset.LegionModeValue = 1;
+                        else if (preset.Name == "Performance") preset.LegionModeValue = 3;
+                    }
+                    else
+                    {
+                        // Clear hardware mode - use software TDP control
+                        preset.LegionModeValue = null;
+                    }
+                    tdpPresets[i] = preset;
+                }
+            }
+
+            // Save the setting
+            SaveTdpPresetsSettings();
+
+            // Refresh the presets list to update edit button availability
+            RefreshTdpPresetsList();
+
+            // Rebuild the TDP Mode ComboBox
+            PopulateTdpModeComboBox();
+
+            Logger.Info($"Use Lenovo Modes: {(useLenovoModes ? "enabled" : "disabled")}");
+        }
+
+        /// <summary>
+        /// Shows or hides the "Use Lenovo Modes" panel based on device type.
+        /// Should be called after legionGoDetected is set.
+        /// </summary>
+        private void UpdateUseLenovoModesPanelVisibility()
+        {
+            if (UseLenovoModesPanel != null)
+            {
+                // Only show on Legion devices when custom presets are enabled
+                bool isLegion = legionGoDetected?.Value == true;
+                UseLenovoModesPanel.Visibility = isLegion && useCustomTDPPresets ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        // Guard: UseCustomTDPPresetsToggle / UseLenovoModesToggle fire their
+        // Toggled events during XAML load (before GamingWidget_Loaded runs
+        // LoadTdpPresetsSettings). At that moment tdpPresets is still the
+        // empty field initializer and the toggle handler calls Save — which
+        // overwrites LocalSettings["TdpPresets_Data"] with an empty array,
+        // wiping the user's saved presets. Flip this to true only after
+        // LoadTdpPresetsSettings completes so pre-load Save calls bail out.
+        private bool _tdpPresetsLoaded;
+
+        // Increment this whenever the default built-in presets change (names, wattages, order).
+        // On mismatch, stored built-in presets are replaced with the current defaults while
+        // user-added custom presets are preserved.
+        private const int TdpPresetSchemaVersion = 3; // v3: fix migration persistence bug (TdpPresets_Data was not saved in v2 migration)
+
+        private void LoadTdpPresetsSettings()
+        {
+            try
+            {
+                var settings = Windows.Storage.ApplicationData.Current.LocalSettings;
+
+                // Load the use custom presets flag
+                if (settings.Values.TryGetValue("TdpPresets_UseCustom", out object useCustomObj))
+                {
+                    useCustomTDPPresets = (bool)useCustomObj;
+                }
+                else
+                {
+                    useCustomTDPPresets = false;
+                }
+
+                // Load the use Lenovo modes flag (default: true for Legion devices)
+                if (settings.Values.TryGetValue("TdpPresets_UseLenovoModes", out object useLenovoObj))
+                {
+                    useLenovoModes = (bool)useLenovoObj;
+                }
+                else
+                {
+                    useLenovoModes = true; // Default to using hardware modes
+                }
+
+                // Load the presets data
+                if (settings.Values.TryGetValue("TdpPresets_Data", out object presetsJson) && presetsJson is string json)
+                {
+                    tdpPresets = Shared.Data.TdpPreset.FromJson(json);
+                }
+
+                // If no presets loaded or empty, use defaults
+                if (tdpPresets == null || tdpPresets.Count == 0)
+                {
+                    tdpPresets = Shared.Data.TdpPreset.GetDefaultPresets();
+                }
+
+                // Schema migration: if stored version is older than current, refresh built-in presets.
+                // User-added custom presets (IsBuiltIn=false) are kept as-is.
+                int storedSchemaVersion = 0;
+                if (settings.Values.TryGetValue("TdpPresets_SchemaVersion", out object svObj) && svObj is int sv)
+                    storedSchemaVersion = sv;
+
+                if (storedSchemaVersion < TdpPresetSchemaVersion)
+                {
+                    var currentDefaults = Shared.Data.TdpPreset.GetDefaultPresets();
+                    var userCustom = tdpPresets.Where(p => !p.IsBuiltIn).ToList();
+                    tdpPresets = currentDefaults;
+                    tdpPresets.AddRange(userCustom);
+                    // Save both version AND data immediately — _tdpPresetsLoaded is still false here
+                    // so SaveTdpPresetsSettings() is blocked; write directly to avoid the guard.
+                    settings.Values["TdpPresets_SchemaVersion"] = TdpPresetSchemaVersion;
+                    settings.Values["TdpPresets_Data"] = Shared.Data.TdpPreset.ToJson(tdpPresets);
+                    Logger.Info($"TDP preset schema migrated v{storedSchemaVersion}→v{TdpPresetSchemaVersion}: " +
+                                $"{currentDefaults.Count} built-in + {userCustom.Count} custom presets");
+                }
+
+                // Update UI
+                if (UseCustomTDPPresetsToggle != null)
+                {
+                    UseCustomTDPPresetsToggle.IsOn = useCustomTDPPresets;
+                }
+
+                if (UseLenovoModesToggle != null)
+                {
+                    UseLenovoModesToggle.IsOn = useLenovoModes;
+                }
+
+                if (TDPPresetsListPanel != null)
+                {
+                    TDPPresetsListPanel.Visibility = useCustomTDPPresets ? Visibility.Visible : Visibility.Collapsed;
+                }
+
+                // Update Lenovo modes panel visibility
+                UpdateUseLenovoModesPanelVisibility();
+
+                // Update the presets list display
+                RefreshTdpPresetsList();
+
+                Logger.Info($"Loaded TDP presets settings: useCustom={useCustomTDPPresets}, useLenovoModes={useLenovoModes}, presetCount={tdpPresets.Count}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error loading TDP presets settings: {ex.Message}");
+                tdpPresets = Shared.Data.TdpPreset.GetDefaultPresets();
+            }
+            finally
+            {
+                // Gate Save only after Load has finished (including the fallback
+                // to defaults on exception) so subsequent Toggled events can
+                // persist normally. See the field comment for why this matters.
+                _tdpPresetsLoaded = true;
+            }
+        }
+
+        private void SaveTdpPresetsSettings()
+        {
+            // Skip Saves that fire during XAML load, before LoadTdpPresetsSettings
+            // has populated tdpPresets. Otherwise the empty field-initialized
+            // list clobbers the user's saved data on LocalSettings.
+            if (!_tdpPresetsLoaded)
+            {
+                Logger.Debug("SaveTdpPresetsSettings: skipped (pre-load toggle event)");
+                return;
+            }
+            try
+            {
+                var settings = Windows.Storage.ApplicationData.Current.LocalSettings;
+
+                settings.Values["TdpPresets_UseCustom"] = useCustomTDPPresets;
+                settings.Values["TdpPresets_UseLenovoModes"] = useLenovoModes;
+                settings.Values["TdpPresets_Data"] = Shared.Data.TdpPreset.ToJson(tdpPresets);
+                settings.Values["TdpPresets_SchemaVersion"] = TdpPresetSchemaVersion;
+
+                Logger.Info($"Saved TDP presets settings: useCustom={useCustomTDPPresets}, useLenovoModes={useLenovoModes}, presetCount={tdpPresets.Count}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error saving TDP presets settings: {ex.Message}");
+            }
+        }
+
+        private void RefreshTdpPresetsList()
+        {
+            if (TDPPresetsItemsControl != null)
+            {
+                TDPPresetsItemsControl.ItemsSource = null;
+                TDPPresetsItemsControl.ItemsSource = tdpPresets;
+            }
+        }
+
+        private void PopulateTdpModeComboBox()
+        {
+            if (TDPModeComboBox == null) return;
+
+            // Remember current selection if possible
+            int previousIndex = TDPModeComboBox.SelectedIndex;
+            string previousName = null;
+            if (previousIndex >= 0 && previousIndex < TDPModeComboBox.Items.Count)
+            {
+                var item = TDPModeComboBox.Items[previousIndex] as ComboBoxItem;
+                previousName = item?.Content?.ToString();
+            }
+
+            TDPModeComboBox.Items.Clear();
+
+            // Always show only Slider/Custom mode — named presets hidden for MSI Claw.
+            // This applies regardless of useCustomTDPPresets, so pipe sync or profile load
+            // can never land on a preset index that would disable the slider.
+            if (false && useCustomTDPPresets && tdpPresets != null && tdpPresets.Count > 0)
+            {
+                // (preset items disabled — keeping block to avoid removing dependent logic)
+                for (int i = 0; i < tdpPresets.Count; i++)
+                {
+                    var preset = tdpPresets[i];
+                    var item = new ComboBoxItem
+                    {
+                        Content = global::XboxGamingBar.OnexStrings.Format("{0} ({1}W)",preset.Name,preset.TdpWatts),
+                        Tag = i
+                    };
+                    TDPModeComboBox.Items.Add(item);
+                }
+
+                // (disabled)
+                TDPModeComboBox.Items.Add(new ComboBoxItem { Content = global::XboxGamingBar.OnexStrings.Get("Slider"), Tag = -1 });
+            }
+            else
+            {
+                // Only Slider/Custom mode — named presets hidden for MSI Claw (unreliable persistence)
+                TDPModeComboBox.Items.Add(new ComboBoxItem { Content = global::XboxGamingBar.OnexStrings.Get("Slider"), Tag = "255" });
+            }
+
+            // Try to restore previous selection
+            int newIndex = -1;
+            if (!string.IsNullOrEmpty(previousName))
+            {
+                for (int i = 0; i < TDPModeComboBox.Items.Count; i++)
+                {
+                    var item = TDPModeComboBox.Items[i] as ComboBoxItem;
+                    if (item?.Content?.ToString()?.StartsWith(previousName.Split(' ')[0]) == true)
+                    {
+                        newIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            // Default to index 0 (Slider) — only one item exists in non-custom-preset mode
+            TDPModeComboBox.SelectedIndex = newIndex >= 0 ? newIndex : 0;
+
+            // Ensure slider enabled state is refreshed — SelectionChanged may have returned early
+            // during initialization (isLoadingProfile=true), leaving the slider disabled.
+            UpdateTDPSliderEnabledState();
+        }
+
+        private void TDPPresetEditButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is Shared.Data.TdpPreset preset)
+            {
+                editingPreset = preset;
+                editingPresetIndex = tdpPresets.IndexOf(preset);
+
+                // Determine if TDP editing should be allowed
+                // On Legion devices with "Use Lenovo modes" enabled, built-in presets use hardware modes
+                // and TDP cannot be edited (hardware controls the TDP)
+                bool isLegion = legionGoDetected?.Value == true;
+                bool tdpEditingDisabled = isLegion && useLenovoModes && preset.IsBuiltIn;
+
+                // Populate edit dialog
+                if (EditPresetNameTextBox != null)
+                {
+                    EditPresetNameTextBox.Text = preset.Name;
+                    EditPresetNameTextBox.IsEnabled = !preset.IsBuiltIn; // Can't rename built-in presets
+                }
+
+                if (EditPresetTDPNumberBox != null)
+                {
+                    EditPresetTDPNumberBox.Value = preset.TdpWatts;
+                    EditPresetTDPNumberBox.Minimum = deviceTDPMin;
+                    EditPresetTDPNumberBox.Maximum = deviceTDPMax;
+                    EditPresetTDPNumberBox.IsEnabled = !tdpEditingDisabled;
+                }
+
+                // Show/hide TDP panel based on whether editing is allowed
+                if (EditPresetTDPPanel != null)
+                {
+                    EditPresetTDPPanel.Visibility = tdpEditingDisabled ? Visibility.Collapsed : Visibility.Visible;
+                }
+
+                // TDP Boost checkbox
+                if (EditPresetTDPBoostCheckBox != null)
+                {
+                    EditPresetTDPBoostCheckBox.IsChecked = preset.TdpBoostEnabled;
+                    // TDP Boost only available when TDP is editable (software control)
+                    EditPresetTDPBoostCheckBox.IsEnabled = !tdpEditingDisabled;
+                }
+
+                // Show/hide TDP Boost panel
+                if (EditPresetTDPBoostPanel != null)
+                {
+                    EditPresetTDPBoostPanel.Visibility = tdpEditingDisabled ? Visibility.Collapsed : Visibility.Visible;
+                }
+
+                // Show edit dialog
+                if (EditPresetDialog != null)
+                {
+                    EditPresetDialog.Visibility = Visibility.Visible;
+                }
+
+                Logger.Info($"Editing preset: {preset.Name} ({preset.TdpWatts}W, Boost={preset.TdpBoostEnabled}, TDPEditable={!tdpEditingDisabled})");
+            }
+        }
+
+        private void TDPPresetDeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is Shared.Data.TdpPreset preset)
+            {
+                if (preset.IsBuiltIn)
+                {
+                    Logger.Warn($"Cannot delete built-in preset: {preset.Name}");
+                    return;
+                }
+
+                tdpPresets.Remove(preset);
+                SaveTdpPresetsSettings();
+                RefreshTdpPresetsList();
+                PopulateTdpModeComboBox();
+
+                Logger.Info($"Deleted preset: {preset.Name}");
+            }
+        }
+
+        private void AddPresetButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (NewPresetNameTextBox == null || NewPresetTDPNumberBox == null) return;
+
+            string name = NewPresetNameTextBox.Text?.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                Logger.Warn("Cannot add preset: name is empty");
+                return;
+            }
+
+            // Check for duplicate names
+            string baseName = name;
+            int suffix = 2;
+            while (tdpPresets.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                name = $"{baseName} {suffix}";
+                suffix++;
+            }
+
+            int tdpWatts = (int)NewPresetTDPNumberBox.Value;
+
+            // Clamp to device limits
+            tdpWatts = Math.Max(deviceTDPMin, Math.Min(deviceTDPMax, tdpWatts));
+
+            // Get TDP Boost setting
+            bool tdpBoostEnabled = NewPresetTDPBoostCheckBox?.IsChecked ?? false;
+
+            var newPreset = new Shared.Data.TdpPreset(name, tdpWatts, null, false, tdpBoostEnabled);
+            tdpPresets.Add(newPreset);
+
+            SaveTdpPresetsSettings();
+            RefreshTdpPresetsList();
+            PopulateTdpModeComboBox();
+
+            // Clear the input fields
+            NewPresetNameTextBox.Text = "";
+            NewPresetTDPNumberBox.Value = 30;
+            if (NewPresetTDPBoostCheckBox != null)
+            {
+                NewPresetTDPBoostCheckBox.IsChecked = false;
+            }
+
+            Logger.Info($"Added new preset: {name} ({tdpWatts}W, Boost={tdpBoostEnabled})");
+        }
+
+        private void EditPresetCancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            editingPreset = null;
+            editingPresetIndex = -1;
+
+            if (EditPresetDialog != null)
+            {
+                EditPresetDialog.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void EditPresetSaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (editingPreset == null || editingPresetIndex < 0 || editingPresetIndex >= tdpPresets.Count)
+            {
+                EditPresetCancelButton_Click(sender, e);
+                return;
+            }
+
+            string newName = EditPresetNameTextBox?.Text?.Trim();
+            int newTdp = (int)(EditPresetTDPNumberBox?.Value ?? editingPreset.TdpWatts);
+
+            // Clamp to device limits
+            newTdp = Math.Max(deviceTDPMin, Math.Min(deviceTDPMax, newTdp));
+
+            // Update the preset
+            var updatedPreset = tdpPresets[editingPresetIndex];
+            if (!updatedPreset.IsBuiltIn && !string.IsNullOrEmpty(newName))
+            {
+                updatedPreset.Name = newName;
+            }
+
+            // Only update TDP and Boost if editing was enabled (not using Lenovo hardware modes for built-in)
+            bool isLegion = legionGoDetected?.Value == true;
+            bool tdpEditingDisabled = isLegion && useLenovoModes && updatedPreset.IsBuiltIn;
+            if (!tdpEditingDisabled)
+            {
+                updatedPreset.TdpWatts = newTdp;
+                updatedPreset.TdpBoostEnabled = EditPresetTDPBoostCheckBox?.IsChecked ?? false;
+            }
+
+            tdpPresets[editingPresetIndex] = updatedPreset;
+
+            SaveTdpPresetsSettings();
+            RefreshTdpPresetsList();
+            PopulateTdpModeComboBox();
+
+            Logger.Info($"Updated preset: {updatedPreset.Name} ({updatedPreset.TdpWatts}W, Boost={updatedPreset.TdpBoostEnabled})");
+
+            // Close dialog
+            EditPresetCancelButton_Click(sender, e);
+        }
+
+        private void ResetTDPPresetsButton_Click(object sender, RoutedEventArgs e)
+        {
+            tdpPresets = Shared.Data.TdpPreset.GetDefaultPresets();
+            SaveTdpPresetsSettings();
+            RefreshTdpPresetsList();
+            PopulateTdpModeComboBox();
+
+            Logger.Info("Reset TDP presets to defaults");
+        }
+
+        /// <summary>
+        /// Gets the TDP value for the currently selected preset mode.
+        /// Returns -1 if in Custom mode (slider controlled).
+        /// </summary>
+        private int GetCurrentPresetTdpValue()
+        {
+            if (TDPModeComboBox == null) return -1;
+
+            int selectedIndex = TDPModeComboBox.SelectedIndex;
+            if (selectedIndex < 0) return -1;
+
+            if (useCustomTDPPresets && tdpPresets != null)
+            {
+                // Last item is always "Custom" mode
+                if (selectedIndex >= tdpPresets.Count)
+                {
+                    return -1; // Custom mode
+                }
+
+                if (selectedIndex < tdpPresets.Count)
+                {
+                    return tdpPresets[selectedIndex].TdpWatts;
+                }
+            }
+            else
+            {
+                // Default hardcoded values — Standard, Balanced, Battery, Super Battery
+                int[] defaultTdpValues = { 30, 25, 17, 12, 8 };
+                if (selectedIndex < defaultTdpValues.Length)
+                {
+                    return defaultTdpValues[selectedIndex];
+                }
+            }
+
+            return -1; // Custom mode
+        }
+
+        /// <summary>
+        /// Gets the Legion hardware mode value for the currently selected preset.
+        /// Returns 255 (Custom) if no hardware mode mapping exists.
+        /// </summary>
+        private int GetCurrentPresetLegionMode()
+        {
+            if (TDPModeComboBox == null) return 255;
+
+            int selectedIndex = TDPModeComboBox.SelectedIndex;
+            if (selectedIndex < 0) return 255;
+
+            if (useCustomTDPPresets && tdpPresets != null)
+            {
+                // Last item is always "Custom" mode
+                if (selectedIndex >= tdpPresets.Count)
+                {
+                    return 255; // Custom mode
+                }
+
+                if (selectedIndex < tdpPresets.Count)
+                {
+                    var preset = tdpPresets[selectedIndex];
+                    return preset.LegionModeValue ?? 255;
+                }
+            }
+            else
+            {
+                // Default hardcoded mode — MSI Claw uses software TDP (255=Custom) for all named presets
+                // Legion Go devices use legionPerformanceMode directly and bypass this path
+                int[] defaultModes = { 255, 255, 255, 255, 255 }; // Max, Standard, Balanced, Battery, Super Battery → all software TDP
+                if (selectedIndex < defaultModes.Length)
+                {
+                    return defaultModes[selectedIndex];
+                }
+            }
+
+            return 255; // Custom mode
+        }
+
+        /// <summary>
+        /// Gets the TDP Boost setting for the currently selected preset.
+        /// Returns null if in Custom mode (user controls TDP Boost toggle directly).
+        /// </summary>
+        private bool? GetCurrentPresetTdpBoost()
+        {
+            if (TDPModeComboBox == null) return null;
+
+            int selectedIndex = TDPModeComboBox.SelectedIndex;
+            if (selectedIndex < 0) return null;
+
+            if (useCustomTDPPresets && tdpPresets != null)
+            {
+                // Last item is always "Custom" mode
+                if (selectedIndex >= tdpPresets.Count)
+                {
+                    return null; // Custom mode - user controls TDP Boost directly
+                }
+
+                if (selectedIndex < tdpPresets.Count)
+                {
+                    return tdpPresets[selectedIndex].TdpBoostEnabled;
+                }
+            }
+
+            // Default presets don't have TDP Boost setting
+            return null;
+        }
+
+        /// <summary>
+        /// Checks if the current TDP Mode selection is "Custom" (slider-controlled).
+        /// </summary>
+        private bool IsCustomTdpModeSelected()
+        {
+            if (TDPModeComboBox == null) return true;
+            return IsCustomTdpModeIndex(TDPModeComboBox.SelectedIndex);
+        }
+
+        /// <summary>
+        /// Checks if a given TDP mode index is "Custom" (slider-controlled).
+        /// </summary>
+        private bool IsCustomTdpModeIndex(int index)
+        {
+            if (index < 0) return true;
+
+            // ComboBox always has only one item (Slider) — always Custom/software TDP.
+            // This holds regardless of useCustomTDPPresets because PopulateTdpModeComboBox
+            // forces the single-Slider layout for both paths.
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the TDPModeComboBox index for Custom/Slider mode.
+        /// </summary>
+        private int GetCustomTdpModeIndex()
+        {
+            return 0; // Slider is always at index 0
+        }
+
+        /// <summary>
+        /// After initial sync completes, matches the TDP mode ComboBox to the helper's current TDP
+        /// and saves the global profile. This ensures game→global transitions always restore the
+        /// correct preset instead of defaulting to Standard (25 W) when TDPModeIndex was never saved.
+        /// Only runs for non-Legion devices and only when the profile has no saved TDPModeIndex.
+        /// </summary>
+        private void SyncTDPModeToCurrentTDP()
+        {
+            // The imported slider-only layout has one item, so legacy preset indexes do not apply.
+            if (TDPModeComboBox?.Items.Count <= 1) return;
+            if (legionGoDetected?.Value == true) return; // Legion uses hardware modes — not needed
+            if (TDPModeComboBox == null || tdp == null) return;
+            if (string.IsNullOrEmpty(currentProfileName) || currentProfileName.StartsWith("Game_")) return;
+
+            var profile = GetProfile(currentProfileName);
+            if (profile == null) return;
+
+            // If TDPModeIndex is already valid, the profile was explicitly saved — nothing to do
+            int maxIndex = useCustomTDPPresets && tdpPresets != null ? tdpPresets.Count : 5;
+            if (profile.TDPModeIndex >= 0 && profile.TDPModeIndex <= maxIndex) return;
+
+            // Find preset index matching the helper's current TDP watt value
+            int helperTDP = (int)Math.Round((double)tdp.Value);
+            int matchedIndex = -1;
+
+            if (useCustomTDPPresets && tdpPresets != null)
+            {
+                for (int i = 0; i < tdpPresets.Count; i++)
+                {
+                    if (tdpPresets[i].TdpWatts == helperTDP) { matchedIndex = i; break; }
+                }
+            }
+            else
+            {
+                int[] defaultTdpValues = { 30, 25, 17, 12, 8 };
+                for (int i = 0; i < defaultTdpValues.Length; i++)
+                {
+                    if (defaultTdpValues[i] == helperTDP) { matchedIndex = i; break; }
+                }
+            }
+
+            if (matchedIndex < 0) matchedIndex = 1; // Default to Standard if no match
+
+            // Update ComboBox without triggering TDPModeComboBox_SelectionChanged's full path
+            // (we don't want to re-send TDP to helper — it already has the correct value)
+            if (TDPModeComboBox.SelectedIndex != matchedIndex)
+            {
+                lastTDPModeIndex = matchedIndex;
+                TDPModeComboBox.SelectedIndex = matchedIndex;
+                Logger.Info($"SyncTDPModeToCurrentTDP: matched {helperTDP}W → preset index {matchedIndex}");
+            }
+
+            // Save the profile so future game→global transitions restore the correct mode
+            Logger.Info($"SyncTDPModeToCurrentTDP: saving profile '{currentProfileName}' (TDP={helperTDP}W, modeIndex={matchedIndex})");
+            SaveWidgetUiStateToProfile(currentProfileName);
+        }
+
+    }
+}

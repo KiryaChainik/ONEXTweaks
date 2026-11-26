@@ -1,0 +1,4977 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="OnexCaption0.Text" xml:space="preserve">
+    <value>LT</value>
+  </data>
+  <data name="OnexCaption1.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Главная</value>
+  </data>
+  <data name="OnexCaption2.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Первый запуск</value>
+  </data>
+  <data name="OnexCaption3.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Производительность</value>
+  </data>
+  <data name="OnexCaption4.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Экран</value>
+  </data>
+  <data name="OnexCaption5.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Управление</value>
+  </data>
+  <data name="OnexCaption6.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Вентилятор</value>
+  </data>
+  <data name="OnexCaption7.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tiny Center M</value>
+  </data>
+  <data name="OnexCaption8.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Lossless Scaling</value>
+  </data>
+  <data name="OnexCaption9.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Профили производительности и экрана</value>
+  </data>
+  <data name="OnexCaption10.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="OnexCaption11.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Драйверы</value>
+  </data>
+  <data name="OnexCaption12.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Графика</value>
+  </data>
+  <data name="OnexCaption13.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Горячие клавиши</value>
+  </data>
+  <data name="OnexCaption14.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>GPD</value>
+  </data>
+  <data name="OnexCaption15.Text" xml:space="preserve">
+    <value>RT</value>
+  </data>
+  <data name="OnexCaption16.Text" xml:space="preserve">
+    <value>Доступны обновления драйверов</value>
+  </data>
+  <data name="OnexCaption17.Text" xml:space="preserve">
+    <value>Нажмите, чтобы открыть раздел драйверов</value>
+  </data>
+  <data name="OnexCaption18.Text" xml:space="preserve">
+    <value>Доступно обновление GoTweaks</value>
+  </data>
+  <data name="OnexCaption19.Text" xml:space="preserve">
+    <value>Нажмите для установки</value>
+  </data>
+  <data name="OnexCaption20.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Включить / выключить звук</value>
+  </data>
+  <data name="OnexCaption21.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Микшер громкости</value>
+  </data>
+  <data name="OnexCaption21.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Микшер громкости</value>
+  </data>
+  <data name="OnexCaption22.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Включить / выключить микрофон</value>
+  </data>
+  <data name="OnexCaption23.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Открыть ClawTweaks Center</value>
+  </data>
+  <data name="OnexCaption24.Text" xml:space="preserve">
+    <value>Настройка плиток и горячих клавиш</value>
+  </data>
+  <data name="OnexCaption25.Text" xml:space="preserve">
+    <value>Настройка плиток и горячих клавиш</value>
+  </data>
+  <data name="OnexCaption26.Text" xml:space="preserve">
+    <value>Нажмите на плитку, затем на другую, чтобы поменять их местами. Кнопка «Показать/скрыть» меняет видимость. Можно создавать плитки для системных действий, изменения TDP и выбора ограничения FPS, а также назначать сочетания кнопок контроллера для их вызова без открытия виджета.</value>
+  </data>
+  <data name="OnexCaption27.Text" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="OnexCaption28.Text" xml:space="preserve">
+    <value>Завершить настройку</value>
+  </data>
+  <data name="OnexCaption29.Content" xml:space="preserve">
+    <value>По умолчанию</value>
+  </data>
+  <data name="OnexCaption29.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Вернуть 23 стандартные плитки и порядок. Пользовательские плитки останутся после них; столбцы и сочетания кнопок сохранятся.</value>
+  </data>
+  <data name="OnexCaption30.Text" xml:space="preserve">
+    <value>Добавить плитку или сочетание</value>
+  </data>
+  <data name="OnexCaption31.Text" xml:space="preserve">
+    <value>Клавиатура</value>
+  </data>
+  <data name="OnexCaption32.Text" xml:space="preserve">
+    <value>Действие</value>
+  </data>
+  <data name="OnexCaption33.PlaceholderText" xml:space="preserve">
+    <value>Название плитки</value>
+  </data>
+  <data name="OnexCaption34.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption35.PlaceholderText" xml:space="preserve">
+    <value>Выберите действие…</value>
+  </data>
+  <data name="OnexCaption36.Text" xml:space="preserve">
+    <value>Добавить плитку</value>
+  </data>
+  <data name="OnexCaption37.Text" xml:space="preserve">
+    <value>Столбцы:</value>
+  </data>
+  <data name="OnexCaption38.Text" xml:space="preserve">
+    <value>ЗАПУСК ПРОГРАММ</value>
+  </data>
+  <data name="OnexCaption39.Text" xml:space="preserve">
+    <value>Управление запуском программ</value>
+  </data>
+  <data name="OnexCaption40.Text" xml:space="preserve">
+    <value>Добавьте файлы .exe или .ps1. Они появятся в разделе пользовательских программ при назначении плиток и передних кнопок.</value>
+  </data>
+  <data name="OnexCaption41.PlaceholderText" xml:space="preserve">
+    <value>Путь к .exe или .ps1</value>
+  </data>
+  <data name="OnexCaption42.Content" xml:space="preserve">
+    <value>Обзор…</value>
+  </data>
+  <data name="OnexCaption43.Content" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="OnexCaption44.Text" xml:space="preserve">
+    <value>ОТКРЫТИЕ ССЫЛОК</value>
+  </data>
+  <data name="OnexCaption45.Text" xml:space="preserve">
+    <value>Управление ссылками</value>
+  </data>
+  <data name="OnexCaption46.Text" xml:space="preserve">
+    <value>Добавьте сайты. Они появятся в разделе пользовательских ссылок при назначении плиток и передних кнопок.</value>
+  </data>
+  <data name="OnexCaption47.Content" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="OnexCaption48.Text" xml:space="preserve">
+    <value>Показывать строку показателей</value>
+  </data>
+  <data name="OnexCaption49.Text" xml:space="preserve">
+    <value>Выберите до 6 показателей ниже</value>
+  </data>
+  <data name="OnexCaption50.Text" xml:space="preserve">
+    <value>Показатели (не более 6)</value>
+  </data>
+  <data name="OnexCaption51.Content" xml:space="preserve">
+    <value>Расход батареи</value>
+  </data>
+  <data name="OnexCaption52.Content" xml:space="preserve">
+    <value>Заряд батареи</value>
+  </data>
+  <data name="OnexCaption53.Content" xml:space="preserve">
+    <value>Загрузка CPU</value>
+  </data>
+  <data name="OnexCaption54.Content" xml:space="preserve">
+    <value>Температура CPU</value>
+  </data>
+  <data name="OnexCaption55.Content" xml:space="preserve">
+    <value>Мощность CPU</value>
+  </data>
+  <data name="OnexCaption56.Content" xml:space="preserve">
+    <value>Загрузка GPU</value>
+  </data>
+  <data name="OnexCaption57.Content" xml:space="preserve">
+    <value>Температура GPU</value>
+  </data>
+  <data name="OnexCaption58.Content" xml:space="preserve">
+    <value>Мощность GPU</value>
+  </data>
+  <data name="OnexCaption59.Content" xml:space="preserve">
+    <value>Использование памяти</value>
+  </data>
+  <data name="OnexCaption60.Content" xml:space="preserve">
+    <value>Осталось времени</value>
+  </data>
+  <data name="OnexCaption61.Text" xml:space="preserve">
+    <value>Выбрано 0/6</value>
+  </data>
+  <data name="OnexCaption62.Text" xml:space="preserve">
+    <value>Порядок: перетаскивание или стрелки</value>
+  </data>
+  <data name="OnexCaption63.Text" xml:space="preserve">
+    <value>Завершить настройку</value>
+  </data>
+  <data name="OnexCaption64.Text" xml:space="preserve">
+    <value>RTSS · Подключение…</value>
+  </data>
+  <data name="OnexCaption65.Text" xml:space="preserve">
+    <value>Оверлей</value>
+  </data>
+  <data name="OnexCaption66.Content" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption67.Content" xml:space="preserve">
+    <value>Basic</value>
+  </data>
+  <data name="OnexCaption68.Content" xml:space="preserve">
+    <value>Horizontal</value>
+  </data>
+  <data name="OnexCaption69.Content" xml:space="preserve">
+    <value>Horizontal Custom</value>
+  </data>
+  <data name="OnexCaption70.Content" xml:space="preserve">
+    <value>Vertical Custom</value>
+  </data>
+  <data name="OnexCaption71.Content" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption72.Content" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption73.Text" xml:space="preserve">
+    <value>Способ вывода</value>
+  </data>
+  <data name="OnexCaption74.Text" xml:space="preserve">
+    <value>RTSS показывает оверлей только в играх. Встроенный оверлей работает и на рабочем столе.</value>
+  </data>
+  <data name="OnexCaption75.Content" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption76.Content" xml:space="preserve">
+    <value>ONEXTweaks (встроенный)</value>
+  </data>
+  <data name="OnexCaption77.Content" xml:space="preserve">
+    <value>Слева сверху</value>
+  </data>
+  <data name="OnexCaption78.Content" xml:space="preserve">
+    <value>По центру сверху</value>
+  </data>
+  <data name="OnexCaption79.Content" xml:space="preserve">
+    <value>Справа сверху</value>
+  </data>
+  <data name="OnexCaption80.Content" xml:space="preserve">
+    <value>Слева снизу</value>
+  </data>
+  <data name="OnexCaption81.Content" xml:space="preserve">
+    <value>По центру снизу</value>
+  </data>
+  <data name="OnexCaption82.Content" xml:space="preserve">
+    <value>Справа снизу</value>
+  </data>
+  <data name="OnexCaption83.Text" xml:space="preserve">
+    <value>Расположение</value>
+  </data>
+  <data name="OnexCaption84.Text" xml:space="preserve">
+    <value>Столбцы</value>
+  </data>
+  <data name="OnexCaption85.Text" xml:space="preserve">
+    <value>Элементов в строке (1 — вертикальный список)</value>
+  </data>
+  <data name="OnexCaption86.Text" xml:space="preserve">
+    <value>Размер оверлея</value>
+  </data>
+  <data name="OnexCaption87.Content" xml:space="preserve">
+    <value>Маленький</value>
+  </data>
+  <data name="OnexCaption88.Content" xml:space="preserve">
+    <value>Средний</value>
+  </data>
+  <data name="OnexCaption89.Content" xml:space="preserve">
+    <value>Выше среднего</value>
+  </data>
+  <data name="OnexCaption90.Content" xml:space="preserve">
+    <value>По умолчанию</value>
+  </data>
+  <data name="OnexCaption91.Content" xml:space="preserve">
+    <value>Большой</value>
+  </data>
+  <data name="OnexCaption92.Content" xml:space="preserve">
+    <value>Очень большой</value>
+  </data>
+  <data name="OnexCaption93.Content" xml:space="preserve">
+    <value>Огромный</value>
+  </data>
+  <data name="OnexCaption94.Content" xml:space="preserve">
+    <value>Максимальный</value>
+  </data>
+  <data name="OnexCaption95.Text" xml:space="preserve">
+    <value>Шрифт оверлея</value>
+  </data>
+  <data name="OnexCaption96.Content" xml:space="preserve">
+    <value>Bahnschrift</value>
+  </data>
+  <data name="OnexCaption97.Content" xml:space="preserve">
+    <value>Bahnschrift Light</value>
+  </data>
+  <data name="OnexCaption98.Content" xml:space="preserve">
+    <value>Bahnschrift SemiLight</value>
+  </data>
+  <data name="OnexCaption99.Content" xml:space="preserve">
+    <value>Bahnschrift SemiBold</value>
+  </data>
+  <data name="OnexCaption100.Content" xml:space="preserve">
+    <value>Bahnschrift Condensed</value>
+  </data>
+  <data name="OnexCaption101.Content" xml:space="preserve">
+    <value>Bahnschrift SemiCondensed</value>
+  </data>
+  <data name="OnexCaption102.Content" xml:space="preserve">
+    <value>Bahnschrift Light Condensed</value>
+  </data>
+  <data name="OnexCaption103.Content" xml:space="preserve">
+    <value>Bahnschrift Light SemiCondensed</value>
+  </data>
+  <data name="OnexCaption104.Content" xml:space="preserve">
+    <value>Bahnschrift SemiLight Condensed</value>
+  </data>
+  <data name="OnexCaption105.Content" xml:space="preserve">
+    <value>Bahnschrift SemiLight SemiCondensed</value>
+  </data>
+  <data name="OnexCaption106.Content" xml:space="preserve">
+    <value>Bahnschrift SemiBold Condensed</value>
+  </data>
+  <data name="OnexCaption107.Content" xml:space="preserve">
+    <value>Bahnschrift SemiBold SemiCondensed</value>
+  </data>
+  <data name="OnexCaption108.Content" xml:space="preserve">
+    <value>RTSS default (Unispace)</value>
+  </data>
+  <data name="OnexCaption109.Text" xml:space="preserve">
+    <value>Цвета</value>
+  </data>
+  <data name="OnexCaption110.Text" xml:space="preserve">
+    <value>Цвет текста</value>
+  </data>
+  <data name="OnexCaption111.Content" xml:space="preserve">
+    <value>Динамический</value>
+  </data>
+  <data name="OnexCaption112.Text" xml:space="preserve">
+    <value>Цвет подписей</value>
+  </data>
+  <data name="OnexCaption113.Content" xml:space="preserve">
+    <value>По умолчанию</value>
+  </data>
+  <data name="OnexCaption114.Text" xml:space="preserve">
+    <value>Непрозрачность оверлея</value>
+  </data>
+  <data name="OnexCaption115.Text" xml:space="preserve">
+    <value>Уменьшает яркость оверлея для защиты OLED</value>
+  </data>
+  <data name="OnexCaption116.Text" xml:space="preserve">
+    <value>Фон</value>
+  </data>
+  <data name="OnexCaption117.Text" xml:space="preserve">
+    <value>Тёмная подложка повышает контраст оверлея</value>
+  </data>
+  <data name="OnexCaption118.Text" xml:space="preserve">
+    <value>Непрозрачность фона</value>
+  </data>
+  <data name="OnexCaption119.Text" xml:space="preserve">
+    <value>Смещение положения</value>
+  </data>
+  <data name="OnexCaption120.Text" xml:space="preserve">
+    <value>Сдвигает оверлей каждую минуту для защиты от выгорания</value>
+  </data>
+  <data name="OnexCaption121.Text" xml:space="preserve">
+    <value>Отдельная строка графика времени кадра</value>
+  </data>
+  <data name="OnexCaption122.Text" xml:space="preserve">
+    <value>Всегда показывать график отдельной строкой внизу</value>
+  </data>
+  <data name="OnexCaption123.Text" xml:space="preserve">
+    <value>Отображаемые показатели</value>
+  </data>
+  <data name="OnexCaption124.Text" xml:space="preserve">
+    <value>Выберите один из двух пользовательских пресетов. Флажки ниже показывают его показатели и их порядок. Стандартные пресеты ONEXTweaks Basic и Horizontal редактировать нельзя.</value>
+  </data>
+  <data name="OnexCaption125.Text" xml:space="preserve">
+    <value>Пресет</value>
+  </data>
+  <data name="OnexCaption126.Content" xml:space="preserve">
+    <value>Horizontal Custom</value>
+  </data>
+  <data name="OnexCaption127.Content" xml:space="preserve">
+    <value>Vertical Custom</value>
+  </data>
+  <data name="OnexCaption128.Text" xml:space="preserve">
+    <value>Редактируется активный пресет оверлея.</value>
+  </data>
+  <data name="OnexCaption129.Text" xml:space="preserve">
+    <value>Пользовательские теги RTSS</value>
+  </data>
+  <data name="OnexCaption130.Text" xml:space="preserve">
+    <value>Добавьте теги RTSS, например &lt;FR&gt; для FPS</value>
+  </data>
+  <data name="OnexCaption131.PlaceholderText" xml:space="preserve">
+    <value>Введите теги RTSS…</value>
+  </data>
+  <data name="OnexCaption132.Text" xml:space="preserve">
+    <value>Оверлей AMD Adrenaline</value>
+  </data>
+  <data name="OnexCaption133.Text" xml:space="preserve">
+    <value>Оверлей AMD управляется через Adrenaline. Ctrl+Shift+O включает его, Ctrl+Shift+X переключает уровень подробности.</value>
+  </data>
+  <data name="OnexCaption134.Text" xml:space="preserve">
+    <value>Настройки TDP</value>
+  </data>
+  <data name="OnexCaption135.Text" xml:space="preserve">
+    <value>Настройки CPU</value>
+  </data>
+  <data name="OnexCaption136.Text" xml:space="preserve">
+    <value>Режим питания Windows</value>
+  </data>
+  <data name="OnexCaption137.Text" xml:space="preserve">
+    <value>Ограничение FPS</value>
+  </data>
+  <data name="OnexCaption138.Text" xml:space="preserve">
+    <value>Настройки Intel</value>
+  </data>
+  <data name="OnexCaption139.Text" xml:space="preserve">
+    <value>Разрешение и частота экрана</value>
+  </data>
+  <data name="OnexCaption140.Text" xml:space="preserve">
+    <value>Профиль вентилятора</value>
+  </data>
+  <data name="OnexCaption141.Text" xml:space="preserve">
+    <value>Профиль цветов экрана</value>
+  </data>
+  <data name="OnexCaption142.Text" xml:space="preserve">
+    <value>Настройки TDP</value>
+  </data>
+  <data name="OnexCaption143.Text" xml:space="preserve">
+    <value>Лимит мощности (PL1)</value>
+  </data>
+  <data name="OnexCaption144.Text" xml:space="preserve">
+    <value>MSI Center M активен: управление TDP недоступно. Отключите его плиткой MSI Center на главной.</value>
+  </data>
+  <data name="OnexCaption145.Text" xml:space="preserve">
+    <value>Лимиты:</value>
+  </data>
+  <data name="OnexCaption146.Text" xml:space="preserve">
+    <value>-- W</value>
+  </data>
+  <data name="OnexCaption147.Text" xml:space="preserve">
+    <value>Для ручного управления TDP выберите режим «Ползунок».</value>
+  </data>
+  <data name="OnexCaption148.Text" xml:space="preserve">
+    <value>Лимит мощности (PL2)</value>
+  </data>
+  <data name="OnexCaption149.Text" xml:space="preserve">
+    <value>Прямое управление PL2. Значение должно быть выше PL1, максимум 41 W.</value>
+  </data>
+  <data name="OnexCaption150.Text" xml:space="preserve">
+    <value>Ускорение PL2</value>
+  </data>
+  <data name="OnexCaption151.Text" xml:space="preserve">
+    <value>3W</value>
+  </data>
+  <data name="OnexCaption152.Text" xml:space="preserve">
+    <value>Настройки CPU</value>
+  </data>
+  <data name="OnexCaption153.Text" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="OnexCaption154.Text" xml:space="preserve">
+    <value>Ускорение</value>
+  </data>
+  <data name="OnexCaption155.Text" xml:space="preserve">
+    <value>Включает CPU Boost. Раскройте блок для выбора политики планирования и максимальных частот P/E-ядер.</value>
+  </data>
+  <data name="OnexCaption156.Text" xml:space="preserve">
+    <value>Политика планирования CPU</value>
+  </data>
+  <data name="OnexCaption157.Content" xml:space="preserve">
+    <value>Автоматически (по умолчанию)</value>
+  </data>
+  <data name="OnexCaption158.Content" xml:space="preserve">
+    <value>Только E-ядра</value>
+  </data>
+  <data name="OnexCaption159.Text" xml:space="preserve">
+    <value>Максимальная частота P-ядер</value>
+  </data>
+  <data name="OnexCaption160.Content" xml:space="preserve">
+    <value>Без ограничений</value>
+  </data>
+  <data name="OnexCaption161.Content" xml:space="preserve">
+    <value>4800 MHz</value>
+  </data>
+  <data name="OnexCaption162.Content" xml:space="preserve">
+    <value>4200 MHz</value>
+  </data>
+  <data name="OnexCaption163.Content" xml:space="preserve">
+    <value>3600 MHz</value>
+  </data>
+  <data name="OnexCaption164.Content" xml:space="preserve">
+    <value>3000 MHz</value>
+  </data>
+  <data name="OnexCaption165.Content" xml:space="preserve">
+    <value>2400 MHz</value>
+  </data>
+  <data name="OnexCaption166.Content" xml:space="preserve">
+    <value>1800 MHz</value>
+  </data>
+  <data name="OnexCaption167.Content" xml:space="preserve">
+    <value>1200 MHz</value>
+  </data>
+  <data name="OnexCaption168.Text" xml:space="preserve">
+    <value>Максимальная частота E-ядер</value>
+  </data>
+  <data name="OnexCaption169.Content" xml:space="preserve">
+    <value>Без ограничений</value>
+  </data>
+  <data name="OnexCaption170.Content" xml:space="preserve">
+    <value>2900 MHz</value>
+  </data>
+  <data name="OnexCaption171.Content" xml:space="preserve">
+    <value>2400 MHz</value>
+  </data>
+  <data name="OnexCaption172.Content" xml:space="preserve">
+    <value>1800 MHz</value>
+  </data>
+  <data name="OnexCaption173.Content" xml:space="preserve">
+    <value>1200 MHz</value>
+  </data>
+  <data name="OnexCaption174.Content" xml:space="preserve">
+    <value>800 MHz</value>
+  </data>
+  <data name="OnexCaption175.Text" xml:space="preserve">
+    <value>Режим питания Windows</value>
+  </data>
+  <data name="OnexCaption176.Text" xml:space="preserve">
+    <value>Режим питания Windows</value>
+  </data>
+  <data name="OnexCaption177.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption178.Content" xml:space="preserve">
+    <value>Максимальная экономия</value>
+  </data>
+  <data name="OnexCaption179.Content" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption180.Content" xml:space="preserve">
+    <value>Максимальная производительность</value>
+  </data>
+  <data name="OnexCaption181.Text" xml:space="preserve">
+    <value>Ограничение FPS</value>
+  </data>
+  <data name="OnexCaption182.Text" xml:space="preserve">
+    <value>Ограничение FPS</value>
+  </data>
+  <data name="OnexCaption183.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption184.Text" xml:space="preserve">
+    <value>Вкл. / Выкл.</value>
+  </data>
+  <data name="OnexCaption185.Content" xml:space="preserve">
+    <value>Плавно (шаг 1 FPS)</value>
+  </data>
+  <data name="OnexCaption186.Content" xml:space="preserve">
+    <value>До 180 FPS</value>
+  </data>
+  <data name="OnexCaption187.Text" xml:space="preserve">
+    <value>Настройки Intel</value>
+  </data>
+  <data name="OnexCaption188.Text" xml:space="preserve">
+    <value>Генерация кадров</value>
+  </data>
+  <data name="OnexCaption189.Text" xml:space="preserve">
+    <value>Intel XeSS MFG</value>
+  </data>
+  <data name="OnexCaption190.Content" xml:space="preserve">
+    <value>Выбор приложения</value>
+  </data>
+  <data name="OnexCaption191.Content" xml:space="preserve">
+    <value>2X</value>
+  </data>
+  <data name="OnexCaption192.Content" xml:space="preserve">
+    <value>3X</value>
+  </data>
+  <data name="OnexCaption193.Content" xml:space="preserve">
+    <value>4X</value>
+  </data>
+  <data name="OnexCaption194.Text" xml:space="preserve">
+    <value>Для применения перезапустите игру.</value>
+  </data>
+  <data name="OnexCaption195.Text" xml:space="preserve">
+    <value>Чистая установка драйвера сбрасывает эти значения.</value>
+  </data>
+  <data name="OnexCaption196.Text" xml:space="preserve">
+    <value>VRR</value>
+  </data>
+  <data name="OnexCaption197.Text" xml:space="preserve">
+    <value>Intel Arc Sync</value>
+  </data>
+  <data name="OnexCaption198.Content" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption199.Content" xml:space="preserve">
+    <value>Вкл.</value>
+  </data>
+  <data name="OnexCaption200.Text" xml:space="preserve">
+    <value>Режим VRR</value>
+  </data>
+  <data name="OnexCaption201.Text" xml:space="preserve">
+    <value>Где действует VRR</value>
+  </data>
+  <data name="OnexCaption202.Content" xml:space="preserve">
+    <value>Полный экран</value>
+  </data>
+  <data name="OnexCaption203.Content" xml:space="preserve">
+    <value>Полный экран и окно</value>
+  </data>
+  <data name="OnexCaption204.Text" xml:space="preserve">
+    <value>Низкая задержка</value>
+  </data>
+  <data name="OnexCaption205.Text" xml:space="preserve">
+    <value>Intel Anti-Lag</value>
+  </data>
+  <data name="OnexCaption206.Content" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption207.Content" xml:space="preserve">
+    <value>Вкл.</value>
+  </data>
+  <data name="OnexCaption208.Content" xml:space="preserve">
+    <value>Вкл. + Boost</value>
+  </data>
+  <data name="OnexCaption209.Text" xml:space="preserve">
+    <value>Синхронизация кадров</value>
+  </data>
+  <data name="OnexCaption210.Text" xml:space="preserve">
+    <value>Режим V-Sync</value>
+  </data>
+  <data name="OnexCaption211.Content" xml:space="preserve">
+    <value>По выбору приложения</value>
+  </data>
+  <data name="OnexCaption212.Content" xml:space="preserve">
+    <value>V-Sync выкл.</value>
+  </data>
+  <data name="OnexCaption213.Content" xml:space="preserve">
+    <value>V-Sync вкл.</value>
+  </data>
+  <data name="OnexCaption214.Content" xml:space="preserve">
+    <value>Smooth Sync</value>
+  </data>
+  <data name="OnexCaption215.Content" xml:space="preserve">
+    <value>Speed Sync</value>
+  </data>
+  <data name="OnexCaption216.Content" xml:space="preserve">
+    <value>Ограничить FPS частотой экрана</value>
+  </data>
+  <data name="OnexCaption217.Text" xml:space="preserve">
+    <value>Режим масштабирования</value>
+  </data>
+  <data name="OnexCaption218.Text" xml:space="preserve">
+    <value>Кто масштабирует изображение</value>
+  </data>
+  <data name="OnexCaption219.Content" xml:space="preserve">
+    <value>Масштабирование GPU</value>
+  </data>
+  <data name="OnexCaption220.Content" xml:space="preserve">
+    <value>Ретро-масштабирование</value>
+  </data>
+  <data name="OnexCaption221.Text" xml:space="preserve">
+    <value>Метод масштабирования</value>
+  </data>
+  <data name="OnexCaption222.Text" xml:space="preserve">
+    <value>Как изображение заполняет экран</value>
+  </data>
+  <data name="OnexCaption223.Text" xml:space="preserve">
+    <value>Состояние драйвера</value>
+  </data>
+  <data name="OnexCaption224.Text" xml:space="preserve">
+    <value>Читает фактические настройки Intel: приложение Intel может показывать устаревшие значения.</value>
+  </data>
+  <data name="OnexCaption225.Content" xml:space="preserve">
+    <value>Считать</value>
+  </data>
+  <data name="OnexCaption226.Text" xml:space="preserve">
+    <value>Разрешение и частота экрана</value>
+  </data>
+  <data name="OnexCaption227.Text" xml:space="preserve">
+    <value>Разрешение</value>
+  </data>
+  <data name="OnexCaption228.PlaceholderText" xml:space="preserve">
+    <value>1920x1080</value>
+  </data>
+  <data name="OnexCaption229.Text" xml:space="preserve">
+    <value>Частота экрана</value>
+  </data>
+  <data name="OnexCaption230.PlaceholderText" xml:space="preserve">
+    <value>60 Hz</value>
+  </data>
+  <data name="OnexCaption231.Text" xml:space="preserve">
+    <value>Профиль вентилятора</value>
+  </data>
+  <data name="OnexCaption232.Text" xml:space="preserve">
+    <value>Профиль цветов экрана</value>
+  </data>
+  <data name="OnexCaption233.Text" xml:space="preserve">
+    <value>Игровой профиль производительности и экрана</value>
+  </data>
+  <data name="OnexCaption234.Text" xml:space="preserve">
+    <value>Глобальный профиль</value>
+  </data>
+  <data name="OnexCaption235.Text" xml:space="preserve">
+    <value>Игра или приложение не обнаружены</value>
+  </data>
+  <data name="OnexCaption236.Text" xml:space="preserve">
+    <value>Скоро</value>
+  </data>
+  <data name="OnexCaption237.Text" xml:space="preserve">
+    <value>Кривая вентилятора</value>
+  </data>
+  <data name="OnexCaption238.Text" xml:space="preserve">
+    <value>Вентилятор: </value>
+  </data>
+  <data name="OnexCaption239.Text" xml:space="preserve">
+    <value>-- RPM</value>
+  </data>
+  <data name="OnexCaption240.Content" xml:space="preserve">
+    <value>Тихий</value>
+  </data>
+  <data name="OnexCaption241.Content" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption242.Content" xml:space="preserve">
+    <value>Производительность</value>
+  </data>
+  <data name="OnexCaption243.Content" xml:space="preserve">
+    <value>Пользовательский</value>
+  </data>
+  <data name="OnexCaption244.Text" xml:space="preserve">
+    <value>⚠ Помощник отключён при активном управлении EC. Вентилятор может оставаться на последних оборотах до подключения помощника или перезагрузки.</value>
+  </data>
+  <data name="OnexCaption245.Text" xml:space="preserve">
+    <value>Разблокировать управление кривой</value>
+  </data>
+  <data name="OnexCaption246.Text" xml:space="preserve">
+    <value>Обход минимальных значений прошивки прямой записью EC для каждого режима</value>
+  </data>
+  <data name="OnexCaption247.Text" xml:space="preserve">
+    <value>Сведения и ограничения</value>
+  </data>
+  <data name="OnexCaption248.Text" xml:space="preserve">
+    <value>• Не задавайте 0% выше ~50°C
+• При 101°C программная защита включает максимальные обороты</value>
+  </data>
+  <data name="OnexCaption249.Text" xml:space="preserve">
+    <value>• Кривые и разблокировка сохраняются для каждого режима питания
+• Список выбирает редактируемый, а не активный режим
+• Разблокировка выкл.: вентилятором управляет прошивка; пользовательская кривая через WMI сохраняет ограничения прошивки
+• Разблокировка вкл.: помощник записывает кривую в EC каждые 3 секунды в любом режиме
+• Температуры 10°C–100°C соответствуют хранению кривой; прошивка может иначе сопоставлять температуры</value>
+  </data>
+  <data name="OnexCaption250.Text" xml:space="preserve">
+    <value>Вентилятор, %</value>
+  </data>
+  <data name="OnexCaption251.Text" xml:space="preserve">
+    <value>10°C</value>
+  </data>
+  <data name="OnexCaption252.Text" xml:space="preserve">
+    <value>100°C</value>
+  </data>
+  <data name="OnexCaption253.Text" xml:space="preserve">
+    <value>Температура датчика вентилятора: </value>
+  </data>
+  <data name="OnexCaption254.Text" xml:space="preserve">
+    <value>--°C</value>
+  </data>
+  <data name="OnexCaption255.Text" xml:space="preserve">
+    <value> Минимум защиты EC</value>
+  </data>
+  <data name="OnexCaption256.Text" xml:space="preserve">
+    <value>Режим TDP</value>
+  </data>
+  <data name="OnexCaption257.Text" xml:space="preserve">
+    <value>Управление питанием и тепловым режимом</value>
+  </data>
+  <data name="OnexCaption258.Content" xml:space="preserve">
+    <value>Максимум (30 W)</value>
+  </data>
+  <data name="OnexCaption259.Content" xml:space="preserve">
+    <value>Стандартный (25 W)</value>
+  </data>
+  <data name="OnexCaption260.Content" xml:space="preserve">
+    <value>Сбалансированный (17 W)</value>
+  </data>
+  <data name="OnexCaption261.Content" xml:space="preserve">
+    <value>От батареи (12 W)</value>
+  </data>
+  <data name="OnexCaption262.Content" xml:space="preserve">
+    <value>Экономия батареи (8 W)</value>
+  </data>
+  <data name="OnexCaption263.Content" xml:space="preserve">
+    <value>Ползунок</value>
+  </data>
+  <data name="OnexCaption264.Text" xml:space="preserve">
+    <value>Пределы TDP устройства</value>
+  </data>
+  <data name="OnexCaption265.Text" xml:space="preserve">
+    <value>Повышение TDP сверх тепловых возможностей устройства может привести к перегреву или снижению частот.</value>
+  </data>
+  <data name="OnexCaption266.Text" xml:space="preserve">
+    <value>Минимальный TDP</value>
+  </data>
+  <data name="OnexCaption267.Text" xml:space="preserve">
+    <value>4W</value>
+  </data>
+  <data name="OnexCaption268.Text" xml:space="preserve">
+    <value>Максимальный TDP</value>
+  </data>
+  <data name="OnexCaption269.Text" xml:space="preserve">
+    <value>30W</value>
+  </data>
+  <data name="OnexCaption270.Text" xml:space="preserve">
+    <value>Настройки повышения TDP</value>
+  </data>
+  <data name="OnexCaption271.Text" xml:space="preserve">
+    <value>Задаёт лимит PL2 напрямую. Он должен быть выше PL1: при слишком низком значении автоматически устанавливается PL1 + 1 W.</value>
+  </data>
+  <data name="OnexCaption272.Text" xml:space="preserve">
+    <value>Ускорение PL2</value>
+  </data>
+  <data name="OnexCaption273.Text" xml:space="preserve">
+    <value>3W</value>
+  </data>
+  <data name="OnexCaption274.Text" xml:space="preserve">
+    <value>Пользовательские пресеты TDP</value>
+  </data>
+  <data name="OnexCaption275.Text" xml:space="preserve">
+    <value>Использовать пользовательские пресеты</value>
+  </data>
+  <data name="OnexCaption276.Text" xml:space="preserve">
+    <value>Заменяет стандартные значения TDP для режимов</value>
+  </data>
+  <data name="OnexCaption277.Text" xml:space="preserve">
+    <value>Использовать режимы Lenovo</value>
+  </data>
+  <data name="OnexCaption278.Text" xml:space="preserve">
+    <value>Аппаратные режимы «Тихий», «Сбалансированный», «Производительность»</value>
+  </data>
+  <data name="OnexCaption279.Text" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="OnexCaption280.Content" xml:space="preserve">
+    <value>Редактировать</value>
+  </data>
+  <data name="OnexCaption281.Text" xml:space="preserve">
+    <value>По умолчанию</value>
+  </data>
+  <data name="OnexCaption282.Text" xml:space="preserve">
+    <value>Новый пресет</value>
+  </data>
+  <data name="OnexCaption283.PlaceholderText" xml:space="preserve">
+    <value>Название пресета</value>
+  </data>
+  <data name="OnexCaption284.Content" xml:space="preserve">
+    <value>Включить повышение TDP</value>
+  </data>
+  <data name="OnexCaption285.Content" xml:space="preserve">
+    <value>Добавить пресет</value>
+  </data>
+  <data name="OnexCaption286.Content" xml:space="preserve">
+    <value>Сбросить настройки</value>
+  </data>
+  <data name="OnexCaption287.Text" xml:space="preserve">
+    <value>Изменить пресет</value>
+  </data>
+  <data name="OnexCaption288.Text" xml:space="preserve">
+    <value>Название:</value>
+  </data>
+  <data name="OnexCaption289.Text" xml:space="preserve">
+    <value>TDP (W):</value>
+  </data>
+  <data name="OnexCaption290.Text" xml:space="preserve">
+    <value>Повышение TDP:</value>
+  </data>
+  <data name="OnexCaption291.Content" xml:space="preserve">
+    <value>Включить повышение TDP</value>
+  </data>
+  <data name="OnexCaption292.Content" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="OnexCaption293.Content" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="OnexCaption294.Text" xml:space="preserve">
+    <value>Обнаружение игр</value>
+  </data>
+  <data name="OnexCaption295.Text" xml:space="preserve">
+    <value>Игры с профилями обнаруживаются независимо от этих настроек</value>
+  </data>
+  <data name="OnexCaption296.Text" xml:space="preserve">
+    <value>Предпочитать имя файла</value>
+  </data>
+  <data name="OnexCaption297.Text" xml:space="preserve">
+    <value>Использовать имя .exe; если недоступно — заголовок окна</value>
+  </data>
+  <data name="OnexCaption298.Text" xml:space="preserve">
+    <value>Только игры</value>
+  </data>
+  <data name="OnexCaption299.Text" xml:space="preserve">
+    <value>Приложения с FPS в RTSS или добавленные в Xbox Game Bar</value>
+  </data>
+  <data name="OnexCaption300.Text" xml:space="preserve">
+    <value>Сохраняемые настройки игры</value>
+  </data>
+  <data name="OnexCaption301.Text" xml:space="preserve">
+    <value>Выберите настройки для игровых профилей</value>
+  </data>
+  <data name="OnexCaption302.Content" xml:space="preserve">
+    <value>Лимит мощности TDP</value>
+  </data>
+  <data name="OnexCaption303.Content" xml:space="preserve">
+    <value>CPU Boost</value>
+  </data>
+  <data name="OnexCaption304.Content" xml:space="preserve">
+    <value>CPU EPP</value>
+  </data>
+  <data name="OnexCaption305.Content" xml:space="preserve">
+    <value>Состояние CPU</value>
+  </data>
+  <data name="OnexCaption306.Content" xml:space="preserve">
+    <value>Функции AMD (FMF, Anti-Lag, Boost, Chill)</value>
+  </data>
+  <data name="OnexCaption307.Content" xml:space="preserve">
+    <value>Ограничение FPS</value>
+  </data>
+  <data name="OnexCaption308.Content" xml:space="preserve">
+    <value>Режим питания Windows</value>
+  </data>
+  <data name="OnexCaption309.Content" xml:space="preserve">
+    <value>HDR</value>
+  </data>
+  <data name="OnexCaption310.Content" xml:space="preserve">
+    <value>Разрешение</value>
+  </data>
+  <data name="OnexCaption311.Content" xml:space="preserve">
+    <value>Частота экрана</value>
+  </data>
+  <data name="OnexCaption312.Content" xml:space="preserve">
+    <value>Кривая вентилятора</value>
+  </data>
+  <data name="OnexCaption313.Content" xml:space="preserve">
+    <value>Оверлей производительности</value>
+  </data>
+  <data name="OnexCaption314.Content" xml:space="preserve">
+    <value>Привязка CPU</value>
+  </data>
+  <data name="OnexCaption315.Text" xml:space="preserve">
+    <value>Глобальный профиль производительности и экрана</value>
+  </data>
+  <data name="OnexCaption316.Text" xml:space="preserve">
+    <value>Режим TDP</value>
+  </data>
+  <data name="OnexCaption317.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption318.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption319.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption320.Text" xml:space="preserve">
+    <value>Повышенный лимит TDP</value>
+  </data>
+  <data name="OnexCaption321.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption322.Text" xml:space="preserve">
+    <value>  PL2</value>
+  </data>
+  <data name="OnexCaption323.Text" xml:space="preserve">
+    <value>37W</value>
+  </data>
+  <data name="OnexCaption324.Text" xml:space="preserve">
+    <value>CPU Boost</value>
+  </data>
+  <data name="OnexCaption325.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption326.Text" xml:space="preserve">
+    <value>Режим FPS</value>
+  </data>
+  <data name="OnexCaption327.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption328.Text" xml:space="preserve">
+    <value>Ограничение FPS</value>
+  </data>
+  <data name="OnexCaption329.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption330.Text" xml:space="preserve">
+    <value>Режим питания</value>
+  </data>
+  <data name="OnexCaption331.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption332.Text" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption333.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption334.Text" xml:space="preserve">
+    <value>HDR</value>
+  </data>
+  <data name="OnexCaption335.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption336.Text" xml:space="preserve">
+    <value>Разрешение</value>
+  </data>
+  <data name="OnexCaption337.Text" xml:space="preserve">
+    <value>Штатный</value>
+  </data>
+  <data name="OnexCaption338.Text" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="OnexCaption339.Text" xml:space="preserve">
+    <value>Экран</value>
+  </data>
+  <data name="OnexCaption340.Text" xml:space="preserve">
+    <value>От сети ⚡</value>
+  </data>
+  <data name="OnexCaption341.Text" xml:space="preserve">
+    <value>От батареи 🔋</value>
+  </data>
+  <data name="OnexCaption342.Text" xml:space="preserve">
+    <value>Режим</value>
+  </data>
+  <data name="OnexCaption343.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption344.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption345.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption346.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption347.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption348.Text" xml:space="preserve">
+    <value>Повышенный лимит TDP</value>
+  </data>
+  <data name="OnexCaption349.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption350.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption351.Text" xml:space="preserve">
+    <value>  PL2</value>
+  </data>
+  <data name="OnexCaption352.Text" xml:space="preserve">
+    <value>37W</value>
+  </data>
+  <data name="OnexCaption353.Text" xml:space="preserve">
+    <value>37W</value>
+  </data>
+  <data name="OnexCaption354.Text" xml:space="preserve">
+    <value>Ускорение</value>
+  </data>
+  <data name="OnexCaption355.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption356.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption357.Text" xml:space="preserve">
+    <value>Гироскоп</value>
+  </data>
+  <data name="OnexCaption358.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption359.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption360.Text" xml:space="preserve">
+    <value>Режим FPS</value>
+  </data>
+  <data name="OnexCaption361.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption362.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption363.Text" xml:space="preserve">
+    <value>Лимит FPS</value>
+  </data>
+  <data name="OnexCaption364.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption365.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption366.Text" xml:space="preserve">
+    <value>Питание</value>
+  </data>
+  <data name="OnexCaption367.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption368.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption369.Text" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption370.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption371.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption372.Text" xml:space="preserve">
+    <value>Разрешение</value>
+  </data>
+  <data name="OnexCaption373.Text" xml:space="preserve">
+    <value>Штатный</value>
+  </data>
+  <data name="OnexCaption374.Text" xml:space="preserve">
+    <value>Штатный</value>
+  </data>
+  <data name="OnexCaption375.Text" xml:space="preserve">
+    <value>Сейчас играет</value>
+  </data>
+  <data name="OnexCaption376.Text" xml:space="preserve">
+    <value>Игра</value>
+  </data>
+  <data name="OnexCaption377.Text" xml:space="preserve">
+    <value>От сети ⚡</value>
+  </data>
+  <data name="OnexCaption378.Text" xml:space="preserve">
+    <value>От батареи 🔋</value>
+  </data>
+  <data name="OnexCaption379.Text" xml:space="preserve">
+    <value>Режим</value>
+  </data>
+  <data name="OnexCaption380.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption381.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption382.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption383.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption384.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption385.Text" xml:space="preserve">
+    <value>Повышенный лимит TDP</value>
+  </data>
+  <data name="OnexCaption386.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption387.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption388.Text" xml:space="preserve">
+    <value>  PL2</value>
+  </data>
+  <data name="OnexCaption389.Text" xml:space="preserve">
+    <value>35W</value>
+  </data>
+  <data name="OnexCaption390.Text" xml:space="preserve">
+    <value>35W</value>
+  </data>
+  <data name="OnexCaption391.Text" xml:space="preserve">
+    <value>Ускорение</value>
+  </data>
+  <data name="OnexCaption392.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption393.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption394.Text" xml:space="preserve">
+    <value>Гироскоп</value>
+  </data>
+  <data name="OnexCaption395.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption396.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption397.Text" xml:space="preserve">
+    <value>Режим FPS</value>
+  </data>
+  <data name="OnexCaption398.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption399.Text" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption400.Text" xml:space="preserve">
+    <value>Лимит FPS</value>
+  </data>
+  <data name="OnexCaption401.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption402.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption403.Text" xml:space="preserve">
+    <value>Питание</value>
+  </data>
+  <data name="OnexCaption404.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption405.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption406.Text" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption407.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption408.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption409.Text" xml:space="preserve">
+    <value>Разрешение</value>
+  </data>
+  <data name="OnexCaption410.Text" xml:space="preserve">
+    <value>Штатный</value>
+  </data>
+  <data name="OnexCaption411.Text" xml:space="preserve">
+    <value>Штатный</value>
+  </data>
+  <data name="OnexCaption412.Text" xml:space="preserve">
+    <value>Сейчас играет</value>
+  </data>
+  <data name="OnexCaption413.Text" xml:space="preserve">
+    <value>Игра</value>
+  </data>
+  <data name="OnexCaption414.Text" xml:space="preserve">
+    <value>Режим TDP</value>
+  </data>
+  <data name="OnexCaption415.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption416.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption417.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption418.Text" xml:space="preserve">
+    <value>Повышенный лимит TDP</value>
+  </data>
+  <data name="OnexCaption419.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption420.Text" xml:space="preserve">
+    <value>  PL2</value>
+  </data>
+  <data name="OnexCaption421.Text" xml:space="preserve">
+    <value>37W</value>
+  </data>
+  <data name="OnexCaption422.Text" xml:space="preserve">
+    <value>CPU Boost</value>
+  </data>
+  <data name="OnexCaption423.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption424.Text" xml:space="preserve">
+    <value>CPU EPP</value>
+  </data>
+  <data name="OnexCaption425.Text" xml:space="preserve">
+    <value>Состояние CPU</value>
+  </data>
+  <data name="OnexCaption426.Text" xml:space="preserve">
+    <value>Ограничение FPS</value>
+  </data>
+  <data name="OnexCaption427.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption428.Text" xml:space="preserve">
+    <value>Режим питания</value>
+  </data>
+  <data name="OnexCaption429.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption430.Text" xml:space="preserve">
+    <value>AMD</value>
+  </data>
+  <data name="OnexCaption431.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption432.Text" xml:space="preserve">
+    <value>HDR</value>
+  </data>
+  <data name="OnexCaption433.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption434.Text" xml:space="preserve">
+    <value>Разрешение</value>
+  </data>
+  <data name="OnexCaption435.Text" xml:space="preserve">
+    <value>Штатный</value>
+  </data>
+  <data name="OnexCaption436.Text" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="OnexCaption437.Text" xml:space="preserve">
+    <value>Экран</value>
+  </data>
+  <data name="OnexCaption438.Text" xml:space="preserve">
+    <value>Сохранённые профили</value>
+  </data>
+  <data name="OnexCaption439.Text" xml:space="preserve">
+    <value>Сохранённые игровые профили производительности и экрана</value>
+  </data>
+  <data name="OnexCaption440.Text" xml:space="preserve">
+    <value>Сортировка</value>
+  </data>
+  <data name="OnexCaption441.Content" xml:space="preserve">
+    <value>Название (А→Я)</value>
+  </data>
+  <data name="OnexCaption442.Content" xml:space="preserve">
+    <value>Последнее изменение</value>
+  </data>
+  <data name="OnexCaption443.Content" xml:space="preserve">
+    <value>TDP (по убыванию)</value>
+  </data>
+  <data name="OnexCaption444.Text" xml:space="preserve">
+    <value>Раздельные настройки для батареи и питания от сети</value>
+  </data>
+  <data name="OnexCaption445.Text" xml:space="preserve">
+    <value>Область: глобальный профиль</value>
+  </data>
+  <data name="OnexCaption446.Text" xml:space="preserve">
+    <value>Игра не обнаружена</value>
+  </data>
+  <data name="OnexCaption447.Text" xml:space="preserve">
+    <value>Версия и обновления</value>
+  </data>
+  <data name="OnexCaption448.Text" xml:space="preserve">
+    <value>Установленная версия: …</value>
+  </data>
+  <data name="OnexCaption449.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Обновить список версий</value>
+  </data>
+  <data name="OnexCaption450.Text" xml:space="preserve">
+    <value>Показаны только более новые версии. Тестовые сборки отмечены отдельно. Подписанный помощник скачает и запустит установщик; ход установки показан в окне PowerShell.</value>
+  </data>
+  <data name="OnexCaption451.Text" xml:space="preserve">
+    <value>Первоначальная настройка</value>
+  </data>
+  <data name="OnexCaption452.Text" xml:space="preserve">
+    <value>Для ONEXTweaks нужны дополнительные компоненты. Можно проверить установленные и установить недостающие.</value>
+  </data>
+  <data name="OnexCaption453.Text" xml:space="preserve">
+    <value>1. Необходимые компоненты</value>
+  </data>
+  <data name="OnexCaption454.Text" xml:space="preserve">
+    <value>Установите недостающие компоненты через CTW Center: там даны ссылки на официальные установщики. Здесь показано, что уже установлено.</value>
+  </data>
+  <data name="OnexCaption455.Text" xml:space="preserve">
+    <value>Переход с неподдерживаемого ViGEm на VIIPER (USBIP)</value>
+  </data>
+  <data name="OnexCaption456.Text" xml:space="preserve">
+    <value>usbip-win2: проверка…</value>
+  </data>
+  <data name="OnexCaption457.Content" xml:space="preserve">
+    <value>Проверить снова</value>
+  </data>
+  <data name="OnexCaption458.Text" xml:space="preserve">
+    <value>Драйвер ядра USB/IP для VIIPER: переназначения, гироскоп как стик, режим мыши. Установите через CTW Center, затем перезагрузите Windows.</value>
+  </data>
+  <data name="OnexCaption459.Text" xml:space="preserve">
+    <value>Компоненты проверяются вместе. После установки нажмите «Проверить компоненты».</value>
+  </data>
+  <data name="OnexCaption460.Text" xml:space="preserve">
+    <value>HidHide: проверка…</value>
+  </data>
+  <data name="OnexCaption461.Text" xml:space="preserve">
+    <value>Скрывает встроенный контроллер Claw во время эмуляции, чтобы игры видели только виртуальный геймпад и не получали двойной ввод.</value>
+  </data>
+  <data name="OnexCaption462.Text" xml:space="preserve">
+    <value>RTSS: проверка…</value>
+  </data>
+  <data name="OnexCaption463.Text" xml:space="preserve">
+    <value>RivaTuner Statistics Server: игровой оверлей с FPS, TDP и температурами, а также ограничение FPS.</value>
+  </data>
+  <data name="OnexCaption464.Text" xml:space="preserve">
+    <value>PawnIO: проверка…</value>
+  </data>
+  <data name="OnexCaption465.Text" xml:space="preserve">
+    <value>Драйвер датчиков CPU/GPU для оверлея. Без него мощность может отображаться как 0 W.</value>
+  </data>
+  <data name="OnexCaption466.Content" xml:space="preserve">
+    <value>Проверить компоненты</value>
+  </data>
+  <data name="OnexCaption467.Text" xml:space="preserve">
+    <value>HidHide, RTSS и PawnIO — официальные подписанные компоненты, устанавливаемые через winget. usbip-win2 скачивается по запросу. Кнопки установки находятся в разделе «Настройки → Отладка → Драйверы».</value>
+  </data>
+  <data name="OnexCaption468.Text" xml:space="preserve">
+    <value>2. Отключить MSI Center M</value>
+  </data>
+  <data name="OnexCaption469.Text" xml:space="preserve">
+    <value>Проверка MSI Center M…</value>
+  </data>
+  <data name="OnexCaption470.Content" xml:space="preserve">
+    <value>Отключить</value>
+  </data>
+  <data name="OnexCaption471.Text" xml:space="preserve">
+    <value>3. Включить эмуляцию контроллера</value>
+  </data>
+  <data name="OnexCaption472.Text" xml:space="preserve">
+    <value>Эмуляция контроллера: выкл.</value>
+  </data>
+  <data name="OnexCaption473.Content" xml:space="preserve">
+    <value>Включить</value>
+  </data>
+  <data name="OnexCaption474.Text" xml:space="preserve">
+    <value>Настроить левую кнопку MSI (Claw)</value>
+  </data>
+  <data name="OnexCaption475.Text" xml:space="preserve">
+    <value>Назначьте действие на одиночное нажатие левой передней кнопки MSI, например меню Steam. Полная настройка находится на вкладке управления.</value>
+  </data>
+  <data name="OnexCaption476.Content" xml:space="preserve">
+    <value>Настроить левую кнопку MSI →</value>
+  </data>
+  <data name="OnexCaption477.Text" xml:space="preserve">
+    <value>Переход к ClawTweaks при открытии Game Bar</value>
+  </data>
+  <data name="OnexCaption478.Text" xml:space="preserve">
+    <value>Правая кнопка MSI открывает Game Bar. При эмуляции ONEXTweaks может переключать его на свой виджет. Укажите фактическую позицию ONEXTweaks в списке: обычно №3, первые две позиции занимает Microsoft.</value>
+  </data>
+  <data name="OnexCaption479.Text" xml:space="preserve">
+    <value>Позиция виджета ONEXTweaks</value>
+  </data>
+  <data name="OnexCaption480.Text" xml:space="preserve">
+    <value>Устаревший режим (ViGEm)</value>
+  </data>
+  <data name="OnexCaption481.Text" xml:space="preserve">
+    <value>ViGEmBus — старый драйвер эмуляции. По умолчанию используется VIIPER (usbip-win2). ViGEm нужен только для устаревшего режима в разделе «Настройки → Отладка» и не влияет на завершение настройки VIIPER.</value>
+  </data>
+  <data name="OnexCaption482.Text" xml:space="preserve">
+    <value>ViGEmBus: проверка…</value>
+  </data>
+  <data name="OnexCaption483.Text" xml:space="preserve">
+    <value>Удаление компонентов</value>
+  </data>
+  <data name="OnexCaption484.Text" xml:space="preserve">
+    <value>Каждый компонент можно удалить отдельно. В строках показано его текущее состояние.</value>
+  </data>
+  <data name="OnexCaption485.Text" xml:space="preserve">
+    <value>usbip-win2: проверка…</value>
+  </data>
+  <data name="OnexCaption486.Content" xml:space="preserve">
+    <value>Установить usbip-win2</value>
+  </data>
+  <data name="OnexCaption487.Content" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="OnexCaption488.Text" xml:space="preserve">
+    <value>Драйвер ядра USB/IP для эмуляции VIIPER.</value>
+  </data>
+  <data name="OnexCaption489.Text" xml:space="preserve">
+    <value>ViGEmBus: проверка…</value>
+  </data>
+  <data name="OnexCaption490.Content" xml:space="preserve">
+    <value>Установить ViGEmBus</value>
+  </data>
+  <data name="OnexCaption491.Content" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="OnexCaption492.Text" xml:space="preserve">
+    <value>Устаревший драйвер эмуляции. Нужен только без VIIPER.</value>
+  </data>
+  <data name="OnexCaption493.Text" xml:space="preserve">
+    <value>HidHide: проверка…</value>
+  </data>
+  <data name="OnexCaption494.Content" xml:space="preserve">
+    <value>Установить HidHide</value>
+  </data>
+  <data name="OnexCaption495.Content" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="OnexCaption496.Text" xml:space="preserve">
+    <value>Скрывает встроенный контроллер Claw при эмуляции, предотвращая двойной ввод.</value>
+  </data>
+  <data name="OnexCaption497.Text" xml:space="preserve">
+    <value>RTSS: проверка…</value>
+  </data>
+  <data name="OnexCaption498.Content" xml:space="preserve">
+    <value>Установить RTSS</value>
+  </data>
+  <data name="OnexCaption499.Content" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="OnexCaption500.Text" xml:space="preserve">
+    <value>RivaTuner Statistics Server: ограничение FPS и игровой оверлей.</value>
+  </data>
+  <data name="OnexCaption501.Text" xml:space="preserve">
+    <value>PawnIO: проверка…</value>
+  </data>
+  <data name="OnexCaption502.Content" xml:space="preserve">
+    <value>Установить PawnIO</value>
+  </data>
+  <data name="OnexCaption503.Content" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="OnexCaption504.Text" xml:space="preserve">
+    <value>Драйвер датчиков мощности и температуры CPU/GPU для оверлея.</value>
+  </data>
+  <data name="OnexCaption505.Text" xml:space="preserve">
+    <value>Заводские настройки</value>
+  </data>
+  <data name="OnexCaption506.Text" xml:space="preserve">
+    <value>Удаляет все профили, настройки контроллера, пользовательские плитки, пресеты TDP и быстрые настройки. Лимит заряда отключается и возвращается к 100%. Приложение перезапустится с заводскими настройками.</value>
+  </data>
+  <data name="OnexCaption507.Content" xml:space="preserve">
+    <value>Сбросить всё</value>
+  </data>
+  <data name="OnexCaption508.Text" xml:space="preserve">
+    <value>Удалить ONEXTweaks</value>
+  </data>
+  <data name="OnexCaption509.Text" xml:space="preserve">
+    <value>Открывает раздел приложений Windows для удаления ONEXTweaks. Заводской сброс перед удалением очищает профили и настройки.</value>
+  </data>
+  <data name="OnexCaption510.Content" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="OnexCaption511.Text" xml:space="preserve">
+    <value>Настройка вкладок</value>
+  </data>
+  <data name="OnexCaption512.Text" xml:space="preserve">
+    <value>Измените порядок, скройте ненужные вкладки и выберите начальную.</value>
+  </data>
+  <data name="OnexCaption513.Text" xml:space="preserve">
+    <value>Вкладки настроек и первого запуска скрыть нельзя.</value>
+  </data>
+  <data name="OnexCaption514.Text" xml:space="preserve">
+    <value>Начальная вкладка при открытии Game Bar</value>
+  </data>
+  <data name="OnexCaption515.Text" xml:space="preserve">
+    <value>Выкл. — возвращаться к последней вкладке (по умолчанию).</value>
+  </data>
+  <data name="OnexCaption516.Text" xml:space="preserve">
+    <value>Кнопка Guide контроллера</value>
+  </data>
+  <data name="OnexCaption517.Text" xml:space="preserve">
+    <value>Запрещает виртуальной кнопке Xbox/Guide открывать Windows Game Bar, отключая системные сочетания в реестре. Кнопка всё ещё может открыть приложение Xbox. Это не вызывает Steam Big Picture или оверлей Steam.</value>
+  </data>
+  <data name="OnexCaption518.Content" xml:space="preserve">
+    <value>Не открывать Game Bar кнопкой Guide</value>
+  </data>
+  <data name="OnexCaption519.Text" xml:space="preserve">
+    <value>Запускать с Windows</value>
+  </data>
+  <data name="OnexCaption520.Text" xml:space="preserve">
+    <value>Подключение к помощнику…</value>
+  </data>
+  <data name="OnexCaption521.Text" xml:space="preserve">
+    <value>Настройка вкладок</value>
+  </data>
+  <data name="OnexCaption522.Text" xml:space="preserve">
+    <value>Измените порядок, скройте ненужные вкладки и выберите начальную.</value>
+  </data>
+  <data name="OnexCaption523.Text" xml:space="preserve">
+    <value>Вкладки настроек и первого запуска скрыть нельзя.</value>
+  </data>
+  <data name="OnexCaption524.Text" xml:space="preserve">
+    <value>Начальная вкладка при открытии Game Bar</value>
+  </data>
+  <data name="OnexCaption525.Text" xml:space="preserve">
+    <value>Выкл. — возвращаться к последней вкладке (по умолчанию).</value>
+  </data>
+  <data name="OnexCaption526.Text" xml:space="preserve">
+    <value>Оформление</value>
+  </data>
+  <data name="OnexCaption527.Text" xml:space="preserve">
+    <value>Тема, шрифт и эффект стекла в интерфейсе виджета</value>
+  </data>
+  <data name="OnexCaption528.Text" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="OnexCaption529.Text" xml:space="preserve">
+    <value>Изменить оформление виджета</value>
+  </data>
+  <data name="OnexCaption530.Content" xml:space="preserve">
+    <value>ONEXPLAYER</value>
+  </data>
+  <data name="OnexCaption531.Content" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="OnexCaption532.Content" xml:space="preserve">
+    <value>Next Gen Claw</value>
+  </data>
+  <data name="OnexCaption533.Content" xml:space="preserve">
+    <value>Claw Blue</value>
+  </data>
+  <data name="OnexCaption534.Content" xml:space="preserve">
+    <value>Box X</value>
+  </data>
+  <data name="OnexCaption535.Content" xml:space="preserve">
+    <value>Nintendon't</value>
+  </data>
+  <data name="OnexCaption536.Content" xml:space="preserve">
+    <value>Chrilleteur</value>
+  </data>
+  <data name="OnexCaption537.Content" xml:space="preserve">
+    <value>Candy</value>
+  </data>
+  <data name="OnexCaption538.Content" xml:space="preserve">
+    <value>Spot if i</value>
+  </data>
+  <data name="OnexCaption539.Content" xml:space="preserve">
+    <value>Cyberpunk</value>
+  </data>
+  <data name="OnexCaption540.Content" xml:space="preserve">
+    <value>Loius Vuittong</value>
+  </data>
+  <data name="OnexCaption541.Content" xml:space="preserve">
+    <value>Ferrar I</value>
+  </data>
+  <data name="OnexCaption542.Content" xml:space="preserve">
+    <value>Polar Ice</value>
+  </data>
+  <data name="OnexCaption543.Content" xml:space="preserve">
+    <value>Claw Tweaks</value>
+  </data>
+  <data name="OnexCaption544.Content" xml:space="preserve">
+    <value>ViscaBarca</value>
+  </data>
+  <data name="OnexCaption545.Content" xml:space="preserve">
+    <value>BVB</value>
+  </data>
+  <data name="OnexCaption546.Content" xml:space="preserve">
+    <value>По умолчанию</value>
+  </data>
+  <data name="OnexCaption547.Content" xml:space="preserve">
+    <value>Тёмная</value>
+  </data>
+  <data name="OnexCaption548.Content" xml:space="preserve">
+    <value>OLED</value>
+  </data>
+  <data name="OnexCaption549.Content" xml:space="preserve">
+    <value>Dracula</value>
+  </data>
+  <data name="OnexCaption550.Content" xml:space="preserve">
+    <value>Nord</value>
+  </data>
+  <data name="OnexCaption551.Content" xml:space="preserve">
+    <value>Catppuccin</value>
+  </data>
+  <data name="OnexCaption552.Text" xml:space="preserve">
+    <value>Шрифт интерфейса</value>
+  </data>
+  <data name="OnexCaption553.Text" xml:space="preserve">
+    <value>English / Русский</value>
+  </data>
+  <data name="OnexCaption554.Text" xml:space="preserve">
+    <value>The quick brown fox — Съешь ещё этих мягких булок. Ёё 0123456789</value>
+  </data>
+  <data name="OnexCaption555.Text" xml:space="preserve">
+    <value>Эффект стекла</value>
+  </data>
+  <data name="OnexCaption556.Text" xml:space="preserve">
+    <value>Мягкие блики на карточках и плитках. Изменения применяются сразу.</value>
+  </data>
+  <data name="OnexCaption557.Text" xml:space="preserve">
+    <value>Настройки цвета</value>
+  </data>
+  <data name="OnexCaption558.Text" xml:space="preserve">
+    <value>Цветопередача экрана</value>
+  </data>
+  <data name="OnexCaption559.Header" xml:space="preserve">
+    <value>Яркость</value>
+  </data>
+  <data name="OnexCaption560.Header" xml:space="preserve">
+    <value>Контраст</value>
+  </data>
+  <data name="OnexCaption561.Header" xml:space="preserve">
+    <value>Насыщенность</value>
+  </data>
+  <data name="OnexCaption562.Header" xml:space="preserve">
+    <value>Цветовая температура (K)</value>
+  </data>
+  <data name="OnexCaption563.Text" xml:space="preserve">
+    <value>Настройки TDP перенесены на вкладку производительности в карточку режима TDP.</value>
+  </data>
+  <data name="OnexCaption564.Text" xml:space="preserve">
+    <value>Горячие клавиши</value>
+  </data>
+  <data name="OnexCaption565.Text" xml:space="preserve">
+    <value>Сочетания кнопок контроллера для горячих клавиш</value>
+  </data>
+  <data name="OnexCaption566.Text" xml:space="preserve">
+    <value>View + A</value>
+  </data>
+  <data name="OnexCaption567.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption568.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption569.Content" xml:space="preserve">
+    <value>Включить / выключить оверлей</value>
+  </data>
+  <data name="OnexCaption570.Content" xml:space="preserve">
+    <value>Снимок экрана</value>
+  </data>
+  <data name="OnexCaption571.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption572.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption573.Content" xml:space="preserve">
+    <value>Открыть клавиатуру</value>
+  </data>
+  <data name="OnexCaption574.Content" xml:space="preserve">
+    <value>Диспетчер задач</value>
+  </data>
+  <data name="OnexCaption575.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption576.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption577.Text" xml:space="preserve">
+    <value>View + B</value>
+  </data>
+  <data name="OnexCaption578.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption579.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption580.Content" xml:space="preserve">
+    <value>Включить / выключить оверлей</value>
+  </data>
+  <data name="OnexCaption581.Content" xml:space="preserve">
+    <value>Снимок экрана</value>
+  </data>
+  <data name="OnexCaption582.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption583.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption584.Content" xml:space="preserve">
+    <value>Открыть клавиатуру</value>
+  </data>
+  <data name="OnexCaption585.Content" xml:space="preserve">
+    <value>Диспетчер задач</value>
+  </data>
+  <data name="OnexCaption586.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption587.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption588.Text" xml:space="preserve">
+    <value>View + X</value>
+  </data>
+  <data name="OnexCaption589.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption590.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption591.Content" xml:space="preserve">
+    <value>Включить / выключить оверлей</value>
+  </data>
+  <data name="OnexCaption592.Content" xml:space="preserve">
+    <value>Снимок экрана</value>
+  </data>
+  <data name="OnexCaption593.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption594.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption595.Content" xml:space="preserve">
+    <value>Открыть клавиатуру</value>
+  </data>
+  <data name="OnexCaption596.Content" xml:space="preserve">
+    <value>Диспетчер задач</value>
+  </data>
+  <data name="OnexCaption597.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption598.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption599.Text" xml:space="preserve">
+    <value>View + Y</value>
+  </data>
+  <data name="OnexCaption600.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption601.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption602.Content" xml:space="preserve">
+    <value>Включить / выключить оверлей</value>
+  </data>
+  <data name="OnexCaption603.Content" xml:space="preserve">
+    <value>Снимок экрана</value>
+  </data>
+  <data name="OnexCaption604.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption605.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption606.Content" xml:space="preserve">
+    <value>Открыть клавиатуру</value>
+  </data>
+  <data name="OnexCaption607.Content" xml:space="preserve">
+    <value>Диспетчер задач</value>
+  </data>
+  <data name="OnexCaption608.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption609.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption610.Text" xml:space="preserve">
+    <value>Menu + ↑</value>
+  </data>
+  <data name="OnexCaption611.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption612.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption613.Content" xml:space="preserve">
+    <value>Включить / выключить оверлей</value>
+  </data>
+  <data name="OnexCaption614.Content" xml:space="preserve">
+    <value>Снимок экрана</value>
+  </data>
+  <data name="OnexCaption615.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption616.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption617.Content" xml:space="preserve">
+    <value>Открыть клавиатуру</value>
+  </data>
+  <data name="OnexCaption618.Content" xml:space="preserve">
+    <value>Диспетчер задач</value>
+  </data>
+  <data name="OnexCaption619.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption620.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption621.Text" xml:space="preserve">
+    <value>Menu + ↓</value>
+  </data>
+  <data name="OnexCaption622.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption623.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption624.Content" xml:space="preserve">
+    <value>Включить / выключить оверлей</value>
+  </data>
+  <data name="OnexCaption625.Content" xml:space="preserve">
+    <value>Снимок экрана</value>
+  </data>
+  <data name="OnexCaption626.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption627.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption628.Content" xml:space="preserve">
+    <value>Открыть клавиатуру</value>
+  </data>
+  <data name="OnexCaption629.Content" xml:space="preserve">
+    <value>Диспетчер задач</value>
+  </data>
+  <data name="OnexCaption630.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption631.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption632.Text" xml:space="preserve">
+    <value>Menu + ←</value>
+  </data>
+  <data name="OnexCaption633.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption634.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption635.Content" xml:space="preserve">
+    <value>Включить / выключить оверлей</value>
+  </data>
+  <data name="OnexCaption636.Content" xml:space="preserve">
+    <value>Снимок экрана</value>
+  </data>
+  <data name="OnexCaption637.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption638.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption639.Content" xml:space="preserve">
+    <value>Открыть клавиатуру</value>
+  </data>
+  <data name="OnexCaption640.Content" xml:space="preserve">
+    <value>Диспетчер задач</value>
+  </data>
+  <data name="OnexCaption641.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption642.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption643.Text" xml:space="preserve">
+    <value>Menu + →</value>
+  </data>
+  <data name="OnexCaption644.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption645.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption646.Content" xml:space="preserve">
+    <value>Включить / выключить оверлей</value>
+  </data>
+  <data name="OnexCaption647.Content" xml:space="preserve">
+    <value>Снимок экрана</value>
+  </data>
+  <data name="OnexCaption648.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption649.Content" xml:space="preserve">
+    <value>Alt+F4</value>
+  </data>
+  <data name="OnexCaption650.Content" xml:space="preserve">
+    <value>Открыть клавиатуру</value>
+  </data>
+  <data name="OnexCaption651.Content" xml:space="preserve">
+    <value>Диспетчер задач</value>
+  </data>
+  <data name="OnexCaption652.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption653.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption654.Text" xml:space="preserve">
+    <value>Горячие клавиши работают, пока виджет запущен, даже если он скрыт.</value>
+  </data>
+  <data name="OnexCaption655.Text" xml:space="preserve">
+    <value>Отладка</value>
+  </data>
+  <data name="OnexCaption656.Text" xml:space="preserve">
+    <value>Диагностика и поиск неисправностей</value>
+  </data>
+  <data name="OnexCaption657.Content" xml:space="preserve">
+    <value>Перезапустить помощник</value>
+  </data>
+  <data name="OnexCaption658.Content" xml:space="preserve">
+    <value>Завершить ONEXTweaks</value>
+  </data>
+  <data name="OnexCaption659.Content" xml:space="preserve">
+    <value>Экспорт журналов</value>
+  </data>
+  <data name="OnexCaption660.Content" xml:space="preserve">
+    <value>Проверить обновления (скоро)</value>
+  </data>
+  <data name="OnexCaption661.Content" xml:space="preserve">
+    <value>Проверять обновления при запуске (скоро)</value>
+  </data>
+  <data name="OnexCaption662.Content" xml:space="preserve">
+    <value>Скрыть уведомление об обновлении ONEXTweaks на главной</value>
+  </data>
+  <data name="OnexCaption663.Content" xml:space="preserve">
+    <value>Экспорт всех данных (скоро)</value>
+  </data>
+  <data name="OnexCaption664.Content" xml:space="preserve">
+    <value>Импорт всех данных (скоро)</value>
+  </data>
+  <data name="OnexCaption665.Content" xml:space="preserve">
+    <value>Подготовить к удалению</value>
+  </data>
+  <data name="OnexCaption666.Text" xml:space="preserve">
+    <value>Инструменты отладки</value>
+  </data>
+  <data name="OnexCaption667.Text" xml:space="preserve">
+    <value>Подробный журнал и диагностика PawnIO</value>
+  </data>
+  <data name="OnexCaption668.Text" xml:space="preserve">
+    <value>Эмуляция VIIPER (рекомендуется)</value>
+  </data>
+  <data name="OnexCaption669.Text" xml:space="preserve">
+    <value>Заменяет устаревшую эмуляцию ViGEm на VIIPER через USBIP. Нужен usbip-win2. Переключение перезапускает эмуляцию контроллера.</value>
+  </data>
+  <data name="OnexCaption670.Text" xml:space="preserve">
+    <value>Драйвер usbip-win2: проверка…</value>
+  </data>
+  <data name="OnexCaption671.Text" xml:space="preserve">
+    <value>⚠ Требуется usbip-win2</value>
+  </data>
+  <data name="OnexCaption672.Text" xml:space="preserve">
+    <value>Для VIIPER нужен драйвер ядра usbip-win2. Установите подписанный драйвер, перезагрузите Windows и вернитесь сюда.</value>
+  </data>
+  <data name="OnexCaption673.Content" xml:space="preserve">
+    <value>Установить usbip-win2</value>
+  </data>
+  <data name="OnexCaption674.Content" xml:space="preserve">
+    <value>Открыть выпуски usbip-win2</value>
+  </data>
+  <data name="OnexCaption675.Text" xml:space="preserve">
+    <value>Кривая вентилятора: разрешить 1–39%</value>
+  </data>
+  <data name="OnexCaption676.Text" xml:space="preserve">
+    <value>Обычно кривая допускает 0% или значения от 40%. На Claw 8 AI+ и Claw 8 EX ниже примерно 40% наблюдается одинаковая минимальная скорость: измеренные обороты при 20% и 40% совпадали. График показывает этот разрыв.</value>
+  </data>
+  <data name="OnexCaption677.Text" xml:space="preserve">
+    <value>Разрешает любые значения 1–39% и убирает разрыв оси. Способ записи EC не меняется. При отключении значения кривой возвращаются к допустимому диапазону.</value>
+  </data>
+  <data name="OnexCaption678.Text" xml:space="preserve">
+    <value>Обработка гироскопа игрового профиля</value>
+  </data>
+  <data name="OnexCaption679.Text" xml:space="preserve">
+    <value>Автоматический режим читает датчики через COM Sensor API. Этот путь проверен на Claw 8 AI+ и Claw 8 EX. Если датчик не найден, используется WinRT. Изменение применяется сразу.</value>
+  </data>
+  <data name="OnexCaption680.Text" xml:space="preserve">
+    <value>Остальные режимы предназначены для проверки: виртуальный программный принудительно использует WinRT; аппаратный SensorModule передаёт движение прошивке; виртуальный Sensor API использует только COM без запасного источника.</value>
+  </data>
+  <data name="OnexCaption681.Content" xml:space="preserve">
+    <value>Автоматически (Sensor API)</value>
+  </data>
+  <data name="OnexCaption682.Content" xml:space="preserve">
+    <value>Виртуальный (программный)</value>
+  </data>
+  <data name="OnexCaption683.Content" xml:space="preserve">
+    <value>Прошивка (SensorModule)</value>
+  </data>
+  <data name="OnexCaption684.Content" xml:space="preserve">
+    <value>Виртуальный (Sensor API)</value>
+  </data>
+  <data name="OnexCaption685.Text" xml:space="preserve">
+    <value>Инструменты SMU PawnIO</value>
+  </data>
+  <data name="OnexCaption686.Text" xml:space="preserve">
+    <value>Прямые команды SMU: изменения применяются сразу</value>
+  </data>
+  <data name="OnexCaption687.Text" xml:space="preserve">
+    <value>CPU: не обнаружен</value>
+  </data>
+  <data name="OnexCaption688.Text" xml:space="preserve">
+    <value>Curve Optimizer (все ядра)</value>
+  </data>
+  <data name="OnexCaption689.Text" xml:space="preserve">
+    <value>Отрицательное значение снижает напряжение, положительное — повышает</value>
+  </data>
+  <data name="OnexCaption690.Text" xml:space="preserve">
+    <value>Curve Optimizer (iGPU)</value>
+  </data>
+  <data name="OnexCaption691.Text" xml:space="preserve">
+    <value>Отрицательное значение снижает напряжение, положительное — повышает</value>
+  </data>
+  <data name="OnexCaption692.Text" xml:space="preserve">
+    <value>Частота iGPU (MHz)</value>
+  </data>
+  <data name="OnexCaption693.Text" xml:space="preserve">
+    <value>Установить частоту iGPU</value>
+  </data>
+  <data name="OnexCaption694.Text" xml:space="preserve">
+    <value>Предел температуры Tctl (°C)</value>
+  </data>
+  <data name="OnexCaption695.Text" xml:space="preserve">
+    <value>Температурный предел CPU</value>
+  </data>
+  <data name="OnexCaption696.Content" xml:space="preserve">
+    <value>Применить всё</value>
+  </data>
+  <data name="OnexCaption697.Content" xml:space="preserve">
+    <value>Сбросить к 0</value>
+  </data>
+  <data name="OnexCaption698.Text" xml:space="preserve">
+    <value>Тепловые службы Intel (IPF/DTT) — только диагностика</value>
+  </data>
+  <data name="OnexCaption699.Text" xml:space="preserve">
+    <value>Не устраняет аварийный режим вентилятора: это блокировка EC, снимаемая полным выключением. Остановка этих задач может ухудшить состояние зависшего вентилятора.</value>
+  </data>
+  <data name="OnexCaption700.Content" xml:space="preserve">
+    <value>Остановить задачи Intel</value>
+  </data>
+  <data name="OnexCaption701.Content" xml:space="preserve">
+    <value>Запустить задачи Intel</value>
+  </data>
+  <data name="OnexCaption702.Content" xml:space="preserve">
+    <value>Частота</value>
+  </data>
+  <data name="OnexCaption703.Text" xml:space="preserve">
+    <value>Нажмите «Обновить» для чтения состояния тепловых служб Intel.</value>
+  </data>
+  <data name="OnexCaption704.Text" xml:space="preserve">
+    <value>Максимальные обороты вентилятора — только диагностика</value>
+  </data>
+  <data name="OnexCaption705.Text" xml:space="preserve">
+    <value>Включает принудительную полную скорость EC для сравнения с режимом Aggressive при 100%. После включения подождите несколько секунд и считайте RPM. После проверки отключите.</value>
+  </data>
+  <data name="OnexCaption706.Content" xml:space="preserve">
+    <value>Полная скорость: вкл.</value>
+  </data>
+  <data name="OnexCaption707.Content" xml:space="preserve">
+    <value>Полная скорость: выкл.</value>
+  </data>
+  <data name="OnexCaption708.Content" xml:space="preserve">
+    <value>Считать RPM</value>
+  </data>
+  <data name="OnexCaption709.Text" xml:space="preserve">
+    <value>Нажмите «Считать RPM» для чтения текущих оборотов.</value>
+  </data>
+  <data name="OnexCaption710.Text" xml:space="preserve">
+    <value>Проверка управления вентилятором — только диагностика</value>
+  </data>
+  <data name="OnexCaption711.Text" xml:space="preserve">
+    <value>Записывает байт в блок EC (по умолчанию 152) для поиска регистра скорости. После проверки верните значение 0.</value>
+  </data>
+  <data name="OnexCaption712.Text" xml:space="preserve">
+    <value>Блок</value>
+  </data>
+  <data name="OnexCaption713.Text" xml:space="preserve">
+    <value>Значение</value>
+  </data>
+  <data name="OnexCaption714.Text" xml:space="preserve">
+    <value>0 (0x00)</value>
+  </data>
+  <data name="OnexCaption715.Content" xml:space="preserve">
+    <value>Записать</value>
+  </data>
+  <data name="OnexCaption716.Content" xml:space="preserve">
+    <value>0x80|40</value>
+  </data>
+  <data name="OnexCaption717.Content" xml:space="preserve">
+    <value>0x80|80</value>
+  </data>
+  <data name="OnexCaption718.Text" xml:space="preserve">
+    <value>Запишите значение и сравните звук вентилятора. Чтение покажет фактическое значение EC.</value>
+  </data>
+  <data name="OnexCaption719.Content" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="OnexCaption720.Text" xml:space="preserve">
+    <value>Руководство по управлению</value>
+  </data>
+  <data name="OnexCaption721.Text" xml:space="preserve">
+    <value>Тач, геймпад и ползунки</value>
+  </data>
+  <data name="OnexCaption722.Text" xml:space="preserve">
+    <value>О программе</value>
+  </data>
+  <data name="OnexCaption723.Text" xml:space="preserve">
+    <value>Версия и авторы</value>
+  </data>
+  <data name="OnexCaption724.Text" xml:space="preserve">
+    <value>ONEXTweaks объединяет настройки производительности, экрана, вентилятора, подсветки и контроллера в виджете Game Bar для ONEXPLAYER.</value>
+  </data>
+  <data name="OnexCaption725.Text" xml:space="preserve">
+    <value>Версия виджета</value>
+  </data>
+  <data name="OnexCaption726.Text" xml:space="preserve">
+    <value>Неизвестно</value>
+  </data>
+  <data name="OnexCaption727.Text" xml:space="preserve">
+    <value>Автор</value>
+  </data>
+  <data name="OnexCaption728.Text" xml:space="preserve">
+    <value>KiryaChainik</value>
+  </data>
+  <data name="OnexCaption729.Text" xml:space="preserve">
+    <value>Как связаны компоненты</value>
+  </data>
+  <data name="OnexCaption730.Text" xml:space="preserve">
+    <value>Виджет — интерфейс, плитки и редакторы профилей.
+Bridge — действия, ввод контроллера и взаимодействие с Windows.
+Power Agent — применение и чтение аппаратных лимитов мощности.
+Дополнительные компоненты: VIIPER и HidHide для виртуального контроллера; RTSS для оверлея и ограничения FPS.</value>
+  </data>
+  <data name="OnexCaption731.Text" xml:space="preserve">
+    <value>Особая благодарность</value>
+  </data>
+  <data name="OnexCaption732.Text" xml:space="preserve">
+    <value>ClawTweaks — enterTheVoidCode (Riff_Lash)</value>
+  </data>
+  <data name="OnexCaption733.Text" xml:space="preserve">
+    <value>На основе ClawTweaks / GoTweaks. Также благодарим авторов и участников GoTweaks и Handheld Companion.</value>
+  </data>
+  <data name="OnexCaption734.Text" xml:space="preserve">
+    <value>Обновления драйверов MSI Claw</value>
+  </data>
+  <data name="OnexCaption735.Text" xml:space="preserve">
+    <value>Драйверы и прошивка MSI и Intel</value>
+  </data>
+  <data name="OnexCaption736.Text" xml:space="preserve">
+    <value>Модель</value>
+  </data>
+  <data name="OnexCaption737.Text" xml:space="preserve">
+    <value>Установленный BIOS</value>
+  </data>
+  <data name="OnexCaption738.Content" xml:space="preserve">
+    <value>Проверить обновления</value>
+  </data>
+  <data name="OnexCaption739.Content" xml:space="preserve">
+    <value>Открыть страницу драйверов MSI</value>
+  </data>
+  <data name="OnexCaption740.Content" xml:space="preserve">
+    <value>Intel DSA</value>
+  </data>
+  <data name="OnexCaption741.Text" xml:space="preserve">
+    <value>Нажмите «Проверить обновления» для сверки установленных версий драйверов.</value>
+  </data>
+  <data name="OnexCaption742.Content" xml:space="preserve">
+    <value>Проверять драйверы при запуске</value>
+  </data>
+  <data name="OnexCaption743.Content" xml:space="preserve">
+    <value>Модифицированный драйвер Wi-Fi (theboss619) — на свой риск</value>
+  </data>
+  <data name="OnexCaption744.Content" xml:space="preserve">
+    <value>Также предлагать бета-драйверы графики Intel без сертификации WHQL</value>
+  </data>
+  <data name="OnexCaption745.Text" xml:space="preserve">
+    <value>БЕТА</value>
+  </data>
+  <data name="OnexCaption746.Text" xml:space="preserve">
+    <value>Установлено:</value>
+  </data>
+  <data name="OnexCaption747.Text" xml:space="preserve">
+    <value>Последняя версия:</value>
+  </data>
+  <data name="OnexCaption748.Content" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="OnexCaption749.Text" xml:space="preserve">
+    <value>Настройки графического драйвера Intel</value>
+  </data>
+  <data name="OnexCaption750.Text" xml:space="preserve">
+    <value>Глобальный профиль</value>
+  </data>
+  <data name="OnexCaption751.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Предыдущее изображение</value>
+  </data>
+  <data name="OnexCaption752.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Следующее изображение</value>
+  </data>
+  <data name="OnexCaption753.Text" xml:space="preserve">
+    <value>Насыщенность</value>
+  </data>
+  <data name="OnexCaption754.Text" xml:space="preserve">
+    <value>Цветовой тон</value>
+  </data>
+  <data name="OnexCaption755.Text" xml:space="preserve">
+    <value>Контраст</value>
+  </data>
+  <data name="OnexCaption756.Text" xml:space="preserve">
+    <value>Яркость</value>
+  </data>
+  <data name="OnexCaption757.Text" xml:space="preserve">
+    <value>Гамма</value>
+  </data>
+  <data name="OnexCaption758.Text" xml:space="preserve">
+    <value>Адаптивная резкость</value>
+  </data>
+  <data name="OnexCaption759.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption760.Text" xml:space="preserve">
+    <value>0 — выкл. Уровни 1–5 усиливают контуры в SDR: 1 — слегка, 5 — сильно.</value>
+  </data>
+  <data name="OnexCaption761.Content" xml:space="preserve">
+    <value>Сбросить к нейтральным</value>
+  </data>
+  <data name="OnexCaption762.Text" xml:space="preserve">
+    <value>Управление вентилятором</value>
+  </data>
+  <data name="OnexCaption763.Text" xml:space="preserve">
+    <value>Глобальный профиль</value>
+  </data>
+  <data name="OnexCaption764.Text" xml:space="preserve">
+    <value>Раздельно Fan 1 / Fan 2</value>
+  </data>
+  <data name="OnexCaption765.Text" xml:space="preserve">
+    <value>Пресет</value>
+  </data>
+  <data name="OnexCaption766.Content" xml:space="preserve">
+    <value>MSI Default</value>
+  </data>
+  <data name="OnexCaption767.Content" xml:space="preserve">
+    <value>Тихий простой</value>
+  </data>
+  <data name="OnexCaption768.Content" xml:space="preserve">
+    <value>Охлаждение · Ранний разгон</value>
+  </data>
+  <data name="OnexCaption769.Content" xml:space="preserve">
+    <value>Пользовательский</value>
+  </data>
+  <data name="OnexCaption770.Content" xml:space="preserve">
+    <value>Стандартный EC Sport (отладка)</value>
+  </data>
+  <data name="OnexCaption771.Content" xml:space="preserve">
+    <value>Вентилятор 1 (CPU)</value>
+  </data>
+  <data name="OnexCaption772.Content" xml:space="preserve">
+    <value>Вентилятор 2 (GPU)</value>
+  </data>
+  <data name="OnexCaption773.Text" xml:space="preserve">
+    <value>CPU:</value>
+  </data>
+  <data name="OnexCaption774.Text" xml:space="preserve">
+    <value>--°C</value>
+  </data>
+  <data name="OnexCaption775.Text" xml:space="preserve">
+    <value>Вентилятор 1:</value>
+  </data>
+  <data name="OnexCaption776.Text" xml:space="preserve">
+    <value>0 RPM</value>
+  </data>
+  <data name="OnexCaption777.Text" xml:space="preserve">
+    <value>Вентилятор 2:</value>
+  </data>
+  <data name="OnexCaption778.Text" xml:space="preserve">
+    <value>0 RPM</value>
+  </data>
+  <data name="OnexCaption779.Text" xml:space="preserve">
+    <value>Есть несохранённые изменения</value>
+  </data>
+  <data name="OnexCaption780.Text" xml:space="preserve">
+    <value>Предел MSI: 75%</value>
+  </data>
+  <data name="OnexCaption781.Text" xml:space="preserve">
+    <value>Применение кривой вентилятора</value>
+  </data>
+  <data name="OnexCaption782.Text" xml:space="preserve">
+    <value>Редактирование недоступно до завершения записи.</value>
+  </data>
+  <data name="OnexCaption783.Text" xml:space="preserve">
+    <value>Вентиляторы 1 и 2 · Синхронно</value>
+  </data>
+  <data name="OnexCaption784.Text" xml:space="preserve">
+    <value>Применить кривую</value>
+  </data>
+  <data name="OnexCaption785.Text" xml:space="preserve">
+    <value>Глобальный</value>
+  </data>
+  <data name="OnexCaption786.Content" xml:space="preserve">
+    <value>Проверить применённые значения</value>
+  </data>
+  <data name="OnexCaption787.Text" xml:space="preserve">
+    <value>Расширенный диапазон (&gt;75%)</value>
+  </data>
+  <data name="OnexCaption788.Text" xml:space="preserve">
+    <value>Разрешить скорость выше ограничения MSI</value>
+  </data>
+  <data name="OnexCaption789.Text" xml:space="preserve">
+    <value>Перетаскивайте столбцы вверх/вниз для изменения скорости. Геймпад: ←/→ — выбрать столбец, A — начать, ↑/↓ — изменить, A/B — завершить. Температуры под столбцами заданы прошивкой и показаны для справки; меняется только процент скорости. Кривая записывается в EC для обоих вентиляторов. Отключение возвращает управление прошивке MSI.</value>
+  </data>
+  <data name="OnexCaption790.Text" xml:space="preserve">
+    <value>Tiny Center M</value>
+  </data>
+  <data name="OnexCaption791.Text" xml:space="preserve">
+    <value>Аппаратные настройки записываются в контроллер и синхронизируются с MSI Center M.</value>
+  </data>
+  <data name="OnexCaption792.Text" xml:space="preserve">
+    <value>Цвет LED контроллера</value>
+  </data>
+  <data name="OnexCaption793.Text" xml:space="preserve">
+    <value>Задать цвет LED контроллера.</value>
+  </data>
+  <data name="OnexCaption794.Text" xml:space="preserve">
+    <value>Синхронизировать стики и кнопки</value>
+  </data>
+  <data name="OnexCaption795.Text" xml:space="preserve">
+    <value>Отключите, чтобы задать отдельные цвета и эффекты правому и левому стикам и кнопкам.</value>
+  </data>
+  <data name="OnexCaption796.Text" xml:space="preserve">
+    <value>Зона</value>
+  </data>
+  <data name="OnexCaption797.Text" xml:space="preserve">
+    <value>Правый стик</value>
+  </data>
+  <data name="OnexCaption798.Text" xml:space="preserve">
+    <value>Левый стик</value>
+  </data>
+  <data name="OnexCaption799.Text" xml:space="preserve">
+    <value>Кнопки</value>
+  </data>
+  <data name="OnexCaption800.Text" xml:space="preserve">
+    <value>Режим</value>
+  </data>
+  <data name="OnexCaption801.Text" xml:space="preserve">
+    <value>Постоянный</value>
+  </data>
+  <data name="OnexCaption802.Text" xml:space="preserve">
+    <value>Дыхание</value>
+  </data>
+  <data name="OnexCaption803.Text" xml:space="preserve">
+    <value>Смена цветов</value>
+  </data>
+  <data name="OnexCaption804.Text" xml:space="preserve">
+    <value>Волна</value>
+  </data>
+  <data name="OnexCaption805.Text" xml:space="preserve">
+    <value>Батарея</value>
+  </data>
+  <data name="OnexCaption806.Text" xml:space="preserve">
+    <value>Цвет</value>
+  </data>
+  <data name="OnexCaption807.Text" xml:space="preserve">
+    <value>Радуга</value>
+  </data>
+  <data name="OnexCaption808.Text" xml:space="preserve">
+    <value>Вкл. — радуга. Выкл. — ваши цвета.</value>
+  </data>
+  <data name="OnexCaption809.Text" xml:space="preserve">
+    <value>Скорость</value>
+  </data>
+  <data name="OnexCaption810.Content" xml:space="preserve">
+    <value>Медленно</value>
+  </data>
+  <data name="OnexCaption811.Content" xml:space="preserve">
+    <value>Средний</value>
+  </data>
+  <data name="OnexCaption812.Content" xml:space="preserve">
+    <value>Быстро</value>
+  </data>
+  <data name="OnexCaption813.Text" xml:space="preserve">
+    <value>Направление</value>
+  </data>
+  <data name="OnexCaption814.Content" xml:space="preserve">
+    <value>По часовой стрелке</value>
+  </data>
+  <data name="OnexCaption815.Content" xml:space="preserve">
+    <value>Против часовой стрелки</value>
+  </data>
+  <data name="OnexCaption816.Text" xml:space="preserve">
+    <value>Плавно проходит весь цветовой спектр. Пользовательский набор цветов будет добавлен позже.</value>
+  </data>
+  <data name="OnexCaption817.Text" xml:space="preserve">
+    <value>Яркость</value>
+  </data>
+  <data name="OnexCaption818.Text" xml:space="preserve">
+    <value>Для всех зон</value>
+  </data>
+  <data name="OnexCaption819.Text" xml:space="preserve">
+    <value>Цвет LED зависит от заряда: от синего при ≥90% до фиолетового при &lt;20%. Обновляется при переходе через каждые 10%. Ползунок выше задаёт яркость.</value>
+  </data>
+  <data name="OnexCaption820.Text" xml:space="preserve">
+    <value>Лимит заряда</value>
+  </data>
+  <data name="OnexCaption821.Text" xml:space="preserve">
+    <value>Ограничьте заряд для продления срока службы батареи</value>
+  </data>
+  <data name="OnexCaption822.Text" xml:space="preserve">
+    <value>Включить лимит заряда</value>
+  </data>
+  <data name="OnexCaption823.Text" xml:space="preserve">
+    <value>Остановить зарядку при достижении уровня ниже.</value>
+  </data>
+  <data name="OnexCaption824.Text" xml:space="preserve">
+    <value>Максимальный заряд</value>
+  </data>
+  <data name="OnexCaption825.Content" xml:space="preserve">
+    <value>Проверить</value>
+  </data>
+  <data name="OnexCaption826.Text" xml:space="preserve">
+    <value>Лимит выполняется самим EC и сохраняется во сне и при выключении с подключённым питанием. Сброс EC, обновление BIOS или полная разрядка могут его очистить. После сна или гибернации проверьте фактическое значение.</value>
+  </data>
+  <data name="OnexCaption827.Text" xml:space="preserve">
+    <value>Настройки стиков и триггеров</value>
+  </data>
+  <data name="OnexCaption828.Text" xml:space="preserve">
+    <value>Мёртвые зоны и пределы стиков и триггеров записываются в контроллер.</value>
+  </data>
+  <data name="OnexCaption829.Text" xml:space="preserve">
+    <value>Нет несохранённых изменений</value>
+  </data>
+  <data name="OnexCaption830.Content" xml:space="preserve">
+    <value>Сбросить стики и триггеры</value>
+  </data>
+  <data name="OnexCaption831.Text" xml:space="preserve">
+    <value>Левый стик</value>
+  </data>
+  <data name="OnexCaption832.Text" xml:space="preserve">
+    <value>Внутренняя мёртвая зона</value>
+  </data>
+  <data name="OnexCaption833.Text" xml:space="preserve">
+    <value>Внешний порог</value>
+  </data>
+  <data name="OnexCaption834.Text" xml:space="preserve">
+    <value>Правый стик</value>
+  </data>
+  <data name="OnexCaption835.Text" xml:space="preserve">
+    <value>Внутренняя мёртвая зона</value>
+  </data>
+  <data name="OnexCaption836.Text" xml:space="preserve">
+    <value>Внешний порог</value>
+  </data>
+  <data name="OnexCaption837.Text" xml:space="preserve">
+    <value>Левый триггер</value>
+  </data>
+  <data name="OnexCaption838.Text" xml:space="preserve">
+    <value>Мёртвая зона</value>
+  </data>
+  <data name="OnexCaption839.Text" xml:space="preserve">
+    <value>Лимит</value>
+  </data>
+  <data name="OnexCaption840.Text" xml:space="preserve">
+    <value>Правый триггер</value>
+  </data>
+  <data name="OnexCaption841.Text" xml:space="preserve">
+    <value>Мёртвая зона</value>
+  </data>
+  <data name="OnexCaption842.Text" xml:space="preserve">
+    <value>Лимит</value>
+  </data>
+  <data name="OnexCaption843.Text" xml:space="preserve">
+    <value>Аппаратный гироскоп (глобально)</value>
+  </data>
+  <data name="OnexCaption844.Text" xml:space="preserve">
+    <value>Гироскоп прошивки MSI действует глобально: выберите правый стик или мышь и способ активации. Игровые настройки гироскопа находятся на вкладке контроллера.</value>
+  </data>
+  <data name="OnexCaption845.Text" xml:space="preserve">
+    <value>Нет несохранённых изменений</value>
+  </data>
+  <data name="OnexCaption846.Text" xml:space="preserve">
+    <value>Текущее состояние</value>
+  </data>
+  <data name="OnexCaption847.Text" xml:space="preserve">
+    <value>Включить гироскоп прошивки</value>
+  </data>
+  <data name="OnexCaption848.OnContent" xml:space="preserve">
+    <value>Вкл.</value>
+  </data>
+  <data name="OnexCaption848.OffContent" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption849.Text" xml:space="preserve">
+    <value>Выход</value>
+  </data>
+  <data name="OnexCaption850.Content" xml:space="preserve">
+    <value>Правый стик</value>
+  </data>
+  <data name="OnexCaption851.Content" xml:space="preserve">
+    <value>Мышь</value>
+  </data>
+  <data name="OnexCaption852.Text" xml:space="preserve">
+    <value>Активация</value>
+  </data>
+  <data name="OnexCaption853.Content" xml:space="preserve">
+    <value>Всегда включён</value>
+  </data>
+  <data name="OnexCaption854.Content" xml:space="preserve">
+    <value>Удержание кнопки</value>
+  </data>
+  <data name="OnexCaption855.Content" xml:space="preserve">
+    <value>Переключение кнопкой</value>
+  </data>
+  <data name="OnexCaption856.Text" xml:space="preserve">
+    <value>Кнопка удержания</value>
+  </data>
+  <data name="OnexCaption857.Content" xml:space="preserve">
+    <value>L2</value>
+  </data>
+  <data name="OnexCaption858.Content" xml:space="preserve">
+    <value>R2</value>
+  </data>
+  <data name="OnexCaption859.Content" xml:space="preserve">
+    <value>M1</value>
+  </data>
+  <data name="OnexCaption860.Content" xml:space="preserve">
+    <value>M2</value>
+  </data>
+  <data name="OnexCaption861.Text" xml:space="preserve">
+    <value>Чувствительность</value>
+  </data>
+  <data name="OnexCaption862.Text" xml:space="preserve">
+    <value>Мёртвая зона</value>
+  </data>
+  <data name="OnexCaption863.Text" xml:space="preserve">
+    <value>Состояние Lossless Scaling</value>
+  </data>
+  <data name="OnexCaption864.Content" xml:space="preserve">
+    <value>Показать окно</value>
+  </data>
+  <data name="OnexCaption865.Text" xml:space="preserve">
+    <value>Запустить</value>
+  </data>
+  <data name="OnexCaption866.Text" xml:space="preserve">
+    <value>Не установлено</value>
+  </data>
+  <data name="OnexCaption867.Text" xml:space="preserve">
+    <value>Текущий профиль</value>
+  </data>
+  <data name="OnexCaption868.Text" xml:space="preserve">
+    <value>По умолчанию</value>
+  </data>
+  <data name="OnexCaption869.Content" xml:space="preserve">
+    <value>Создать профиль</value>
+  </data>
+  <data name="OnexCaption870.Text" xml:space="preserve">
+    <value>Lossless Scaling</value>
+  </data>
+  <data name="OnexCaption871.Content" xml:space="preserve">
+    <value>Применить и перезапустить</value>
+  </data>
+  <data name="OnexCaption872.Content" xml:space="preserve">
+    <value>Сбросить настройки</value>
+  </data>
+  <data name="OnexCaption873.Text" xml:space="preserve">
+    <value>Автомасштабирование</value>
+  </data>
+  <data name="OnexCaption874.Text" xml:space="preserve">
+    <value>Автоматически обнаруживать и масштабировать игры</value>
+  </data>
+  <data name="OnexCaption875.Text" xml:space="preserve">
+    <value>Задержка автомасштабирования (s)</value>
+  </data>
+  <data name="OnexCaption876.Text" xml:space="preserve">
+    <value>Алгоритм масштабирования</value>
+  </data>
+  <data name="OnexCaption877.PlaceholderText" xml:space="preserve">
+    <value>Выберите тип</value>
+  </data>
+  <data name="OnexCaption878.Text" xml:space="preserve">
+    <value>Резкость</value>
+  </data>
+  <data name="OnexCaption879.Text" xml:space="preserve">
+    <value>Оптимизация</value>
+  </data>
+  <data name="OnexCaption880.Text" xml:space="preserve">
+    <value>Тип LS1</value>
+  </data>
+  <data name="OnexCaption881.PlaceholderText" xml:space="preserve">
+    <value>Выберите тип</value>
+  </data>
+  <data name="OnexCaption882.Text" xml:space="preserve">
+    <value>Изменять размер перед масштабированием</value>
+  </data>
+  <data name="OnexCaption883.Text" xml:space="preserve">
+    <value>Размер окна, кратный исходному разрешению</value>
+  </data>
+  <data name="OnexCaption884.Text" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="OnexCaption885.PlaceholderText" xml:space="preserve">
+    <value>Выберите размер</value>
+  </data>
+  <data name="OnexCaption886.Text" xml:space="preserve">
+    <value>VRS</value>
+  </data>
+  <data name="OnexCaption887.Text" xml:space="preserve">
+    <value>Режим масштабирования</value>
+  </data>
+  <data name="OnexCaption888.PlaceholderText" xml:space="preserve">
+    <value>Выберите режим</value>
+  </data>
+  <data name="OnexCaption889.Text" xml:space="preserve">
+    <value>Пропорции</value>
+  </data>
+  <data name="OnexCaption890.PlaceholderText" xml:space="preserve">
+    <value>Выберите пропорции</value>
+  </data>
+  <data name="OnexCaption891.Text" xml:space="preserve">
+    <value>Коэффициент масштаба</value>
+  </data>
+  <data name="OnexCaption892.Text" xml:space="preserve">
+    <value>Генерация кадров</value>
+  </data>
+  <data name="OnexCaption893.PlaceholderText" xml:space="preserve">
+    <value>Выберите тип</value>
+  </data>
+  <data name="OnexCaption894.Text" xml:space="preserve">
+    <value>Настройки LSFG3</value>
+  </data>
+  <data name="OnexCaption895.Text" xml:space="preserve">
+    <value>Режим</value>
+  </data>
+  <data name="OnexCaption896.PlaceholderText" xml:space="preserve">
+    <value>Выберите режим</value>
+  </data>
+  <data name="OnexCaption897.Text" xml:space="preserve">
+    <value>Множитель</value>
+  </data>
+  <data name="OnexCaption898.PlaceholderText" xml:space="preserve">
+    <value>Выберите множитель</value>
+  </data>
+  <data name="OnexCaption899.Text" xml:space="preserve">
+    <value>Целевой FPS</value>
+  </data>
+  <data name="OnexCaption900.Text" xml:space="preserve">
+    <value>Масштаб потока</value>
+  </data>
+  <data name="OnexCaption901.Text" xml:space="preserve">
+    <value>Режим производительности</value>
+  </data>
+  <data name="OnexCaption902.Text" xml:space="preserve">
+    <value>Облегчённая модель для снижения задержки ввода</value>
+  </data>
+  <data name="OnexCaption903.Text" xml:space="preserve">
+    <value>Настройки LSFG2</value>
+  </data>
+  <data name="OnexCaption904.Text" xml:space="preserve">
+    <value>Режим</value>
+  </data>
+  <data name="OnexCaption905.PlaceholderText" xml:space="preserve">
+    <value>Выберите режим</value>
+  </data>
+  <data name="OnexCaption906.Text" xml:space="preserve">
+    <value>Синхронизация и экран</value>
+  </data>
+  <data name="OnexCaption907.Text" xml:space="preserve">
+    <value>Режим синхронизации</value>
+  </data>
+  <data name="OnexCaption908.PlaceholderText" xml:space="preserve">
+    <value>Выберите режим</value>
+  </data>
+  <data name="OnexCaption909.Text" xml:space="preserve">
+    <value>Максимальная задержка кадров</value>
+  </data>
+  <data name="OnexCaption910.Text" xml:space="preserve">
+    <value>Поддержка HDR</value>
+  </data>
+  <data name="OnexCaption911.Text" xml:space="preserve">
+    <value>Сохранять HDR при масштабировании и генерации кадров</value>
+  </data>
+  <data name="OnexCaption912.Text" xml:space="preserve">
+    <value>Поддержка G-Sync / VRR</value>
+  </data>
+  <data name="OnexCaption913.Text" xml:space="preserve">
+    <value>Улучшает плавность на экранах VRR</value>
+  </data>
+  <data name="OnexCaption914.Text" xml:space="preserve">
+    <value>Захват и оверлей</value>
+  </data>
+  <data name="OnexCaption915.Text" xml:space="preserve">
+    <value>API захвата</value>
+  </data>
+  <data name="OnexCaption916.PlaceholderText" xml:space="preserve">
+    <value>Выберите API</value>
+  </data>
+  <data name="OnexCaption917.Text" xml:space="preserve">
+    <value>WGC — совместимость, DXGI — низкая задержка, GDI — устаревший</value>
+  </data>
+  <data name="OnexCaption918.Text" xml:space="preserve">
+    <value>Показывать FPS</value>
+  </data>
+  <data name="OnexCaption919.Text" xml:space="preserve">
+    <value>Счётчик FPS Lossless Scaling слева сверху</value>
+  </data>
+  <data name="OnexCaption920.Text" xml:space="preserve">
+    <value>Обнаружен конфликт</value>
+  </data>
+  <data name="OnexCaption921.Text" xml:space="preserve">
+    <value>AMD Fluid Motion Frames автоматически отключён из-за конфликта с генерацией кадров Lossless Scaling.</value>
+  </data>
+  <data name="OnexCaption922.Text" xml:space="preserve">
+    <value>MSI Center M активен: эмуляция контроллера и гироскоп недоступны. Отключите его плиткой MSI Center на главной.</value>
+  </data>
+  <data name="OnexCaption923.Text" xml:space="preserve">
+    <value>Активен драйвер расширенной поддержки Xbox в Steam. Он перехватывает HID и мешает эмуляции. Отключите Xbox Extended Feature Support в настройках контроллера Steam.</value>
+  </data>
+  <data name="OnexCaption924.Text" xml:space="preserve">
+    <value>Основной режим контроллера</value>
+  </data>
+  <data name="OnexCaption925.Text" xml:space="preserve">
+    <value>Общий режим для игр. Аппаратный: штатный XInput и переназначения прошивки. Виртуальный: эмуляция, гироскоп, мышь и макросы. В игровом профиле можно задать противоположный режим как исключение.</value>
+  </data>
+  <data name="OnexCaption926.Text" xml:space="preserve">
+    <value>Аппаратный контроллер</value>
+  </data>
+  <data name="OnexCaption927.Text" xml:space="preserve">
+    <value>Виртуальный контроллер</value>
+  </data>
+  <data name="OnexCaption928.Text" xml:space="preserve">
+    <value>Игровой профиль контроллера</value>
+  </data>
+  <data name="OnexCaption929.Text" xml:space="preserve">
+    <value>Глобальный профиль</value>
+  </data>
+  <data name="OnexCaption930.Text" xml:space="preserve">
+    <value>Игра или приложение не обнаружены</value>
+  </data>
+  <data name="OnexCaption931.Text" xml:space="preserve">
+    <value>Запустите игру для настройки её профиля контроллера.</value>
+  </data>
+  <data name="OnexCaption932.Text" xml:space="preserve">
+    <value>Сохраняемые группы настроек</value>
+  </data>
+  <data name="OnexCaption933.Content" xml:space="preserve">
+    <value>Раскладка Nintendo</value>
+  </data>
+  <data name="OnexCaption934.Content" xml:space="preserve">
+    <value>Вибрация</value>
+  </data>
+  <data name="OnexCaption935.Content" xml:space="preserve">
+    <value>Подсветка</value>
+  </data>
+  <data name="OnexCaption936.Content" xml:space="preserve">
+    <value>Назначения кнопок</value>
+  </data>
+  <data name="OnexCaption937.Text" xml:space="preserve">
+    <value>Передние кнопки</value>
+  </data>
+  <data name="OnexCaption938.Text" xml:space="preserve">
+    <value>Выберите действие кнопки MSI и виджет для кнопки быстрых настроек.</value>
+  </data>
+  <data name="OnexCaption939.Text" xml:space="preserve">
+    <value>Кнопка MSI</value>
+  </data>
+  <data name="OnexCaption940.Text" xml:space="preserve">
+    <value>Одиночное
+нажатие</value>
+  </data>
+  <data name="OnexCaption941.PlaceholderText" xml:space="preserve">
+    <value>Выберите действие…</value>
+  </data>
+  <data name="OnexCaption942.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption943.Text" xml:space="preserve">
+    <value>Двойное нажатие</value>
+  </data>
+  <data name="OnexCaption944.Text" xml:space="preserve">
+    <value>Второе действие при быстром двойном нажатии.</value>
+  </data>
+  <data name="OnexCaption945.Text" xml:space="preserve">
+    <value>Двойное
+нажатие</value>
+  </data>
+  <data name="OnexCaption946.PlaceholderText" xml:space="preserve">
+    <value>Выберите действие двойного нажатия…</value>
+  </data>
+  <data name="OnexCaption947.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption948.Text" xml:space="preserve">
+    <value>Интервал распознавания</value>
+  </data>
+  <data name="OnexCaption949.Text" xml:space="preserve">
+    <value>220 ms</value>
+  </data>
+  <data name="OnexCaption950.Text" xml:space="preserve">
+    <value>Нажмите левую кнопку MSI для проверки…</value>
+  </data>
+  <data name="OnexCaption951.Text" xml:space="preserve">
+    <value>Кнопка быстрых настроек</value>
+  </data>
+  <data name="OnexCaption952.Text" xml:space="preserve">
+    <value>При активном виртуальном контроллере ONEXTweaks переключает Game Bar на выбранный виджет.</value>
+  </data>
+  <data name="OnexCaption953.Text" xml:space="preserve">
+    <value>Позиция виджета для перехода к ONEXTweaks</value>
+  </data>
+  <data name="OnexCaption954.Text" xml:space="preserve">
+    <value>Улучшенная эмуляция контроллера</value>
+  </data>
+  <data name="OnexCaption955.Text" xml:space="preserve">
+    <value>Читать Legion HID вместо стандартного XInput (Legion Go / Go 2)</value>
+  </data>
+  <data name="OnexCaption956.Text" xml:space="preserve">
+    <value>Скрывать штатный контроллер</value>
+  </data>
+  <data name="OnexCaption957.Text" xml:space="preserve">
+    <value>Скрывать физический ввод при виртуальном контроллере</value>
+  </data>
+  <data name="OnexCaption958.Text" xml:space="preserve">
+    <value>Скрываемое устройство</value>
+  </data>
+  <data name="OnexCaption959.Text" xml:space="preserve">
+    <value>Выберите семейство физических геймпадов для скрытия</value>
+  </data>
+  <data name="OnexCaption960.Content" xml:space="preserve">
+    <value>Автоматически (только встроенный)</value>
+  </data>
+  <data name="OnexCaption961.Content" xml:space="preserve">
+    <value>Встроенный контроллер консоли</value>
+  </data>
+  <data name="OnexCaption962.Content" xml:space="preserve">
+    <value>Мост Xbox 360 (VID 045E:028E)</value>
+  </data>
+  <data name="OnexCaption963.Content" xml:space="preserve">
+    <value>Встроенный и мост Xbox 360</value>
+  </data>
+  <data name="OnexCaption964.Text" xml:space="preserve">
+    <value>Активация гироскопа</value>
+  </data>
+  <data name="OnexCaption965.Text" xml:space="preserve">
+    <value>Источник, способ эмуляции и активация</value>
+  </data>
+  <data name="OnexCaption966.Text" xml:space="preserve">
+    <value>Источник гироскопа</value>
+  </data>
+  <data name="OnexCaption967.Text" xml:space="preserve">
+    <value>Выберите гироскоп</value>
+  </data>
+  <data name="OnexCaption968.Content" xml:space="preserve">
+    <value>Встроенный в консоль</value>
+  </data>
+  <data name="OnexCaption969.Content" xml:space="preserve">
+    <value>Правый контроллер</value>
+  </data>
+  <data name="OnexCaption970.Content" xml:space="preserve">
+    <value>Левый контроллер</value>
+  </data>
+  <data name="OnexCaption971.Content" xml:space="preserve">
+    <value>Контроллеры (смешанный)</value>
+  </data>
+  <data name="OnexCaption972.Text" xml:space="preserve">
+    <value>Калибровка гироскопа</value>
+  </data>
+  <data name="OnexCaption973.Text" xml:space="preserve">
+    <value>Не двигайте контроллеры во время калибровки</value>
+  </data>
+  <data name="OnexCaption974.Content" xml:space="preserve">
+    <value>Калибровать</value>
+  </data>
+  <data name="OnexCaption975.Text" xml:space="preserve">
+    <value>Эмуляция гироскопа</value>
+  </data>
+  <data name="OnexCaption976.Text" xml:space="preserve">
+    <value>Как преобразуется движение гироскопа</value>
+  </data>
+  <data name="OnexCaption977.Content" xml:space="preserve">
+    <value>Мышь</value>
+  </data>
+  <data name="OnexCaption978.Content" xml:space="preserve">
+    <value>Xbox (стик)</value>
+  </data>
+  <data name="OnexCaption979.Content" xml:space="preserve">
+    <value>PS4 (движение)</value>
+  </data>
+  <data name="OnexCaption980.Content" xml:space="preserve">
+    <value>PS4 (стик)</value>
+  </data>
+  <data name="OnexCaption981.Text" xml:space="preserve">
+    <value>Активация гироскопа</value>
+  </data>
+  <data name="OnexCaption982.Text" xml:space="preserve">
+    <value>Всегда, удержание или переключение кнопкой</value>
+  </data>
+  <data name="OnexCaption983.Content" xml:space="preserve">
+    <value>Всегда включён</value>
+  </data>
+  <data name="OnexCaption984.Content" xml:space="preserve">
+    <value>Удержание</value>
+  </data>
+  <data name="OnexCaption985.Content" xml:space="preserve">
+    <value>Переключение</value>
+  </data>
+  <data name="OnexCaption986.Text" xml:space="preserve">
+    <value>Кнопка активации</value>
+  </data>
+  <data name="OnexCaption987.Text" xml:space="preserve">
+    <value>Кнопка для удержания или переключения</value>
+  </data>
+  <data name="OnexCaption988.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption989.Content" xml:space="preserve">
+    <value>Правый триггер</value>
+  </data>
+  <data name="OnexCaption990.Content" xml:space="preserve">
+    <value>Левый триггер</value>
+  </data>
+  <data name="OnexCaption991.Content" xml:space="preserve">
+    <value>Правый бампер</value>
+  </data>
+  <data name="OnexCaption992.Content" xml:space="preserve">
+    <value>Левый бампер</value>
+  </data>
+  <data name="OnexCaption993.Content" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption994.Content" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption995.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption996.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption997.Content" xml:space="preserve">
+    <value>Нажатие правого стика</value>
+  </data>
+  <data name="OnexCaption998.Content" xml:space="preserve">
+    <value>Нажатие левого стика</value>
+  </data>
+  <data name="OnexCaption999.Content" xml:space="preserve">
+    <value>Крестовина вверх</value>
+  </data>
+  <data name="OnexCaption1000.Content" xml:space="preserve">
+    <value>Крестовина вниз</value>
+  </data>
+  <data name="OnexCaption1001.Content" xml:space="preserve">
+    <value>Крестовина влево</value>
+  </data>
+  <data name="OnexCaption1002.Content" xml:space="preserve">
+    <value>Крестовина вправо</value>
+  </data>
+  <data name="OnexCaption1003.Content" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="OnexCaption1004.Content" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="OnexCaption1005.Content" xml:space="preserve">
+    <value>M3 (сзади справа снизу)</value>
+  </data>
+  <data name="OnexCaption1006.Content" xml:space="preserve">
+    <value>M1 (левая рукоятка)</value>
+  </data>
+  <data name="OnexCaption1007.Content" xml:space="preserve">
+    <value>M2 (правая рукоятка)</value>
+  </data>
+  <data name="OnexCaption1008.Content" xml:space="preserve">
+    <value>Y1 (сзади слева сверху)</value>
+  </data>
+  <data name="OnexCaption1009.Content" xml:space="preserve">
+    <value>Y2 (сзади слева снизу)</value>
+  </data>
+  <data name="OnexCaption1010.Content" xml:space="preserve">
+    <value>Y3 (сзади справа сверху)</value>
+  </data>
+  <data name="OnexCaption1011.Text" xml:space="preserve">
+    <value>Ориентация DS4</value>
+  </data>
+  <data name="OnexCaption1012.Text" xml:space="preserve">
+    <value>Параллельное или перпендикулярное положение консоли</value>
+  </data>
+  <data name="OnexCaption1013.Content" xml:space="preserve">
+    <value>Параллельно</value>
+  </data>
+  <data name="OnexCaption1014.Content" xml:space="preserve">
+    <value>Перпендикулярно</value>
+  </data>
+  <data name="OnexCaption1015.Text" xml:space="preserve">
+    <value>Возможности</value>
+  </data>
+  <data name="OnexCaption1016.Text" xml:space="preserve">
+    <value>Тачпад, LED, вибрация и раскладка кнопок</value>
+  </data>
+  <data name="OnexCaption1017.Text" xml:space="preserve">
+    <value>Эмуляция тачпада</value>
+  </data>
+  <data name="OnexCaption1018.Text" xml:space="preserve">
+    <value>Передавать правый тачпад в виртуальный DS4</value>
+  </data>
+  <data name="OnexCaption1019.Text" xml:space="preserve">
+    <value>Передача LED</value>
+  </data>
+  <data name="OnexCaption1020.Text" xml:space="preserve">
+    <value>Передавать запрошенные игрой цвета на контроллер</value>
+  </data>
+  <data name="OnexCaption1021.Text" xml:space="preserve">
+    <value>Профиль вибрации</value>
+  </data>
+  <data name="OnexCaption1022.Text" xml:space="preserve">
+    <value>Отклик вибрации виртуального геймпада</value>
+  </data>
+  <data name="OnexCaption1023.Content" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption1024.Content" xml:space="preserve">
+    <value>Резкий</value>
+  </data>
+  <data name="OnexCaption1025.Content" xml:space="preserve">
+    <value>Мягкий</value>
+  </data>
+  <data name="OnexCaption1026.Content" xml:space="preserve">
+    <value>Ударный</value>
+  </data>
+  <data name="OnexCaption1027.Content" xml:space="preserve">
+    <value>Усиленный</value>
+  </data>
+  <data name="OnexCaption1028.Text" xml:space="preserve">
+    <value>Виртуальная раскладка ABXY</value>
+  </data>
+  <data name="OnexCaption1029.Content" xml:space="preserve">
+    <value>Xbox</value>
+  </data>
+  <data name="OnexCaption1030.Content" xml:space="preserve">
+    <value>Nintendo</value>
+  </data>
+  <data name="OnexCaption1031.Text" xml:space="preserve">
+    <value>Только данные стиков</value>
+  </data>
+  <data name="OnexCaption1032.Text" xml:space="preserve">
+    <value>Выход стика</value>
+  </data>
+  <data name="OnexCaption1033.Text" xml:space="preserve">
+    <value>Преобразование гироскопа в стик</value>
+  </data>
+  <data name="OnexCaption1034.Text" xml:space="preserve">
+    <value>Целевой стик</value>
+  </data>
+  <data name="OnexCaption1035.Content" xml:space="preserve">
+    <value>Левый</value>
+  </data>
+  <data name="OnexCaption1036.Content" xml:space="preserve">
+    <value>Правый</value>
+  </data>
+  <data name="OnexCaption1037.Text" xml:space="preserve">
+    <value>Преобразование 3DOF в 2D</value>
+  </data>
+  <data name="OnexCaption1038.Text" xml:space="preserve">
+    <value>Оси гироскопа для управления стиком</value>
+  </data>
+  <data name="OnexCaption1039.Content" xml:space="preserve">
+    <value>Yaw (поворот)</value>
+  </data>
+  <data name="OnexCaption1040.Content" xml:space="preserve">
+    <value>Roll (крен)</value>
+  </data>
+  <data name="OnexCaption1041.Content" xml:space="preserve">
+    <value>Yaw + Roll (поворот и крен)</value>
+  </data>
+  <data name="OnexCaption1042.Text" xml:space="preserve">
+    <value>Ориентация гироскопа</value>
+  </data>
+  <data name="OnexCaption1043.Text" xml:space="preserve">
+    <value>Положение консоли для управления стиком</value>
+  </data>
+  <data name="OnexCaption1044.Content" xml:space="preserve">
+    <value>Параллельно</value>
+  </data>
+  <data name="OnexCaption1045.Content" xml:space="preserve">
+    <value>Перпендикулярно</value>
+  </data>
+  <data name="OnexCaption1046.Text" xml:space="preserve">
+    <value>Инвертировать выход X</value>
+  </data>
+  <data name="OnexCaption1047.Text" xml:space="preserve">
+    <value>Инвертировать выход Y</value>
+  </data>
+  <data name="OnexCaption1048.Text" xml:space="preserve">
+    <value>Чувствительность</value>
+  </data>
+  <data name="OnexCaption1049.Text" xml:space="preserve">
+    <value>1.00x</value>
+  </data>
+  <data name="OnexCaption1050.Text" xml:space="preserve">
+    <value>Минимальная скорость гироскопа</value>
+  </data>
+  <data name="OnexCaption1051.Text" xml:space="preserve">
+    <value>Игнорировать движение медленнее этого значения</value>
+  </data>
+  <data name="OnexCaption1052.Text" xml:space="preserve">
+    <value>0°/s</value>
+  </data>
+  <data name="OnexCaption1053.Text" xml:space="preserve">
+    <value>Максимальная скорость гироскопа</value>
+  </data>
+  <data name="OnexCaption1054.Text" xml:space="preserve">
+    <value>Скорость для полного отклонения стика</value>
+  </data>
+  <data name="OnexCaption1055.Text" xml:space="preserve">
+    <value>220°/s</value>
+  </data>
+  <data name="OnexCaption1056.Text" xml:space="preserve">
+    <value>Минимальный выход стика</value>
+  </data>
+  <data name="OnexCaption1057.Text" xml:space="preserve">
+    <value>Антимёртвая зона: минимальный выход при движении</value>
+  </data>
+  <data name="OnexCaption1058.Text" xml:space="preserve">
+    <value>Максимальный выход стика</value>
+  </data>
+  <data name="OnexCaption1059.Text" xml:space="preserve">
+    <value>Степенная кривая</value>
+  </data>
+  <data name="OnexCaption1060.Text" xml:space="preserve">
+    <value>0,1 — резкая, 1,0 — линейная, 4,0 — плавная</value>
+  </data>
+  <data name="OnexCaption1061.Text" xml:space="preserve">
+    <value>Скоростная мёртвая зона</value>
+  </data>
+  <data name="OnexCaption1062.Text" xml:space="preserve">
+    <value>Плавное восстановление выше порога</value>
+  </data>
+  <data name="OnexCaption1063.Text" xml:space="preserve">
+    <value>2°/s</value>
+  </data>
+  <data name="OnexCaption1064.Text" xml:space="preserve">
+    <value>Скорость точного наведения</value>
+  </data>
+  <data name="OnexCaption1065.Text" xml:space="preserve">
+    <value>Снижать чувствительность при медленном движении</value>
+  </data>
+  <data name="OnexCaption1066.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption1067.Text" xml:space="preserve">
+    <value>Смешивание осей</value>
+  </data>
+  <data name="OnexCaption1068.Text" xml:space="preserve">
+    <value>Баланс вертикального и горизонтального выхода</value>
+  </data>
+  <data name="OnexCaption1069.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption1070.Content" xml:space="preserve">
+    <value>Сбросить гироскоп к рекомендуемым настройкам</value>
+  </data>
+  <data name="OnexCaption1071.Text" xml:space="preserve">
+    <value>Источник ввода</value>
+  </data>
+  <data name="OnexCaption1072.Content" xml:space="preserve">
+    <value>XInput (любой контроллер)</value>
+  </data>
+  <data name="OnexCaption1073.Content" xml:space="preserve">
+    <value>Legion Go HID (встроенный)</value>
+  </data>
+  <data name="OnexCaption1074.Text" xml:space="preserve">
+    <value>Источник гироскопа</value>
+  </data>
+  <data name="OnexCaption1075.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1076.Content" xml:space="preserve">
+    <value>Левый контроллер</value>
+  </data>
+  <data name="OnexCaption1077.Content" xml:space="preserve">
+    <value>Правый контроллер</value>
+  </data>
+  <data name="OnexCaption1078.Content" xml:space="preserve">
+    <value>Смешанный (среднее L+R)</value>
+  </data>
+  <data name="OnexCaption1079.Content" xml:space="preserve">
+    <value>Консоль (встроенный IMU)</value>
+  </data>
+  <data name="OnexCaption1080.Text" xml:space="preserve">
+    <value>Сопоставление осей IMU</value>
+  </data>
+  <data name="OnexCaption1081.Text" xml:space="preserve">
+    <value>X→</value>
+  </data>
+  <data name="OnexCaption1082.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1083.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1084.Content" xml:space="preserve">
+    <value>Z</value>
+  </data>
+  <data name="OnexCaption1085.Content" xml:space="preserve">
+    <value>-X</value>
+  </data>
+  <data name="OnexCaption1086.Content" xml:space="preserve">
+    <value>-Y</value>
+  </data>
+  <data name="OnexCaption1087.Content" xml:space="preserve">
+    <value>-Z</value>
+  </data>
+  <data name="OnexCaption1088.Text" xml:space="preserve">
+    <value>Y→</value>
+  </data>
+  <data name="OnexCaption1089.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1090.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1091.Content" xml:space="preserve">
+    <value>Z</value>
+  </data>
+  <data name="OnexCaption1092.Content" xml:space="preserve">
+    <value>-X</value>
+  </data>
+  <data name="OnexCaption1093.Content" xml:space="preserve">
+    <value>-Y</value>
+  </data>
+  <data name="OnexCaption1094.Content" xml:space="preserve">
+    <value>-Z</value>
+  </data>
+  <data name="OnexCaption1095.Text" xml:space="preserve">
+    <value>Z→</value>
+  </data>
+  <data name="OnexCaption1096.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1097.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1098.Content" xml:space="preserve">
+    <value>Z</value>
+  </data>
+  <data name="OnexCaption1099.Content" xml:space="preserve">
+    <value>-X</value>
+  </data>
+  <data name="OnexCaption1100.Content" xml:space="preserve">
+    <value>-Y</value>
+  </data>
+  <data name="OnexCaption1101.Content" xml:space="preserve">
+    <value>-Z</value>
+  </data>
+  <data name="OnexCaption1102.Text" xml:space="preserve">
+    <value>Гироскоп → правый стик</value>
+  </data>
+  <data name="OnexCaption1103.Text" xml:space="preserve">
+    <value>ВЫКЛ.</value>
+  </data>
+  <data name="OnexCaption1104.Text" xml:space="preserve">
+    <value>Преобразует гироскоп в движение стика для виртуальных устройств без собственных данных движения: Xbox 360, Xbox Elite 2, Switch Pro.</value>
+  </data>
+  <data name="OnexCaption1105.Text" xml:space="preserve">
+    <value>Включить гироскоп → стик</value>
+  </data>
+  <data name="OnexCaption1106.Text" xml:space="preserve">
+    <value>Выкл. — передавать исходный стик без обработки гироскопом.</value>
+  </data>
+  <data name="OnexCaption1107.Text" xml:space="preserve">
+    <value>Режим активации</value>
+  </data>
+  <data name="OnexCaption1108.Content" xml:space="preserve">
+    <value>Всегда включён</value>
+  </data>
+  <data name="OnexCaption1109.Content" xml:space="preserve">
+    <value>Удержание</value>
+  </data>
+  <data name="OnexCaption1110.Content" xml:space="preserve">
+    <value>Переключение</value>
+  </data>
+  <data name="OnexCaption1111.Text" xml:space="preserve">
+    <value>Кнопка активации</value>
+  </data>
+  <data name="OnexCaption1112.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1113.Content" xml:space="preserve">
+    <value>Правый триггер</value>
+  </data>
+  <data name="OnexCaption1114.Content" xml:space="preserve">
+    <value>Левый триггер</value>
+  </data>
+  <data name="OnexCaption1115.Content" xml:space="preserve">
+    <value>Правый бампер</value>
+  </data>
+  <data name="OnexCaption1116.Content" xml:space="preserve">
+    <value>Левый бампер</value>
+  </data>
+  <data name="OnexCaption1117.Content" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption1118.Content" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption1119.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1120.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1121.Content" xml:space="preserve">
+    <value>Нажатие правого стика</value>
+  </data>
+  <data name="OnexCaption1122.Content" xml:space="preserve">
+    <value>Нажатие левого стика</value>
+  </data>
+  <data name="OnexCaption1123.Content" xml:space="preserve">
+    <value>Крестовина вверх</value>
+  </data>
+  <data name="OnexCaption1124.Content" xml:space="preserve">
+    <value>Крестовина вниз</value>
+  </data>
+  <data name="OnexCaption1125.Content" xml:space="preserve">
+    <value>Крестовина влево</value>
+  </data>
+  <data name="OnexCaption1126.Content" xml:space="preserve">
+    <value>Крестовина вправо</value>
+  </data>
+  <data name="OnexCaption1127.Content" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="OnexCaption1128.Content" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="OnexCaption1129.Content" xml:space="preserve">
+    <value>M3 (сзади справа снизу)</value>
+  </data>
+  <data name="OnexCaption1130.Content" xml:space="preserve">
+    <value>M1 (левая рукоятка)</value>
+  </data>
+  <data name="OnexCaption1131.Content" xml:space="preserve">
+    <value>M2 (правая рукоятка)</value>
+  </data>
+  <data name="OnexCaption1132.Content" xml:space="preserve">
+    <value>Y1 (сзади слева сверху)</value>
+  </data>
+  <data name="OnexCaption1133.Content" xml:space="preserve">
+    <value>Y2 (сзади слева снизу)</value>
+  </data>
+  <data name="OnexCaption1134.Content" xml:space="preserve">
+    <value>Y3 (сзади справа сверху)</value>
+  </data>
+  <data name="OnexCaption1135.Text" xml:space="preserve">
+    <value>Чувствительность</value>
+  </data>
+  <data name="OnexCaption1136.Text" xml:space="preserve">
+    <value>1.00x</value>
+  </data>
+  <data name="OnexCaption1137.Text" xml:space="preserve">
+    <value>Мёртвая зона</value>
+  </data>
+  <data name="OnexCaption1138.Text" xml:space="preserve">
+    <value>2°/s</value>
+  </data>
+  <data name="OnexCaption1139.Text" xml:space="preserve">
+    <value>Дополнительные параметры гироскопа → стик</value>
+  </data>
+  <data name="OnexCaption1140.Text" xml:space="preserve">
+    <value>Целевой стик</value>
+  </data>
+  <data name="OnexCaption1141.Text" xml:space="preserve">
+    <value>Какой виртуальный стик получает движение гироскопа.</value>
+  </data>
+  <data name="OnexCaption1142.Content" xml:space="preserve">
+    <value>Левый</value>
+  </data>
+  <data name="OnexCaption1143.Content" xml:space="preserve">
+    <value>Правый</value>
+  </data>
+  <data name="OnexCaption1144.Text" xml:space="preserve">
+    <value>Преобразование 3DOF в 2D</value>
+  </data>
+  <data name="OnexCaption1145.Text" xml:space="preserve">
+    <value>Оси для стика: Yaw — поворот влево/вправо, Roll — крен влево/вправо, Yaw+Roll — обе.</value>
+  </data>
+  <data name="OnexCaption1146.Content" xml:space="preserve">
+    <value>Yaw (поворот)</value>
+  </data>
+  <data name="OnexCaption1147.Content" xml:space="preserve">
+    <value>Roll (крен)</value>
+  </data>
+  <data name="OnexCaption1148.Content" xml:space="preserve">
+    <value>Yaw + Roll (поворот и крен)</value>
+  </data>
+  <data name="OnexCaption1149.Text" xml:space="preserve">
+    <value>Ориентация гироскопа</value>
+  </data>
+  <data name="OnexCaption1150.Text" xml:space="preserve">
+    <value>Положение консоли. Выберите перпендикулярное, если оси IMU ощущаются повёрнутыми на 90°.</value>
+  </data>
+  <data name="OnexCaption1151.Content" xml:space="preserve">
+    <value>Параллельно</value>
+  </data>
+  <data name="OnexCaption1152.Content" xml:space="preserve">
+    <value>Перпендикулярно</value>
+  </data>
+  <data name="OnexCaption1153.Text" xml:space="preserve">
+    <value>Инвертировать выход X</value>
+  </data>
+  <data name="OnexCaption1154.Text" xml:space="preserve">
+    <value>Инвертировать выход Y</value>
+  </data>
+  <data name="OnexCaption1155.Text" xml:space="preserve">
+    <value>Минимальная скорость гироскопа</value>
+  </data>
+  <data name="OnexCaption1156.Text" xml:space="preserve">
+    <value>Игнорировать медленное движение для фильтрации дрейфа и дрожания.</value>
+  </data>
+  <data name="OnexCaption1157.Text" xml:space="preserve">
+    <value>0°/s</value>
+  </data>
+  <data name="OnexCaption1158.Text" xml:space="preserve">
+    <value>Максимальная скорость гироскопа</value>
+  </data>
+  <data name="OnexCaption1159.Text" xml:space="preserve">
+    <value>Скорость достижения полного отклонения стика.</value>
+  </data>
+  <data name="OnexCaption1160.Text" xml:space="preserve">
+    <value>220°/s</value>
+  </data>
+  <data name="OnexCaption1161.Text" xml:space="preserve">
+    <value>Минимальный выход стика</value>
+  </data>
+  <data name="OnexCaption1162.Text" xml:space="preserve">
+    <value>Антимёртвая зона: минимальное отклонение при обнаружении движения.</value>
+  </data>
+  <data name="OnexCaption1163.Text" xml:space="preserve">
+    <value>Максимальный выход стика</value>
+  </data>
+  <data name="OnexCaption1164.Text" xml:space="preserve">
+    <value>Ограничивает отклонение виртуального стика. Уменьшите для более спокойного наведения.</value>
+  </data>
+  <data name="OnexCaption1165.Text" xml:space="preserve">
+    <value>Степенная кривая</value>
+  </data>
+  <data name="OnexCaption1166.Text" xml:space="preserve">
+    <value>0,1 — резкая (малое движение даёт сильный выход), 1,0 — линейная, 4,0 — плавная.</value>
+  </data>
+  <data name="OnexCaption1167.Text" xml:space="preserve">
+    <value>Скорость точного наведения</value>
+  </data>
+  <data name="OnexCaption1168.Text" xml:space="preserve">
+    <value>Снижает выход при медленных наклонах. 0 — выкл.</value>
+  </data>
+  <data name="OnexCaption1169.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption1170.Text" xml:space="preserve">
+    <value>Смешивание осей</value>
+  </data>
+  <data name="OnexCaption1171.Text" xml:space="preserve">
+    <value>Отрицательные значения усиливают вертикаль, положительные — горизонталь, 0 — баланс.</value>
+  </data>
+  <data name="OnexCaption1172.Text" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption1173.Content" xml:space="preserve">
+    <value>Рекомендуемые настройки</value>
+  </data>
+  <data name="OnexCaption1174.Text" xml:space="preserve">
+    <value>Кнопка Guide/Mode</value>
+  </data>
+  <data name="OnexCaption1175.Content" xml:space="preserve">
+    <value>Штатная (Guide/PS виртуального устройства)</value>
+  </data>
+  <data name="OnexCaption1176.Content" xml:space="preserve">
+    <value>Открыть Xbox Game Bar (Win+G)</value>
+  </data>
+  <data name="OnexCaption1177.Text" xml:space="preserve">
+    <value>Legion L отключена в особых назначениях. Выберите Guide, чтобы передать кнопку Xbox виртуальному устройству.</value>
+  </data>
+  <data name="OnexCaption1178.Text" xml:space="preserve">
+    <value>Поменять моторы вибрации</value>
+  </data>
+  <data name="OnexCaption1179.Text" xml:space="preserve">
+    <value>Передавать виртуальную световую панель на стики</value>
+  </data>
+  <data name="OnexCaption1180.Text" xml:space="preserve">
+    <value>Только DualShock 4 / DualSense Edge: запрошенный игрой цвет временно заменяет выбранный цвет стиков Legion Go. Выкл. сохраняет ваш цвет.</value>
+  </data>
+  <data name="OnexCaption1181.Text" xml:space="preserve">
+    <value>Сила вибрации</value>
+  </data>
+  <data name="OnexCaption1182.Text" xml:space="preserve">
+    <value>Настройки мыши</value>
+  </data>
+  <data name="OnexCaption1183.Text" xml:space="preserve">
+    <value>Чувствительность, кнопки и стики в режиме мыши</value>
+  </data>
+  <data name="OnexCaption1184.Text" xml:space="preserve">
+    <value>Эмуляция мыши</value>
+  </data>
+  <data name="OnexCaption1185.Text" xml:space="preserve">
+    <value>Настройка поведения мыши</value>
+  </data>
+  <data name="OnexCaption1186.Text" xml:space="preserve">
+    <value>Чувствительность</value>
+  </data>
+  <data name="OnexCaption1187.Text" xml:space="preserve">
+    <value>Порог</value>
+  </data>
+  <data name="OnexCaption1188.Text" xml:space="preserve">
+    <value>Ускорение</value>
+  </data>
+  <data name="OnexCaption1189.Text" xml:space="preserve">
+    <value>0 — выкл. (линейно). При удержании отклонённого стика скорость растёт со временем.</value>
+  </data>
+  <data name="OnexCaption1190.Text" xml:space="preserve">
+    <value>Назначения кнопок</value>
+  </data>
+  <data name="OnexCaption1191.Text" xml:space="preserve">
+    <value>Левый щелчок</value>
+  </data>
+  <data name="OnexCaption1192.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1193.Content" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption1194.Content" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption1195.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1196.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1197.Content" xml:space="preserve">
+    <value>LB</value>
+  </data>
+  <data name="OnexCaption1198.Content" xml:space="preserve">
+    <value>RB</value>
+  </data>
+  <data name="OnexCaption1199.Content" xml:space="preserve">
+    <value>LS</value>
+  </data>
+  <data name="OnexCaption1200.Content" xml:space="preserve">
+    <value>RS</value>
+  </data>
+  <data name="OnexCaption1201.Content" xml:space="preserve">
+    <value>LT</value>
+  </data>
+  <data name="OnexCaption1202.Content" xml:space="preserve">
+    <value>RT</value>
+  </data>
+  <data name="OnexCaption1203.Text" xml:space="preserve">
+    <value>Правый щелчок</value>
+  </data>
+  <data name="OnexCaption1204.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1205.Content" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption1206.Content" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption1207.Content" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1208.Content" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1209.Content" xml:space="preserve">
+    <value>LB</value>
+  </data>
+  <data name="OnexCaption1210.Content" xml:space="preserve">
+    <value>RB</value>
+  </data>
+  <data name="OnexCaption1211.Content" xml:space="preserve">
+    <value>LS</value>
+  </data>
+  <data name="OnexCaption1212.Content" xml:space="preserve">
+    <value>RS</value>
+  </data>
+  <data name="OnexCaption1213.Content" xml:space="preserve">
+    <value>LT</value>
+  </data>
+  <data name="OnexCaption1214.Content" xml:space="preserve">
+    <value>RT</value>
+  </data>
+  <data name="OnexCaption1215.Text" xml:space="preserve">
+    <value>Курсор</value>
+  </data>
+  <data name="OnexCaption1216.Content" xml:space="preserve">
+    <value>Правый стик</value>
+  </data>
+  <data name="OnexCaption1217.Content" xml:space="preserve">
+    <value>Левый стик</value>
+  </data>
+  <data name="OnexCaption1218.Text" xml:space="preserve">
+    <value>Прокрутка</value>
+  </data>
+  <data name="OnexCaption1219.Content" xml:space="preserve">
+    <value>Левый стик</value>
+  </data>
+  <data name="OnexCaption1220.Content" xml:space="preserve">
+    <value>Правый стик</value>
+  </data>
+  <data name="OnexCaption1221.Text" xml:space="preserve">
+    <value>Дополнительные действия</value>
+  </data>
+  <data name="OnexCaption1222.Text" xml:space="preserve">
+    <value>Кнопка для действий браузера, окон или пошагового движения курсора</value>
+  </data>
+  <data name="OnexCaption1223.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1224.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1225.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1226.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1227.Content" xml:space="preserve">
+    <value>Alt+Left (назад)</value>
+  </data>
+  <data name="OnexCaption1228.Content" xml:space="preserve">
+    <value>Alt+Right (вперёд)</value>
+  </data>
+  <data name="OnexCaption1229.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1230.Content" xml:space="preserve">
+    <value>Ctrl+Tab (следующая вкладка)</value>
+  </data>
+  <data name="OnexCaption1231.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (предыдущая вкладка)</value>
+  </data>
+  <data name="OnexCaption1232.Content" xml:space="preserve">
+    <value>Win+D (рабочий стол)</value>
+  </data>
+  <data name="OnexCaption1233.Content" xml:space="preserve">
+    <value>Win+Tab (представление задач)</value>
+  </data>
+  <data name="OnexCaption1234.Content" xml:space="preserve">
+    <value>Курсор на шаг вверх</value>
+  </data>
+  <data name="OnexCaption1235.Content" xml:space="preserve">
+    <value>Курсор на шаг вниз</value>
+  </data>
+  <data name="OnexCaption1236.Content" xml:space="preserve">
+    <value>Курсор на шаг влево</value>
+  </data>
+  <data name="OnexCaption1237.Content" xml:space="preserve">
+    <value>Курсор на шаг вправо</value>
+  </data>
+  <data name="OnexCaption1238.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1239.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1240.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1241.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1242.Content" xml:space="preserve">
+    <value>Alt+Left (назад)</value>
+  </data>
+  <data name="OnexCaption1243.Content" xml:space="preserve">
+    <value>Alt+Right (вперёд)</value>
+  </data>
+  <data name="OnexCaption1244.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1245.Content" xml:space="preserve">
+    <value>Ctrl+Tab (следующая вкладка)</value>
+  </data>
+  <data name="OnexCaption1246.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (предыдущая вкладка)</value>
+  </data>
+  <data name="OnexCaption1247.Content" xml:space="preserve">
+    <value>Win+D (рабочий стол)</value>
+  </data>
+  <data name="OnexCaption1248.Content" xml:space="preserve">
+    <value>Win+Tab (представление задач)</value>
+  </data>
+  <data name="OnexCaption1249.Content" xml:space="preserve">
+    <value>Курсор на шаг вверх</value>
+  </data>
+  <data name="OnexCaption1250.Content" xml:space="preserve">
+    <value>Курсор на шаг вниз</value>
+  </data>
+  <data name="OnexCaption1251.Content" xml:space="preserve">
+    <value>Курсор на шаг влево</value>
+  </data>
+  <data name="OnexCaption1252.Content" xml:space="preserve">
+    <value>Курсор на шаг вправо</value>
+  </data>
+  <data name="OnexCaption1253.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1254.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1255.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1256.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1257.Content" xml:space="preserve">
+    <value>Alt+Left (назад)</value>
+  </data>
+  <data name="OnexCaption1258.Content" xml:space="preserve">
+    <value>Alt+Right (вперёд)</value>
+  </data>
+  <data name="OnexCaption1259.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1260.Content" xml:space="preserve">
+    <value>Ctrl+Tab (следующая вкладка)</value>
+  </data>
+  <data name="OnexCaption1261.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (предыдущая вкладка)</value>
+  </data>
+  <data name="OnexCaption1262.Content" xml:space="preserve">
+    <value>Win+D (рабочий стол)</value>
+  </data>
+  <data name="OnexCaption1263.Content" xml:space="preserve">
+    <value>Win+Tab (представление задач)</value>
+  </data>
+  <data name="OnexCaption1264.Content" xml:space="preserve">
+    <value>Курсор на шаг вверх</value>
+  </data>
+  <data name="OnexCaption1265.Content" xml:space="preserve">
+    <value>Курсор на шаг вниз</value>
+  </data>
+  <data name="OnexCaption1266.Content" xml:space="preserve">
+    <value>Курсор на шаг влево</value>
+  </data>
+  <data name="OnexCaption1267.Content" xml:space="preserve">
+    <value>Курсор на шаг вправо</value>
+  </data>
+  <data name="OnexCaption1268.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1269.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1270.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1271.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1272.Content" xml:space="preserve">
+    <value>Alt+Left (назад)</value>
+  </data>
+  <data name="OnexCaption1273.Content" xml:space="preserve">
+    <value>Alt+Right (вперёд)</value>
+  </data>
+  <data name="OnexCaption1274.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1275.Content" xml:space="preserve">
+    <value>Ctrl+Tab (следующая вкладка)</value>
+  </data>
+  <data name="OnexCaption1276.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (предыдущая вкладка)</value>
+  </data>
+  <data name="OnexCaption1277.Content" xml:space="preserve">
+    <value>Win+D (рабочий стол)</value>
+  </data>
+  <data name="OnexCaption1278.Content" xml:space="preserve">
+    <value>Win+Tab (представление задач)</value>
+  </data>
+  <data name="OnexCaption1279.Content" xml:space="preserve">
+    <value>Курсор на шаг вверх</value>
+  </data>
+  <data name="OnexCaption1280.Content" xml:space="preserve">
+    <value>Курсор на шаг вниз</value>
+  </data>
+  <data name="OnexCaption1281.Content" xml:space="preserve">
+    <value>Курсор на шаг влево</value>
+  </data>
+  <data name="OnexCaption1282.Content" xml:space="preserve">
+    <value>Курсор на шаг вправо</value>
+  </data>
+  <data name="OnexCaption1283.Text" xml:space="preserve">
+    <value>Крестовина</value>
+  </data>
+  <data name="OnexCaption1284.Text" xml:space="preserve">
+    <value>Нет — обычное нажатие крестовины (по умолчанию)</value>
+  </data>
+  <data name="OnexCaption1285.Text" xml:space="preserve">
+    <value>Вверх</value>
+  </data>
+  <data name="OnexCaption1286.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1287.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1288.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1289.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1290.Content" xml:space="preserve">
+    <value>Alt+Left (назад)</value>
+  </data>
+  <data name="OnexCaption1291.Content" xml:space="preserve">
+    <value>Alt+Right (вперёд)</value>
+  </data>
+  <data name="OnexCaption1292.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1293.Content" xml:space="preserve">
+    <value>Ctrl+Tab (следующая вкладка)</value>
+  </data>
+  <data name="OnexCaption1294.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (предыдущая вкладка)</value>
+  </data>
+  <data name="OnexCaption1295.Content" xml:space="preserve">
+    <value>Win+D (рабочий стол)</value>
+  </data>
+  <data name="OnexCaption1296.Content" xml:space="preserve">
+    <value>Win+Tab (представление задач)</value>
+  </data>
+  <data name="OnexCaption1297.Content" xml:space="preserve">
+    <value>Курсор на шаг вверх</value>
+  </data>
+  <data name="OnexCaption1298.Content" xml:space="preserve">
+    <value>Курсор на шаг вниз</value>
+  </data>
+  <data name="OnexCaption1299.Content" xml:space="preserve">
+    <value>Курсор на шаг влево</value>
+  </data>
+  <data name="OnexCaption1300.Content" xml:space="preserve">
+    <value>Курсор на шаг вправо</value>
+  </data>
+  <data name="OnexCaption1301.Text" xml:space="preserve">
+    <value>Вниз</value>
+  </data>
+  <data name="OnexCaption1302.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1303.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1304.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1305.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1306.Content" xml:space="preserve">
+    <value>Alt+Left (назад)</value>
+  </data>
+  <data name="OnexCaption1307.Content" xml:space="preserve">
+    <value>Alt+Right (вперёд)</value>
+  </data>
+  <data name="OnexCaption1308.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1309.Content" xml:space="preserve">
+    <value>Ctrl+Tab (следующая вкладка)</value>
+  </data>
+  <data name="OnexCaption1310.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (предыдущая вкладка)</value>
+  </data>
+  <data name="OnexCaption1311.Content" xml:space="preserve">
+    <value>Win+D (рабочий стол)</value>
+  </data>
+  <data name="OnexCaption1312.Content" xml:space="preserve">
+    <value>Win+Tab (представление задач)</value>
+  </data>
+  <data name="OnexCaption1313.Content" xml:space="preserve">
+    <value>Курсор на шаг вверх</value>
+  </data>
+  <data name="OnexCaption1314.Content" xml:space="preserve">
+    <value>Курсор на шаг вниз</value>
+  </data>
+  <data name="OnexCaption1315.Content" xml:space="preserve">
+    <value>Курсор на шаг влево</value>
+  </data>
+  <data name="OnexCaption1316.Content" xml:space="preserve">
+    <value>Курсор на шаг вправо</value>
+  </data>
+  <data name="OnexCaption1317.Text" xml:space="preserve">
+    <value>Левый</value>
+  </data>
+  <data name="OnexCaption1318.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1319.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1320.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1321.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1322.Content" xml:space="preserve">
+    <value>Alt+Left (назад)</value>
+  </data>
+  <data name="OnexCaption1323.Content" xml:space="preserve">
+    <value>Alt+Right (вперёд)</value>
+  </data>
+  <data name="OnexCaption1324.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1325.Content" xml:space="preserve">
+    <value>Ctrl+Tab (следующая вкладка)</value>
+  </data>
+  <data name="OnexCaption1326.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (предыдущая вкладка)</value>
+  </data>
+  <data name="OnexCaption1327.Content" xml:space="preserve">
+    <value>Win+D (рабочий стол)</value>
+  </data>
+  <data name="OnexCaption1328.Content" xml:space="preserve">
+    <value>Win+Tab (представление задач)</value>
+  </data>
+  <data name="OnexCaption1329.Content" xml:space="preserve">
+    <value>Курсор на шаг вверх</value>
+  </data>
+  <data name="OnexCaption1330.Content" xml:space="preserve">
+    <value>Курсор на шаг вниз</value>
+  </data>
+  <data name="OnexCaption1331.Content" xml:space="preserve">
+    <value>Курсор на шаг влево</value>
+  </data>
+  <data name="OnexCaption1332.Content" xml:space="preserve">
+    <value>Курсор на шаг вправо</value>
+  </data>
+  <data name="OnexCaption1333.Text" xml:space="preserve">
+    <value>Правый</value>
+  </data>
+  <data name="OnexCaption1334.Content" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1335.Content" xml:space="preserve">
+    <value>Escape</value>
+  </data>
+  <data name="OnexCaption1336.Content" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="OnexCaption1337.Content" xml:space="preserve">
+    <value>Shift+Tab</value>
+  </data>
+  <data name="OnexCaption1338.Content" xml:space="preserve">
+    <value>Alt+Left (назад)</value>
+  </data>
+  <data name="OnexCaption1339.Content" xml:space="preserve">
+    <value>Alt+Right (вперёд)</value>
+  </data>
+  <data name="OnexCaption1340.Content" xml:space="preserve">
+    <value>Alt+Tab</value>
+  </data>
+  <data name="OnexCaption1341.Content" xml:space="preserve">
+    <value>Ctrl+Tab (следующая вкладка)</value>
+  </data>
+  <data name="OnexCaption1342.Content" xml:space="preserve">
+    <value>Ctrl+Shift+Tab (предыдущая вкладка)</value>
+  </data>
+  <data name="OnexCaption1343.Content" xml:space="preserve">
+    <value>Win+D (рабочий стол)</value>
+  </data>
+  <data name="OnexCaption1344.Content" xml:space="preserve">
+    <value>Win+Tab (представление задач)</value>
+  </data>
+  <data name="OnexCaption1345.Content" xml:space="preserve">
+    <value>Курсор на шаг вверх</value>
+  </data>
+  <data name="OnexCaption1346.Content" xml:space="preserve">
+    <value>Курсор на шаг вниз</value>
+  </data>
+  <data name="OnexCaption1347.Content" xml:space="preserve">
+    <value>Курсор на шаг влево</value>
+  </data>
+  <data name="OnexCaption1348.Content" xml:space="preserve">
+    <value>Курсор на шаг вправо</value>
+  </data>
+  <data name="OnexCaption1349.Text" xml:space="preserve">
+    <value>Шаг курсора</value>
+  </data>
+  <data name="OnexCaption1350.Text" xml:space="preserve">
+    <value>10 px</value>
+  </data>
+  <data name="OnexCaption1351.Text" xml:space="preserve">
+    <value>Выбор осей</value>
+  </data>
+  <data name="OnexCaption1352.Text" xml:space="preserve">
+    <value>Оси гироскопа для мыши</value>
+  </data>
+  <data name="OnexCaption1353.Content" xml:space="preserve">
+    <value>Yaw / Pitch (поворот / наклон)</value>
+  </data>
+  <data name="OnexCaption1354.Content" xml:space="preserve">
+    <value>Yaw / Roll (поворот / крен)</value>
+  </data>
+  <data name="OnexCaption1355.Content" xml:space="preserve">
+    <value>Roll / Pitch (крен / наклон)</value>
+  </data>
+  <data name="OnexCaption1356.Text" xml:space="preserve">
+    <value>Инвертировать горизонталь</value>
+  </data>
+  <data name="OnexCaption1357.Text" xml:space="preserve">
+    <value>Инвертировать вертикаль</value>
+  </data>
+  <data name="OnexCaption1358.Text" xml:space="preserve">
+    <value>Усиление по горизонтали</value>
+  </data>
+  <data name="OnexCaption1359.Text" xml:space="preserve">
+    <value>Усиление по вертикали</value>
+  </data>
+  <data name="OnexCaption1360.Text" xml:space="preserve">
+    <value>Тачпад и вибрация</value>
+  </data>
+  <data name="OnexCaption1361.Text" xml:space="preserve">
+    <value>Настройки тачпада и тактильной обратной связи</value>
+  </data>
+  <data name="OnexCaption1362.Text" xml:space="preserve">
+    <value>Тачпад включён</value>
+  </data>
+  <data name="OnexCaption1363.Text" xml:space="preserve">
+    <value>Сила вибрации</value>
+  </data>
+  <data name="OnexCaption1364.Text" xml:space="preserve">
+    <value>Режим вибрации</value>
+  </data>
+  <data name="OnexCaption1365.Text" xml:space="preserve">
+    <value>Тактильный отклик тачпада</value>
+  </data>
+  <data name="OnexCaption1366.Text" xml:space="preserve">
+    <value>Редактируется глобальный профиль контроллера. Для игрового профиля запустите игру.</value>
+  </data>
+  <data name="OnexCaption1367.Text" xml:space="preserve">
+    <value>Переназначения и макросы</value>
+  </data>
+  <data name="OnexCaption1368.Text" xml:space="preserve">
+    <value>Кнопки геймпада, клавиатура или мышь</value>
+  </data>
+  <data name="OnexCaption1369.Text" xml:space="preserve">
+    <value>Аппаратный режим записывает поддерживаемые переназначения в прошивку контроллера. Мышь и макросы требуют виртуального контроллера.</value>
+  </data>
+  <data name="OnexCaption1370.Text" xml:space="preserve">
+    <value>Задние кнопки</value>
+  </data>
+  <data name="OnexCaption1371.Text" xml:space="preserve">
+    <value>Y1</value>
+  </data>
+  <data name="OnexCaption1372.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1373.Text" xml:space="preserve">
+    <value>Y2</value>
+  </data>
+  <data name="OnexCaption1374.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1375.Text" xml:space="preserve">
+    <value>Y3</value>
+  </data>
+  <data name="OnexCaption1376.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1377.Text" xml:space="preserve">
+    <value>M1</value>
+  </data>
+  <data name="OnexCaption1378.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1379.Text" xml:space="preserve">
+    <value>Задержка (ms)</value>
+  </data>
+  <data name="OnexCaption1380.Text" xml:space="preserve">
+    <value>Нажатие (ms)</value>
+  </data>
+  <data name="OnexCaption1381.Text" xml:space="preserve">
+    <value>M2</value>
+  </data>
+  <data name="OnexCaption1382.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1383.Text" xml:space="preserve">
+    <value>Задержка (ms)</value>
+  </data>
+  <data name="OnexCaption1384.Text" xml:space="preserve">
+    <value>Нажатие (ms)</value>
+  </data>
+  <data name="OnexCaption1385.Text" xml:space="preserve">
+    <value>Макросы автоматически повторяют нажатия. Некоторые системы защиты игр могут считать это нарушением.</value>
+  </data>
+  <data name="OnexCaption1386.Text" xml:space="preserve">
+    <value>M3</value>
+  </data>
+  <data name="OnexCaption1387.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1388.Text" xml:space="preserve">
+    <value>Переназначить отдельные кнопки</value>
+  </data>
+  <data name="OnexCaption1389.Content" xml:space="preserve">
+    <value>Сбросить все назначения ниже</value>
+  </data>
+  <data name="OnexCaption1390.Text" xml:space="preserve">
+    <value>Назначено: </value>
+  </data>
+  <data name="OnexCaption1391.Text" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OnexCaption1392.Text" xml:space="preserve">
+    <value>Добавить переназначение</value>
+  </data>
+  <data name="OnexCaption1393.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1394.Text" xml:space="preserve">
+    <value>Гироскоп</value>
+  </data>
+  <data name="OnexCaption1395.Text" xml:space="preserve">
+    <value>Цель</value>
+  </data>
+  <data name="OnexCaption1396.Text" xml:space="preserve">
+    <value>Кнопка</value>
+  </data>
+  <data name="OnexCaption1397.Text" xml:space="preserve">
+    <value>Активация</value>
+  </data>
+  <data name="OnexCaption1398.Text" xml:space="preserve">
+    <value>Обработка гироскопа</value>
+  </data>
+  <data name="OnexCaption1399.Text" xml:space="preserve">
+    <value>Акселерометр</value>
+  </data>
+  <data name="OnexCaption1400.Text" xml:space="preserve">
+    <value>Инвертировать X</value>
+  </data>
+  <data name="OnexCaption1401.Text" xml:space="preserve">
+    <value>Инвертировать Y</value>
+  </data>
+  <data name="OnexCaption1402.Text" xml:space="preserve">
+    <value>Кнопка усиления</value>
+  </data>
+  <data name="OnexCaption1403.Text" xml:space="preserve">
+    <value>Чувствительность X</value>
+  </data>
+  <data name="OnexCaption1404.Text" xml:space="preserve">
+    <value>Чувствительность Y</value>
+  </data>
+  <data name="OnexCaption1405.Text" xml:space="preserve">
+    <value>Порог гироскопа</value>
+  </data>
+  <data name="OnexCaption1406.Text" xml:space="preserve">
+    <value>0.0°/s</value>
+  </data>
+  <data name="OnexCaption1407.Text" xml:space="preserve">
+    <value>Антимёртвая зона</value>
+  </data>
+  <data name="OnexCaption1408.Text" xml:space="preserve">
+    <value>Сглаживание</value>
+  </data>
+  <data name="OnexCaption1409.Text" xml:space="preserve">
+    <value>Усиление при удержании</value>
+  </data>
+  <data name="OnexCaption1410.Content" xml:space="preserve">
+    <value>Калибровать гироскоп</value>
+  </data>
+  <data name="OnexCaption1411.Text" xml:space="preserve">
+    <value>Не двигайте контроллеры и нажмите кнопку: прошивка запомнит смещение датчика.</value>
+  </data>
+  <data name="OnexCaption1412.Text" xml:space="preserve">
+    <value>Вибрация и мёртвые зоны</value>
+  </data>
+  <data name="OnexCaption1413.Text" xml:space="preserve">
+    <value>Сила вибрации и мёртвые зоны стиков</value>
+  </data>
+  <data name="OnexCaption1414.Text" xml:space="preserve">
+    <value>Сила вибрации</value>
+  </data>
+  <data name="OnexCaption1415.Content" xml:space="preserve">
+    <value>Проверить вибрацию</value>
+  </data>
+  <data name="OnexCaption1416.Text" xml:space="preserve">
+    <value>Мёртвые зоны стиков</value>
+  </data>
+  <data name="OnexCaption1417.Text" xml:space="preserve">
+    <value>Левый стик</value>
+  </data>
+  <data name="OnexCaption1418.Text" xml:space="preserve">
+    <value>Правый стик</value>
+  </data>
+  <data name="OnexCaption1419.Text" xml:space="preserve">
+    <value>Раскладка Nintendo</value>
+  </data>
+  <data name="OnexCaption1420.Text" xml:space="preserve">
+    <value>Поменять A↔B и X↔Y</value>
+  </data>
+  <data name="OnexCaption1421.Text" xml:space="preserve">
+    <value>Управление рабочим столом</value>
+  </data>
+  <data name="OnexCaption1422.Text" xml:space="preserve">
+    <value>RS→мышь, крестовина/LS→стрелки, A→Enter, B→Esc (Ctrl+Shift+D)</value>
+  </data>
+  <data name="OnexCaption1423.Text" xml:space="preserve">
+    <value>Стик как мышь</value>
+  </data>
+  <data name="OnexCaption1424.Text" xml:space="preserve">
+    <value>Управлять курсором с помощью стика</value>
+  </data>
+  <data name="OnexCaption1425.Text" xml:space="preserve">
+    <value>Стик</value>
+  </data>
+  <data name="OnexCaption1426.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption1427.Content" xml:space="preserve">
+    <value>Левый стик</value>
+  </data>
+  <data name="OnexCaption1428.Content" xml:space="preserve">
+    <value>Правый стик</value>
+  </data>
+  <data name="OnexCaption1429.Text" xml:space="preserve">
+    <value>Чувствительность</value>
+  </data>
+  <data name="OnexCaption1430.Text" xml:space="preserve">
+    <value>Мёртвые зоны</value>
+  </data>
+  <data name="OnexCaption1431.Text" xml:space="preserve">
+    <value>Ход триггера</value>
+  </data>
+  <data name="OnexCaption1432.Text" xml:space="preserve">
+    <value>Короткий ход триггеров</value>
+  </data>
+  <data name="OnexCaption1433.Text" xml:space="preserve">
+    <value>Левый триггер</value>
+  </data>
+  <data name="OnexCaption1434.Text" xml:space="preserve">
+    <value>Мёртвая зона</value>
+  </data>
+  <data name="OnexCaption1435.Text" xml:space="preserve">
+    <value>Полное нажатие</value>
+  </data>
+  <data name="OnexCaption1436.Text" xml:space="preserve">
+    <value>Правый триггер</value>
+  </data>
+  <data name="OnexCaption1437.Text" xml:space="preserve">
+    <value>Мёртвая зона</value>
+  </data>
+  <data name="OnexCaption1438.Text" xml:space="preserve">
+    <value>Полное нажатие</value>
+  </data>
+  <data name="OnexCaption1439.Text" xml:space="preserve">
+    <value>Сохранённые профили контроллера</value>
+  </data>
+  <data name="OnexCaption1440.Text" xml:space="preserve">
+    <value>Нет сохранённых игровых профилей</value>
+  </data>
+  <data name="OnexCaption1441.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Удалить профиль</value>
+  </data>
+  <data name="OnexCaption1442.Text" xml:space="preserve">
+    <value>Особые назначения</value>
+  </data>
+  <data name="OnexCaption1443.Text" xml:space="preserve">
+    <value>Назначения кнопок Legion L/R и колеса прокрутки</value>
+  </data>
+  <data name="OnexCaption1444.Text" xml:space="preserve">
+    <value>КНОПКИ LEGION</value>
+  </data>
+  <data name="OnexCaption1445.Text" xml:space="preserve">
+    <value>Legion L:</value>
+  </data>
+  <data name="OnexCaption1446.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption1447.Content" xml:space="preserve">
+    <value>Guide</value>
+  </data>
+  <data name="OnexCaption1448.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption1449.Content" xml:space="preserve">
+    <value>Выполнить команду</value>
+  </data>
+  <data name="OnexCaption1450.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption1451.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1452.PlaceholderText" xml:space="preserve">
+    <value>Например, C:\path\app.exe -arg1</value>
+  </data>
+  <data name="OnexCaption1453.Content" xml:space="preserve">
+    <value>Применить</value>
+  </data>
+  <data name="OnexCaption1454.Text" xml:space="preserve">
+    <value>Legion R:</value>
+  </data>
+  <data name="OnexCaption1455.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption1456.Content" xml:space="preserve">
+    <value>Xbox Guide</value>
+  </data>
+  <data name="OnexCaption1457.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption1458.Content" xml:space="preserve">
+    <value>Выполнить команду</value>
+  </data>
+  <data name="OnexCaption1459.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption1460.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1461.PlaceholderText" xml:space="preserve">
+    <value>Например, C:\path\app.exe -arg1</value>
+  </data>
+  <data name="OnexCaption1462.Content" xml:space="preserve">
+    <value>Применить</value>
+  </data>
+  <data name="OnexCaption1463.Text" xml:space="preserve">
+    <value>КОЛЕСО ПРОКРУТКИ</value>
+  </data>
+  <data name="OnexCaption1464.Text" xml:space="preserve">
+    <value>Прокрутка:</value>
+  </data>
+  <data name="OnexCaption1465.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption1466.Content" xml:space="preserve">
+    <value>Xbox Guide</value>
+  </data>
+  <data name="OnexCaption1467.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption1468.Content" xml:space="preserve">
+    <value>Выполнить команду</value>
+  </data>
+  <data name="OnexCaption1469.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption1470.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1471.PlaceholderText" xml:space="preserve">
+    <value>Например, C:\path\app.exe -arg1</value>
+  </data>
+  <data name="OnexCaption1472.Content" xml:space="preserve">
+    <value>Применить</value>
+  </data>
+  <data name="OnexCaption1473.Text" xml:space="preserve">
+    <value>Нажатие колеса:</value>
+  </data>
+  <data name="OnexCaption1474.Content" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption1475.Content" xml:space="preserve">
+    <value>Xbox Guide</value>
+  </data>
+  <data name="OnexCaption1476.Content" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="OnexCaption1477.Content" xml:space="preserve">
+    <value>Выполнить команду</value>
+  </data>
+  <data name="OnexCaption1478.Content" xml:space="preserve">
+    <value>Перейти к GoTweaks</value>
+  </data>
+  <data name="OnexCaption1479.Content" xml:space="preserve">
+    <value>+ Клавиша  ▾</value>
+  </data>
+  <data name="OnexCaption1480.PlaceholderText" xml:space="preserve">
+    <value>Например, C:\path\app.exe -arg1</value>
+  </data>
+  <data name="OnexCaption1481.Content" xml:space="preserve">
+    <value>Применить</value>
+  </data>
+  <data name="OnexCaption1482.Text" xml:space="preserve">
+    <value>Переназначение Xbox Guide требует ViGEmBus</value>
+  </data>
+  <data name="OnexCaption1483.Text" xml:space="preserve">
+    <value>Состояние: проверка…</value>
+  </data>
+  <data name="OnexCaption1484.Content" xml:space="preserve">
+    <value>Установить ViGEmBus</value>
+  </data>
+  <data name="OnexCaption1485.Text" xml:space="preserve">
+    <value>ПОДСВЕТКА</value>
+  </data>
+  <data name="OnexCaption1486.Text" xml:space="preserve">
+    <value>Подсветка</value>
+  </data>
+  <data name="OnexCaption1487.Text" xml:space="preserve">
+    <value>RGB контроллера и подсветка кнопки питания</value>
+  </data>
+  <data name="OnexCaption1488.Text" xml:space="preserve">
+    <value>Режим подсветки</value>
+  </data>
+  <data name="OnexCaption1489.Text" xml:space="preserve">
+    <value>Цвет подсветки</value>
+  </data>
+  <data name="OnexCaption1490.Text" xml:space="preserve">
+    <value>Яркость</value>
+  </data>
+  <data name="OnexCaption1491.Text" xml:space="preserve">
+    <value>Скорость</value>
+  </data>
+  <data name="OnexCaption1492.Text" xml:space="preserve">
+    <value>Подсветка питания</value>
+  </data>
+  <data name="OnexCaption1493.Text" xml:space="preserve">
+    <value>ПРОИЗВОДИТЕЛЬНОСТЬ</value>
+  </data>
+  <data name="OnexCaption1494.Text" xml:space="preserve">
+    <value>Профиль питания</value>
+  </data>
+  <data name="OnexCaption1495.Text" xml:space="preserve">
+    <value>Управление TDP и тепловыми пределами</value>
+  </data>
+  <data name="OnexCaption1496.Content" xml:space="preserve">
+    <value>Тихий</value>
+  </data>
+  <data name="OnexCaption1497.Content" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption1498.Content" xml:space="preserve">
+    <value>Производительность</value>
+  </data>
+  <data name="OnexCaption1499.Content" xml:space="preserve">
+    <value>Ползунок</value>
+  </data>
+  <data name="OnexCaption1500.Text" xml:space="preserve">
+    <value>Длительный TDP (SPL)</value>
+  </data>
+  <data name="OnexCaption1501.Text" xml:space="preserve">
+    <value>15W</value>
+  </data>
+  <data name="OnexCaption1502.Text" xml:space="preserve">
+    <value>Быстрый TDP (SPPL)</value>
+  </data>
+  <data name="OnexCaption1503.Text" xml:space="preserve">
+    <value>25W</value>
+  </data>
+  <data name="OnexCaption1504.Text" xml:space="preserve">
+    <value>Пиковый TDP (FPPT)</value>
+  </data>
+  <data name="OnexCaption1505.Text" xml:space="preserve">
+    <value>35W</value>
+  </data>
+  <data name="OnexCaption1506.Text" xml:space="preserve">
+    <value>Аппаратный контроллер для этой игры</value>
+  </data>
+  <data name="OnexCaption1507.Text" xml:space="preserve">
+    <value>Меняет режим контроллера только для этой игры. Помогает при несовместимости с виртуальным контроллером, например в NBA 2K26.</value>
+  </data>
+  <data name="OnexCaption1508.Text" xml:space="preserve">
+    <value>Для применения перезапустите игру: контроллер меняется только при её запуске.</value>
+  </data>
+  <data name="OnexCaption1509.Text" xml:space="preserve">
+    <value>Состояние контроллера</value>
+  </data>
+  <data name="OnexCaption1510.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Частота</value>
+  </data>
+  <data name="OnexCaption1511.Text" xml:space="preserve">
+    <value>Состояние неизвестно</value>
+  </data>
+  <data name="OnexCaption1512.Text" xml:space="preserve">
+    <value>Нажмите «Обновить» для проверки состояния.</value>
+  </data>
+  <data name="OnexCaption1513.Text" xml:space="preserve">
+    <value>ПОДКЛЮЧЁННЫЕ КОНТРОЛЛЕРЫ</value>
+  </data>
+  <data name="OnexCaption1514.Text" xml:space="preserve">
+    <value>Поиск…</value>
+  </data>
+  <data name="OnexCaption1515.Text" xml:space="preserve">
+    <value>Виртуальный контроллер ViGEm</value>
+  </data>
+  <data name="OnexCaption1516.Text" xml:space="preserve">
+    <value>Виртуальный контроллер VIIPER</value>
+  </data>
+  <data name="OnexCaption1517.Text" xml:space="preserve">
+    <value>Игровые контроллеры</value>
+  </data>
+  <data name="OnexCaption1518.Text" xml:space="preserve">
+    <value>MSI Claw DInput (PID_1902)</value>
+  </data>
+  <data name="OnexCaption1519.Text" xml:space="preserve">
+    <value>Устройства, скрытые HidHide</value>
+  </data>
+  <data name="OnexCaption1520.Text" xml:space="preserve">
+    <value>Подключённые слоты XInput</value>
+  </data>
+  <data name="OnexCaption1521.Text" xml:space="preserve">
+    <value>Устройство VIIPER</value>
+  </data>
+  <data name="OnexCaption1522.Text" xml:space="preserve">
+    <value>Используется VIIPER (USBIP). Изменения применяются сразу с переподключением. Виртуальные устройства кроме Xbox 360 могут быть несовместимы с Game Bar: проверьте их работу перед использованием.</value>
+  </data>
+  <data name="OnexCaption1523.Text" xml:space="preserve">
+    <value>Виртуальное устройство</value>
+  </data>
+  <data name="OnexCaption1524.Content" xml:space="preserve">
+    <value>Xbox 360</value>
+  </data>
+  <data name="OnexCaption1525.Content" xml:space="preserve">
+    <value>DualShock 4</value>
+  </data>
+  <data name="OnexCaption1526.Content" xml:space="preserve">
+    <value>DualSense Edge</value>
+  </data>
+  <data name="OnexCaption1527.Content" xml:space="preserve">
+    <value>Xbox Elite 2</value>
+  </data>
+  <data name="OnexCaption1528.Content" xml:space="preserve">
+    <value>Steam Controller</value>
+  </data>
+  <data name="OnexCaption1529.Content" xml:space="preserve">
+    <value>Switch Pro</value>
+  </data>
+  <data name="OnexCaption1530.Text" xml:space="preserve">
+    <value>Дополнительное устройство Steam</value>
+  </data>
+  <data name="OnexCaption1531.Content" xml:space="preserve">
+    <value>Универсальное</value>
+  </data>
+  <data name="OnexCaption1532.Content" xml:space="preserve">
+    <value>Steam Deck</value>
+  </data>
+  <data name="OnexCaption1533.Content" xml:space="preserve">
+    <value>Legion Go</value>
+  </data>
+  <data name="OnexCaption1534.Content" xml:space="preserve">
+    <value>Legion Go S</value>
+  </data>
+  <data name="OnexCaption1535.Content" xml:space="preserve">
+    <value>Legion Go 2</value>
+  </data>
+  <data name="OnexCaption1536.Content" xml:space="preserve">
+    <value>ROG Ally</value>
+  </data>
+  <data name="OnexCaption1537.Content" xml:space="preserve">
+    <value>MSI Claw</value>
+  </data>
+  <data name="OnexCaption1538.Content" xml:space="preserve">
+    <value>Zotac Zone</value>
+  </data>
+  <data name="OnexCaption1539.Text" xml:space="preserve">
+    <value>Временно использовать Xbox в Game Bar (экспериментально)</value>
+  </data>
+  <data name="OnexCaption1540.Text" xml:space="preserve">
+    <value>При эмуляции другого устройства, например DualShock 4, временно показывает Xbox 360, пока открыт Game Bar. Это помогает навигации. После закрытия возвращает исходный тип. Переподключение может быть заметно запущенной игре.</value>
+  </data>
+  <data name="OnexCaption1541.Text" xml:space="preserve">
+    <value>Клавиатурные назначения через прошивку</value>
+  </data>
+  <data name="OnexCaption1542.Text" xml:space="preserve">
+    <value>Прошивка контроллера выполняет назначения клавиш аппаратно, включая игры. Без этого клавиши эмулируются программно, что может быть несовместимо с игровыми сочетаниями. Только MSI Claw 8/7 AI+ (A2VM).</value>
+  </data>
+  <data name="OnexCaption1543.Text" xml:space="preserve">
+    <value>Показать назначения клавиатуры в прошивке</value>
+  </data>
+  <data name="OnexCaption1544.Content" xml:space="preserve">
+    <value>Перечитать прошивку</value>
+  </data>
+  <data name="OnexCaption1545.Text" xml:space="preserve">
+    <value>Нажмите «Обновить» для чтения контроллера.</value>
+  </data>
+  <data name="OnexCaption1546.Text" xml:space="preserve">
+    <value>Устройство GPD</value>
+  </data>
+  <data name="OnexCaption1547.Text" xml:space="preserve">
+    <value>Обнаружение…</value>
+  </data>
+  <data name="OnexCaption1548.Text" xml:space="preserve">
+    <value>УПРАВЛЕНИЕ ВЕНТИЛЯТОРОМ</value>
+  </data>
+  <data name="OnexCaption1549.Text" xml:space="preserve">
+    <value>Настройки вентилятора</value>
+  </data>
+  <data name="OnexCaption1550.Text" xml:space="preserve">
+    <value>Вентилятор: </value>
+  </data>
+  <data name="OnexCaption1551.Text" xml:space="preserve">
+    <value>-- RPM</value>
+  </data>
+  <data name="OnexCaption1552.Text" xml:space="preserve">
+    <value>Кривая вентилятора</value>
+  </data>
+  <data name="OnexCaption1553.Text" xml:space="preserve">
+    <value>Программная кривая по температуре CPU</value>
+  </data>
+  <data name="OnexCaption1554.Text" xml:space="preserve">
+    <value>Режим вентилятора</value>
+  </data>
+  <data name="OnexCaption1555.Text" xml:space="preserve">
+    <value>Автоматически</value>
+  </data>
+  <data name="OnexCaption1556.Text" xml:space="preserve">
+    <value>Скорость вентилятора</value>
+  </data>
+  <data name="OnexCaption1557.Content" xml:space="preserve">
+    <value>Бесшумный</value>
+  </data>
+  <data name="OnexCaption1558.Content" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption1559.Content" xml:space="preserve">
+    <value>Производительность</value>
+  </data>
+  <data name="OnexCaption1560.Content" xml:space="preserve">
+    <value>Максимальное охлаждение</value>
+  </data>
+  <data name="OnexCaption1561.Content" xml:space="preserve">
+    <value>Пользовательский</value>
+  </data>
+  <data name="OnexCaption1562.Text" xml:space="preserve">
+    <value>Вентилятор, %</value>
+  </data>
+  <data name="OnexCaption1563.Text" xml:space="preserve">
+    <value>30°C</value>
+  </data>
+  <data name="OnexCaption1564.Text" xml:space="preserve">
+    <value>46°C</value>
+  </data>
+  <data name="OnexCaption1565.Text" xml:space="preserve">
+    <value>62°C</value>
+  </data>
+  <data name="OnexCaption1566.Text" xml:space="preserve">
+    <value>78°C</value>
+  </data>
+  <data name="OnexCaption1567.Text" xml:space="preserve">
+    <value>100°C</value>
+  </data>
+  <data name="OnexCaption1568.Text" xml:space="preserve">
+    <value>Температура CPU: </value>
+  </data>
+  <data name="OnexCaption1569.Text" xml:space="preserve">
+    <value>--°C</value>
+  </data>
+  <data name="OnexCaption1570.Text" xml:space="preserve">
+    <value>НАЗНАЧЕНИЯ КНОПОК</value>
+  </data>
+  <data name="OnexCaption1571.Text" xml:space="preserve">
+    <value>Переназначение кнопок</value>
+  </data>
+  <data name="OnexCaption1572.Text" xml:space="preserve">
+    <value>Назначить клавиатуру или мышь на кнопки контроллера</value>
+  </data>
+  <data name="OnexCaption1573.Text" xml:space="preserve">
+    <value>Лицевые кнопки</value>
+  </data>
+  <data name="OnexCaption1574.Text" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="OnexCaption1575.Text" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="OnexCaption1576.Text" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="OnexCaption1577.Text" xml:space="preserve">
+    <value>Y</value>
+  </data>
+  <data name="OnexCaption1578.Text" xml:space="preserve">
+    <value>Крестовина</value>
+  </data>
+  <data name="OnexCaption1579.Text" xml:space="preserve">
+    <value>Вверх</value>
+  </data>
+  <data name="OnexCaption1580.Text" xml:space="preserve">
+    <value>Вниз</value>
+  </data>
+  <data name="OnexCaption1581.Text" xml:space="preserve">
+    <value>Левый</value>
+  </data>
+  <data name="OnexCaption1582.Text" xml:space="preserve">
+    <value>Правый</value>
+  </data>
+  <data name="OnexCaption1583.Text" xml:space="preserve">
+    <value>Нажатия стиков</value>
+  </data>
+  <data name="OnexCaption1584.Text" xml:space="preserve">
+    <value>L3</value>
+  </data>
+  <data name="OnexCaption1585.Text" xml:space="preserve">
+    <value>R3</value>
+  </data>
+  <data name="OnexCaption1586.Text" xml:space="preserve">
+    <value>Левый стик</value>
+  </data>
+  <data name="OnexCaption1587.Text" xml:space="preserve">
+    <value>Левый стик влево</value>
+  </data>
+  <data name="OnexCaption1588.Text" xml:space="preserve">
+    <value>Левый стик вправо</value>
+  </data>
+  <data name="OnexCaption1589.Text" xml:space="preserve">
+    <value>Задние лепестки</value>
+  </data>
+  <data name="OnexCaption1590.Text" xml:space="preserve">
+    <value>L4</value>
+  </data>
+  <data name="OnexCaption1591.Text" xml:space="preserve">
+    <value>R4</value>
+  </data>
+  <data name="OnexCaption1592.Content" xml:space="preserve">
+    <value>Применить назначения</value>
+  </data>
+  <data name="OnexCaption1593.Content" xml:space="preserve">
+    <value>Сбросить настройки</value>
+  </data>
+  <data name="OnexCaption1594.Text" xml:space="preserve">
+    <value>Загрузка…</value>
+  </data>
+  <data name="OnexCaption1595.Text" xml:space="preserve">
+    <value>Доступно обновление: v0.0.0</value>
+  </data>
+  <data name="OnexCaption1596.Content" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="OnexCaption1597.Text" xml:space="preserve">
+    <value>ГОРЯЧИЕ КЛАВИШИ</value>
+  </data>
+  <data name="OnexCaption1598.Text" xml:space="preserve">
+    <value>Горячие клавиши</value>
+  </data>
+  <data name="OnexCaption1599.Text" xml:space="preserve">
+    <value>Сочетания кнопок контроллера для клавиш и действий из списка ниже.</value>
+  </data>
+  <data name="OnexCaption1600.Text" xml:space="preserve">
+    <value>Горячих клавиш пока нет.</value>
+  </data>
+  <data name="OnexCaption1601.Text" xml:space="preserve">
+    <value>ДЕЙСТВИЯ</value>
+  </data>
+  <data name="OnexCaption1602.Text" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="OnexCaption1603.Text" xml:space="preserve">
+    <value>Создавайте действия, например запуск Steam Big Picture, Playnite или Alt+Tab, и назначайте их на сочетания выше.</value>
+  </data>
+  <data name="OnexCaption1604.Text" xml:space="preserve">
+    <value>Действий пока нет.</value>
+  </data>
+  <data name="OnexCaption1605.Text" xml:space="preserve">
+    <value>Запускать RTSS автоматически</value>
+  </data>
+  <data name="OnexCaption1606.OffContent" xml:space="preserve">
+    <value>Отключено</value>
+  </data>
+  <data name="OnexCaption1606.OnContent" xml:space="preserve">
+    <value>Включено</value>
+  </data>
+  <data name="OnexCaption1607.Header" xml:space="preserve">
+    <value>Способ вывода оверлея</value>
+  </data>
+  <data name="OnexCaption1608.Content" xml:space="preserve">
+    <value>Rivatuner Statistics Server</value>
+  </data>
+  <data name="OnexCaption1609.Content" xml:space="preserve">
+    <value>Оверлей ONEXTweaks (работает без игры)</value>
+  </data>
+  <data name="OnexCaption1610.Text" xml:space="preserve">
+    <value>TDP</value>
+  </data>
+  <data name="OnexCaption1611.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Отдельное управление PL2</value>
+  </data>
+  <data name="OnexCaption1611.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Показывать отдельный ползунок PL2</value>
+  </data>
+  <data name="OnexCaption1612.Text" xml:space="preserve">
+    <value>PL2</value>
+  </data>
+  <data name="OnexCaption1613.Text" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="OnexCaption1614.Text" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="OnexCaption1615.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Длительный лимит мощности PL1</value>
+  </data>
+  <data name="OnexCaption1616.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Кратковременный лимит мощности PL2</value>
+  </data>
+  <data name="OnexCaption1617.Text" xml:space="preserve">
+    <value>Ограничение FPS</value>
+  </data>
+  <data name="OnexCaption1618.Content" xml:space="preserve">
+    <value>по шагам</value>
+  </data>
+  <data name="OnexCaption1619.Content" xml:space="preserve">
+    <value>плавно</value>
+  </data>
+  <data name="OnexCaption1620.Content" xml:space="preserve">
+    <value>Intel</value>
+  </data>
+  <data name="OnexCaption1621.Content" xml:space="preserve">
+    <value>RTSS</value>
+  </data>
+  <data name="OnexCaption1622.Text" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption1623.Text" xml:space="preserve">
+    <value>Оверлей</value>
+  </data>
+  <data name="OnexCaption1624.Content" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="OnexCaption1625.Content" xml:space="preserve">
+    <value>Mango</value>
+  </data>
+  <data name="OnexCaption1626.Content" xml:space="preserve">
+    <value>Horizontal</value>
+  </data>
+  <data name="OnexCaption1627.Content" xml:space="preserve">
+    <value>Вертикально</value>
+  </data>
+  <data name="OnexCaption1628.Text" xml:space="preserve">
+    <value>CPU Boost</value>
+  </data>
+  <data name="OnexCaption1629.Text" xml:space="preserve">
+    <value>Режим питания Windows</value>
+  </data>
+  <data name="OnexCaption1630.Content" xml:space="preserve">
+    <value>Экономия</value>
+  </data>
+  <data name="OnexCaption1631.Content" xml:space="preserve">
+    <value>Сбалансированный</value>
+  </data>
+  <data name="OnexCaption1632.Content" xml:space="preserve">
+    <value>Производительность</value>
+  </data>
+  <data name="OnexCaption1633.Text" xml:space="preserve">
+    <value>Вентилятор</value>
+  </data>
+  <data name="OnexCaption1634.Content" xml:space="preserve">
+    <value>По умолчанию</value>
+  </data>
+  <data name="OnexCaption1635.Content" xml:space="preserve">
+    <value>Тихий</value>
+  </data>
+  <data name="OnexCaption1636.Content" xml:space="preserve">
+    <value>Охлаждение</value>
+  </data>
+  <data name="OnexCaption1637.Content" xml:space="preserve">
+    <value>Пользовательский</value>
+  </data>
+  <data name="OnexCaption1638.Text" xml:space="preserve">
+    <value>PL2</value>
+  </data>
+  <data name="OnexCaption1639.Text" xml:space="preserve">
+    <value>Второй регулятор кратковременного повышения мощности.</value>
+  </data>
+  <data name="OnexCaption1640.Text" xml:space="preserve">
+    <value>Плитки</value>
+  </data>
+  <data name="OnexCaption1641.Text" xml:space="preserve">
+    <value>Показывать четыре плитки сверху.</value>
+  </data>
+  <data name="OnexCaption1642.Text" xml:space="preserve">
+    <value>Глобальный профиль</value>
+  </data>
+  <data name="OnexCaption1643.Text" xml:space="preserve">
+    <value>Глобальный профиль</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>Виджет ONEXTweaks для настройки системы во время игры с геймпадом.</value>
+  </data>
+  <data name="OnexSupportAuthorCaption.Text" xml:space="preserve"><value>Поддержать автора</value></data>
+  <data name="OnexSupportAuthorQr.[using:Windows.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>QR-код для поддержки автора</value></data>
+</root>

@@ -1,0 +1,668 @@
+﻿<!-- Owner layout: statistics -> TDP -> brightness/volume -> tiles. -->
+<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:XboxGamingBar" x:Class="XboxGamingBar.OnexReleaseHome">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="OnexInactiveSliderTrackBrush" Color="#FF6D7480" />
+        <SolidColorBrush x:Key="OnexHomePl1Brush" Color="#FF5AA9FF" />
+        <SolidColorBrush x:Key="OnexHomePl2Brush" Color="#FFB89CFF" />
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FF30343A" />
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#FF50555C" />
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="0,10,0,0" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+        </Style>
+        <SolidColorBrush x:Key="HintTextBrush" Color="#FFB4B4B4" />
+        <Style x:Key="LightGlassCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#59000000" />
+            <Setter Property="BorderBrush" Value="#33FFFFFF" />
+        </Style>
+        <Style x:Key="LightMediaThumbStyle" TargetType="Thumb">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Grid>
+                            <Grid.Children>
+                                <Ellipse x:Name="OnexMediaThumbHalo" UseLayoutRounding="False" Width="22" Height="22" Fill="{TemplateBinding Foreground}" Opacity="0.2" />
+                                <Ellipse x:Name="OnexMediaThumbRing" UseLayoutRounding="False" Width="16" Height="16" Fill="{TemplateBinding Foreground}" />
+                                <Ellipse x:Name="OnexMediaThumbInk" UseLayoutRounding="False" Width="10" Height="10" Fill="#FFFFFFFF">
+                                    <Ellipse.RenderTransform><TranslateTransform Y="0.333333333333333" /></Ellipse.RenderTransform>
+                                </Ellipse>
+                            </Grid.Children>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="LightMediaSliderStyle" TargetType="Slider">
+            <Setter Property="IsFocusEngagementEnabled" Value="True" />
+            <Setter Property="ManipulationMode" Value="None" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+            <Setter Property="IsTabStop" Value="True" />
+            <Setter Property="IsThumbToolTipEnabled" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid x:Name="SliderContainer" UseLayoutRounding="False" Background="#00FFFFFF" Height="28">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualStateGroup.States>
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver" />
+                                        <VisualState x:Name="Pressed" />
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="SliderContainer.Opacity" Value="0.4" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup.States>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="FocusEngagementStates">
+                                    <VisualStateGroup.States>
+                                        <VisualState x:Name="FocusDisengaged" />
+                                        <VisualState x:Name="FocusEngagedHorizontal">
+                                            <VisualState.Setters>
+                                                <Setter Target="EngagedGlow.Opacity" Value="1" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="FocusEngagedVertical" />
+                                    </VisualStateGroup.States>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Grid.Children>
+                                <Border x:Name="EngagedGlow" CornerRadius="14" Opacity="0" BorderBrush="Transparent" BorderThickness="0" Background="#10000000" />
+                                <Grid x:Name="HorizontalTemplate" Margin="3,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.Children>
+                                        <Rectangle x:Name="HorizontalTrackRect" Height="8" RadiusX="4" RadiusY="4" Fill="{StaticResource OnexInactiveSliderTrackBrush}" VerticalAlignment="Center" Grid.ColumnSpan="3" />
+                                        <Rectangle x:Name="HorizontalDecreaseRect" Height="8" RadiusX="4" RadiusY="4" Fill="{TemplateBinding Foreground}" VerticalAlignment="Center" Grid.Column="0" />
+                                        <Thumb x:Name="HorizontalThumb" UseLayoutRounding="False" Width="22" Height="22" Margin="-11,0" Style="{StaticResource LightMediaThumbStyle}" Foreground="{TemplateBinding Foreground}" DataContext="{TemplateBinding Value}" Grid.Column="1" AutomationProperties.AccessibilityView="Raw"  />
+                                    </Grid.Children>
+                                </Grid>
+                            </Grid.Children>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <SolidColorBrush x:Key="ThemeAccentBrush" Color="#FF00C8FF" />
+        <Style x:Key="LightThumbStyle" TargetType="Thumb">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Grid>
+                            <Grid.Children>
+                                <Ellipse x:Name="OnexPowerThumbHalo" UseLayoutRounding="False" Width="26" Height="26" Fill="{TemplateBinding Foreground}" Opacity="0.22" />
+                                <Ellipse x:Name="OnexPowerThumbInk" UseLayoutRounding="False" Width="20" Height="20" Fill="#FFFFFFFF" Stroke="{TemplateBinding Foreground}" StrokeThickness="3" />
+                            </Grid.Children>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="LightPowerThumbStyle" TargetType="Thumb">
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Thumb">
+                <Grid>
+                    <Ellipse x:Name="OnexPowerThumbHalo" UseLayoutRounding="False" Width="26" Height="26" Fill="{TemplateBinding Foreground}" Opacity="0.22" />
+                    <Ellipse x:Name="OnexPowerThumbRing" UseLayoutRounding="False" Width="20" Height="20" Fill="{TemplateBinding Foreground}" />
+                    <Ellipse x:Name="OnexPowerThumbInk" UseLayoutRounding="False" Width="14" Height="14" Fill="#FFFFFFFF">
+                        <Ellipse.RenderTransform><TranslateTransform Y="-0.666666666666667" /></Ellipse.RenderTransform>
+                    </Ellipse>
+                </Grid>
+            </ControlTemplate></Setter.Value></Setter>
+        </Style>
+        <Style x:Key="LightPowerSliderStyle" TargetType="Slider">
+            <Setter Property="Background" Value="#FF5AA9FF" />
+            <Setter Property="Foreground" Value="#FF5AA9FF" />
+            <Setter Property="IsFocusEngagementEnabled" Value="True" />
+            <Setter Property="ManipulationMode" Value="None" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+            <Setter Property="IsTabStop" Value="True" />
+            <Setter Property="IsThumbToolTipEnabled" Value="False" />
+            <Setter Property="StepFrequency" Value="1" />
+            <Setter Property="SmallChange" Value="1" />
+            <Setter Property="LargeChange" Value="5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid x:Name="SliderContainer" UseLayoutRounding="False" Background="#00FFFFFF" Height="34">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualStateGroup.States>
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver" />
+                                        <VisualState x:Name="Pressed" />
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="SliderContainer.Opacity" Value="0.4" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup.States>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="FocusEngagementStates">
+                                    <VisualStateGroup.States>
+                                        <VisualState x:Name="FocusDisengaged" />
+                                        <VisualState x:Name="FocusEngagedHorizontal">
+                                            <VisualState.Setters>
+                                                <Setter Target="EngagedGlow.Opacity" Value="1" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="FocusEngagedVertical" />
+                                    </VisualStateGroup.States>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Grid.Children>
+                                <Border x:Name="EngagedGlow" CornerRadius="17" Opacity="0" BorderBrush="Transparent" BorderThickness="0" Background="#1400C8FF" />
+                                <Grid x:Name="HorizontalTemplate" Margin="6,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.Children>
+                                        <Rectangle x:Name="HorizontalTrackRect" Height="10" Margin="0,0,14,0" RadiusX="5" RadiusY="5" Fill="{StaticResource OnexInactiveSliderTrackBrush}" VerticalAlignment="Center" Grid.ColumnSpan="3" />
+                                        <Rectangle x:Name="HorizontalDecreaseRect" Height="10" RadiusX="5" RadiusY="5" Fill="{TemplateBinding Background}" VerticalAlignment="Center" Grid.Column="0" />
+                                        <Thumb x:Name="HorizontalThumb" UseLayoutRounding="False" Width="26" Height="26" Margin="-13,0" Style="{StaticResource LightPowerThumbStyle}" Foreground="{TemplateBinding Foreground}" DataContext="{TemplateBinding Value}" Grid.Column="1" AutomationProperties.AccessibilityView="Raw"  />
+                                    </Grid.Children>
+                                </Grid>
+                            </Grid.Children>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="LightSegmentStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Background" Value="#FF262A30" />
+            <Setter Property="Foreground" Value="#FFD0D0D0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+        </Style>
+        <Style x:Key="LightSubSegmentStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Background" Value="#00FFFFFF" />
+            <Setter Property="Foreground" Value="#FFA8ADB4" />
+            <Setter Property="BorderBrush" Value="#FF3A3F46" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="10,2" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+        </Style>
+        <Style x:Key="LightToggleStyle" TargetType="ToggleSwitch">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+            <Setter Property="FocusVisualMargin" Value="-3" />
+            <Setter Property="IsTabStop" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleSwitch">
+                        <Grid x:Name="RootGrid" Width="64" Height="44" Padding="8" UseLayoutRounding="False" Background="#00FFFFFF">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualStateGroup.States>
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver" />
+                                        <VisualState x:Name="Pressed" />
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="RootGrid.Opacity" Value="0.4" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup.States>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="ToggleStates">
+                                    <VisualStateGroup.States>
+                                        <VisualState x:Name="Dragging" />
+                                        <VisualState x:Name="Off">
+                                            <VisualState.Storyboard>
+                                                <Storyboard>
+                                                    <Storyboard.Children>
+                                                        <DoubleAnimation To="0" Duration="0:0:0.15" Storyboard.TargetName="KnobTransform" Storyboard.TargetProperty="X">
+                                                            <DoubleAnimation.EasingFunction>
+                                                                <CubicEase EasingMode="EaseOut" />
+                                                            </DoubleAnimation.EasingFunction>
+                                                        </DoubleAnimation>
+                                                        <DoubleAnimation To="0" Duration="0:0:0.15" Storyboard.TargetName="TrackOn" Storyboard.TargetProperty="Opacity" />
+                                                        <DoubleAnimation To="0" Duration="0:0:0.15" Storyboard.TargetName="KnobTransform" Storyboard.TargetProperty="Y" />
+                                                    </Storyboard.Children>
+                                                </Storyboard>
+                                            </VisualState.Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="On">
+                                            <VisualState.Storyboard>
+                                                <Storyboard>
+                                                    <Storyboard.Children>
+                                                        <DoubleAnimation To="20" Duration="0:0:0.15" Storyboard.TargetName="KnobTransform" Storyboard.TargetProperty="X">
+                                                            <DoubleAnimation.EasingFunction>
+                                                                <CubicEase EasingMode="EaseOut" />
+                                                            </DoubleAnimation.EasingFunction>
+                                                        </DoubleAnimation>
+                                                        <DoubleAnimation To="1" Duration="0:0:0.15" Storyboard.TargetName="TrackOn" Storyboard.TargetProperty="Opacity" />
+                                                        <DoubleAnimation To="-0.666666666666667" Duration="0:0:0.15" Storyboard.TargetName="KnobTransform" Storyboard.TargetProperty="Y" />
+                                                    </Storyboard.Children>
+                                                </Storyboard>
+                                            </VisualState.Storyboard>
+                                        </VisualState>
+                                    </VisualStateGroup.States>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Grid.Children>
+                                <!-- A common drawing plane keeps track and knob on the same pixel grid.
+                                     Base sizes stay on a common DPI grid; only On has the requested optical lift. -->
+                                <Canvas Width="48" Height="28" UseLayoutRounding="False">
+                                    <Border x:Name="TrackOff" Width="48" Height="28" CornerRadius="14" Background="#FF2C3138" BorderBrush="#FF4A5058" BorderThickness="1" />
+                                    <Border x:Name="TrackOn" Width="48" Height="28" CornerRadius="14" Opacity="0" Background="{StaticResource ThemeAccentBrush}" />
+                                    <Ellipse x:Name="Knob" Width="20" Height="20" Fill="#FFFFFFFF" Canvas.Left="4" Canvas.Top="4">
+                                        <Ellipse.RenderTransform>
+                                            <TranslateTransform x:Name="KnobTransform" />
+                                        </Ellipse.RenderTransform>
+                                    </Ellipse>
+                                </Canvas>
+                            </Grid.Children>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="OnexPl2SliderStyle" TargetType="Slider">
+            <Setter Property="Background" Value="#FF5AA9FF" />
+            <Setter Property="Foreground" Value="#FF5AA9FF" />
+            <Setter Property="IsFocusEngagementEnabled" Value="True" />
+            <Setter Property="ManipulationMode" Value="None" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+            <Setter Property="IsTabStop" Value="True" />
+            <Setter Property="IsThumbToolTipEnabled" Value="False" />
+            <Setter Property="StepFrequency" Value="1" />
+            <Setter Property="SmallChange" Value="1" />
+            <Setter Property="LargeChange" Value="5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid x:Name="SliderContainer" UseLayoutRounding="False" Background="#00FFFFFF" Height="34">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualStateGroup.States>
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver" />
+                                        <VisualState x:Name="Pressed" />
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="SliderContainer.Opacity" Value="0.4" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup.States>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="FocusEngagementStates">
+                                    <VisualStateGroup.States>
+                                        <VisualState x:Name="FocusDisengaged" />
+                                        <VisualState x:Name="FocusEngagedHorizontal">
+                                            <VisualState.Setters>
+                                                <Setter Target="EngagedGlow.Opacity" Value="1" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="FocusEngagedVertical" />
+                                    </VisualStateGroup.States>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Grid.Children>
+                                <Border x:Name="EngagedGlow" CornerRadius="17" Opacity="0" BorderBrush="Transparent" BorderThickness="0" Background="#1400C8FF" IsHitTestVisible="False" />
+                                <Grid x:Name="HorizontalTemplate" Margin="6,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.Children>
+                                        <Rectangle x:Name="HorizontalTrackRect" Height="10" Margin="0,0,14,0" RadiusX="5" RadiusY="5" Fill="{StaticResource OnexInactiveSliderTrackBrush}" VerticalAlignment="Center" Grid.ColumnSpan="3" IsHitTestVisible="False" Opacity="1" />
+                                        <Rectangle x:Name="HorizontalDecreaseRect" Height="10" RadiusX="5" RadiusY="5" Fill="{TemplateBinding Background}" VerticalAlignment="Center" Grid.Column="0" IsHitTestVisible="False" Opacity="1" />
+                                        <Thumb x:Name="HorizontalThumb" UseLayoutRounding="False" Width="26" Height="26" Margin="-13,0" Style="{StaticResource LightThumbStyle}" Foreground="{TemplateBinding Foreground}" DataContext="{TemplateBinding Value}" Grid.Column="1" AutomationProperties.AccessibilityView="Raw" />
+                                    </Grid.Children>
+                                </Grid>
+                            </Grid.Children>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer x:Name="LightScrollViewer" VerticalScrollBarVisibility="Auto" Visibility="Visible" BringIntoViewOnFocusChange="True">
+        <ScrollViewer.Content>
+            <StackPanel x:Name="LightMainStack" Padding="16,8,16,16" Spacing="10">
+                <StackPanel.Children>
+                    <StackPanel x:Name="OnexStatsHost" />
+                    <Border x:Name="LightPowerCard" Style="{StaticResource LightGlassCardStyle}" Margin="0" Padding="20,10,20,8">
+                        <Border.Child>
+                            <StackPanel>
+                                <StackPanel.Children>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.Children>
+                                            <FontIcon FontFamily="Segoe Fluent Icons" Glyph="" FontSize="16" Foreground="{StaticResource ThemeAccentBrush}" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock x:Uid="OnexCaption1610" Text="TDP" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFFFF" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                <ToggleSwitch x:Uid="OnexCaption1611" x:Name="LightPl2Toggle" AutomationProperties.Name="Separate PL2 controls" Style="{StaticResource LightToggleStyle}" Margin="10,0,0,0" ToolTipService.ToolTip="Show a separate PL2 slider" />
+                                                <TextBlock x:Uid="OnexCaption1612" Text="PL2" FontSize="11" Margin="4,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource HintTextBrush}" />
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Grid.Column="2">
+                                                <StackPanel.Children>
+                                                    <TextBlock x:Name="LightPowerValue" local:OnexPowerReadout.UsesTrackAccent="True" Text="--" FontSize="30" FontWeight="SemiBold" Foreground="{StaticResource OnexHomePl1Brush}" />
+                                                    <TextBlock x:Uid="OnexCaption1613" x:Name="LightPowerUnit" local:OnexPowerReadout.UsesTrackAccent="True" Text="W" FontSize="16" FontWeight="SemiBold" Margin="3,0,0,5" VerticalAlignment="Bottom" Foreground="{StaticResource OnexHomePl1Brush}" />
+                                                    <StackPanel x:Name="LightPl2Head" Orientation="Horizontal" Margin="8,0,0,3" VerticalAlignment="Bottom" Visibility="Collapsed">
+                                                        <StackPanel.Children>
+                                                            <TextBlock x:Name="LightPl2Separator" local:OnexPowerReadout.IsNeutral="True" Text="/" FontSize="20" FontWeight="Normal" Foreground="#FFFFFFFF" Margin="0,0,8,0" VerticalAlignment="Bottom" />
+                                                            <TextBlock x:Name="LightPl2Value" local:OnexPowerReadout.UsesTrackAccent="True" Text="" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Bottom" Foreground="{StaticResource OnexHomePl2Brush}" />
+                                                            <TextBlock x:Uid="OnexCaption1614" x:Name="LightPl2Unit" local:OnexPowerReadout.UsesTrackAccent="True" Text="W" FontSize="12" FontWeight="SemiBold" Margin="2,0,0,3" VerticalAlignment="Bottom" Foreground="{StaticResource OnexHomePl2Brush}" />
+                                                        </StackPanel.Children>
+                                                    </StackPanel>
+                                                </StackPanel.Children>
+                                            </StackPanel>
+                                        </Grid.Children>
+                                    </Grid>
+                                    <Grid x:Name="OnexPowerControlHost">
+                                        <!-- Match track ends to the native thumb travel. The 26 DIP thumb uses
+                                             14 DIP more than the template's combined 12 DIP insets. -->
+                                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <Grid x:Name="OnexHomePl1Track">
+                                            <Slider x:Uid="OnexCaption1615" x:Name="LightPowerSlider" local:OnexPowerReadout.UsesTrackAccent="True" Style="{StaticResource LightPowerSliderStyle}" Minimum="8" Maximum="40" Value="15" Margin="0,4,-14,0" AutomationProperties.Name="Sustained power limit PL1" StepFrequency="1" Background="{StaticResource OnexHomePl1Brush}" Foreground="{StaticResource OnexHomePl1Brush}" />
+                                        </Grid>
+                                        <Grid x:Name="OnexHomePl2Track" Grid.Row="1">
+                                            <Slider x:Uid="OnexCaption1616" x:Name="OnexPl2Slider" local:OnexPowerReadout.UsesTrackAccent="True" Style="{StaticResource OnexPl2SliderStyle}" Minimum="8" Maximum="40" Value="16" Margin="0,4,-14,0" Visibility="Collapsed" AutomationProperties.Name="Short power limit PL2" StepFrequency="1" Background="{StaticResource OnexHomePl2Brush}" Foreground="{StaticResource OnexHomePl2Brush}" />
+                                        </Grid>
+                                    </Grid>
+                                    <Grid Margin="6,0">
+                                        <Grid.Children>
+                                            <TextBlock x:Name="LightPowerMin" Text="" FontSize="11" Foreground="{StaticResource HintTextBrush}" />
+                                            <TextBlock x:Name="LightPowerPl2" local:OnexPowerReadout.IsNeutral="True" Text="" FontSize="11" HorizontalAlignment="Center" Foreground="#FFFFFFFF" />
+                                            <TextBlock x:Name="LightPowerMax" Text="" FontSize="11" HorizontalAlignment="Right" Foreground="{StaticResource HintTextBrush}" />
+                                        </Grid.Children>
+                                    </Grid>
+                                    <TextBlock x:Name="OnexPowerStatus" Visibility="Collapsed" TextWrapping="Wrap" Foreground="{StaticResource HintTextBrush}" FontSize="12" Margin="0,6,0,0" AutomationProperties.LiveSetting="Polite" />
+                                </StackPanel.Children>
+                            </StackPanel>
+                        </Border.Child>
+                    </Border>
+                    <StackPanel x:Name="LightTopGroup" Spacing="10">
+                        <StackPanel.Children>
+                            <Border x:Name="LightMediaHost">
+                                <Border x:Name="MediaRailH" Margin="0" Background="#FF1A1C1E" CornerRadius="12" BorderBrush="#FF50555C" BorderThickness="1" Padding="12,8" Visibility="Visible">
+                                    <Border.Child>
+                                        <Grid ColumnSpacing="8" UseLayoutRounding="False">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.Children>
+                                                <Grid x:Name="RailHBrightnessHost" UseLayoutRounding="False" ColumnSpacing="4" Grid.Column="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="24" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="36" />
+                                                    </Grid.ColumnDefinitions>
+                                                </Grid>
+                                                <Grid x:Name="RailHVolumeHost" UseLayoutRounding="False" ColumnSpacing="4" Grid.Column="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="24" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="36" />
+                                                    </Grid.ColumnDefinitions>
+                                                </Grid>
+                                                <StackPanel x:Name="RailHCenterHost" Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="2" />
+                                            </Grid.Children>
+                                        </Grid>
+                                    </Border.Child>
+                                </Border>
+                            </Border>
+                        </StackPanel.Children>
+                    </StackPanel>
+                    <StackPanel x:Name="OnexTilesHost" Spacing="10" />
+                    <StackPanel x:Name="OnexFooterHost" Spacing="10" />
+                    <StackPanel x:Name="OnexRetiredCards" Visibility="Collapsed">
+                        <Border Style="{StaticResource LightGlassCardStyle}" Margin="0" Padding="20,10">
+                            <Border.Child>
+                                <StackPanel Spacing="8">
+                                    <StackPanel.Children>
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.Children>
+                                                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="" FontSize="16" Foreground="{StaticResource ThemeAccentBrush}" VerticalAlignment="Center" />
+                                                <TextBlock x:Uid="OnexCaption1617" Text="FPS Limit" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFFFF" VerticalAlignment="Center" Grid.Column="1" />
+                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Grid.Column="2">
+                                                    <StackPanel.Children>
+                                                        <Button x:Uid="OnexCaption1618" x:Name="LightFpsStepped" Content="stepped" Tag="stepped" Style="{StaticResource LightSubSegmentStyle}" />
+                                                        <Button x:Uid="OnexCaption1619" x:Name="LightFpsFree" Content="free" Tag="free" Style="{StaticResource LightSubSegmentStyle}" />
+                                                    </StackPanel.Children>
+                                                </StackPanel>
+                                                <ToggleSwitch x:Name="LightFpsToggle" Style="{StaticResource LightToggleStyle}" Grid.Column="3" />
+                                            </Grid.Children>
+                                        </Grid>
+                                        <Grid ColumnSpacing="6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.Children>
+                                                <Button x:Uid="OnexCaption1620" x:Name="LightFpsIntel" Content="Intel" Tag="intel" MinWidth="64" Style="{StaticResource LightSegmentStyle}" Grid.Column="0" />
+                                                <Button x:Uid="OnexCaption1621" x:Name="LightFpsRtss" Content="RTSS" Tag="rtss" MinWidth="64" Style="{StaticResource LightSegmentStyle}" Grid.Column="1" />
+                                                <Button x:Name="LightFpsMinus" Style="{StaticResource LightSegmentStyle}" Width="44" Grid.Column="3">
+                                                    <Button.Content>
+                                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="" FontSize="12" />
+                                                    </Button.Content>
+                                                </Button>
+                                                <TextBlock x:Uid="OnexCaption1622" x:Name="LightFpsValue" Text="Off" MinWidth="80" TextAlignment="Center" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource ThemeAccentBrush}" VerticalAlignment="Center" Grid.Column="4" />
+                                                <Button x:Name="LightFpsPlus" Style="{StaticResource LightSegmentStyle}" Width="44" Grid.Column="5">
+                                                    <Button.Content>
+                                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="" FontSize="12" />
+                                                    </Button.Content>
+                                                </Button>
+                                            </Grid.Children>
+                                        </Grid>
+                                    </StackPanel.Children>
+                                </StackPanel>
+                            </Border.Child>
+                        </Border>
+                        <StackPanel x:Name="LightMiscStack" Spacing="10">
+                            <StackPanel.Children>
+                                <Border x:Name="LightOverlayRow" Style="{StaticResource LightGlassCardStyle}" Margin="0" Padding="20,10">
+                                    <Border.Child>
+                                        <StackPanel Spacing="6">
+                                            <StackPanel.Children>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <StackPanel.Children>
+                                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="" FontSize="16" Foreground="{StaticResource ThemeAccentBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock x:Uid="OnexCaption1623" Text="Overlay" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFFFF" />
+                                                    </StackPanel.Children>
+                                                </StackPanel>
+                                                <Grid ColumnSpacing="6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.Children>
+                                                        <Button x:Uid="OnexCaption1624" x:Name="LightOverlay0" Content="Off" Tag="0" Style="{StaticResource LightSegmentStyle}" Grid.Column="0" />
+                                                        <Button x:Uid="OnexCaption1625" x:Name="LightOverlay8" Content="Mango" Tag="8" Style="{StaticResource LightSegmentStyle}" Grid.Column="1" />
+                                                        <Button x:Uid="OnexCaption1626" x:Name="LightOverlay3" Content="Horizontal" Tag="3" Style="{StaticResource LightSegmentStyle}" Grid.Column="2" />
+                                                        <Button x:Uid="OnexCaption1627" x:Name="LightOverlay4" Content="Vertical" Tag="4" Style="{StaticResource LightSegmentStyle}" Grid.Column="3" />
+                                                    </Grid.Children>
+                                                </Grid>
+                                            </StackPanel.Children>
+                                        </StackPanel>
+                                    </Border.Child>
+                                </Border>
+                                <Border x:Name="LightCpuBoostRow" Style="{StaticResource LightGlassCardStyle}" Margin="0" Padding="20,10">
+                                    <Border.Child>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.Children>
+                                                <FontIcon FontFamily="Segoe Fluent Icons" Glyph="" FontSize="16" Foreground="{StaticResource ThemeAccentBrush}" VerticalAlignment="Center" />
+                                                <TextBlock x:Uid="OnexCaption1628" Text="CPU boost" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFFFF" Margin="8,0,0,0" VerticalAlignment="Center" Grid.Column="1" />
+                                                <ToggleSwitch x:Name="LightCpuBoostToggle" Style="{StaticResource LightToggleStyle}" Grid.Column="2" />
+                                            </Grid.Children>
+                                        </Grid>
+                                    </Border.Child>
+                                </Border>
+                                <Border Style="{StaticResource LightGlassCardStyle}" Margin="0" Padding="20,10">
+                                    <Border.Child>
+                                        <StackPanel Spacing="6">
+                                            <StackPanel.Children>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <StackPanel.Children>
+                                                        <FontIcon FontFamily="Segoe Fluent Icons" Glyph="" FontSize="16" Foreground="{StaticResource ThemeAccentBrush}" VerticalAlignment="Center" />
+                                                        <TextBlock x:Uid="OnexCaption1629" Text="OS power mode" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFFFF" />
+                                                    </StackPanel.Children>
+                                                </StackPanel>
+                                                <Grid ColumnSpacing="6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.Children>
+                                                        <Button x:Uid="OnexCaption1630" x:Name="LightPowerMode0" Content="Efficiency" Tag="0" Style="{StaticResource LightSegmentStyle}" Grid.Column="0" />
+                                                        <Button x:Uid="OnexCaption1631" x:Name="LightPowerMode1" Content="Balanced" Tag="1" Style="{StaticResource LightSegmentStyle}" Grid.Column="1" />
+                                                        <Button x:Uid="OnexCaption1632" x:Name="LightPowerMode2" Content="Performance" Tag="2" Style="{StaticResource LightSegmentStyle}" Grid.Column="2" />
+                                                    </Grid.Children>
+                                                </Grid>
+                                            </StackPanel.Children>
+                                        </StackPanel>
+                                    </Border.Child>
+                                </Border>
+                            </StackPanel.Children>
+                        </StackPanel>
+                        <Border x:Name="LightFanCard" Style="{StaticResource LightGlassCardStyle}" Margin="0" Padding="20,10">
+                            <Border.Child>
+                                <StackPanel Spacing="6">
+                                    <StackPanel.Children>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <StackPanel.Children>
+                                                <Viewbox Width="16" Height="16" VerticalAlignment="Center">
+                                                    <Viewbox.Child>
+                                                        <PathIcon Data="M233,135a60,60,0,0,0-89.62-35.45l16.39-65.44a8,8,0,0,0-3.45-8.68A60,60,0,1,0,95.69,128.91L30.82,147.44a8,8,0,0,0-5.8,7.32,60,60,0,0,0,44.42,60.66,60.52,60.52,0,0,0,15.62,2.07,60.07,60.07,0,0,0,59.88-62l48.48,46.92a8,8,0,0,0,9.25,1.35A60,60,0,0,0,233,135Zm-121-7a16,16,0,1,1,16,16A16,16,0,0,1,112,128ZM80,76a44,44,0,0,1,62.75-39.82L127.77,96A32,32,0,0,0,99.85,112.8,43.85,43.85,0,0,1,80,76Zm27,119.57a44,44,0,0,1-65.86-34.43l59.31-16.94A32,32,0,0,0,128,160l.91,0A43.82,43.82,0,0,1,107,195.57Zm106.17-23a43.92,43.92,0,0,1-13,14.14l-44.32-42.89a31.91,31.91,0,0,0-.59-32.57,44,44,0,0,1,57.91,61.32Z" Foreground="{StaticResource ThemeAccentBrush}" />
+                                                    </Viewbox.Child>
+                                                </Viewbox>
+                                                <TextBlock x:Uid="OnexCaption1633" Text="Fan" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFFFF" />
+                                            </StackPanel.Children>
+                                        </StackPanel>
+                                        <Grid ColumnSpacing="6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.Children>
+                                                <Button x:Uid="OnexCaption1634" x:Name="LightFan0" Content="Default" Tag="0" Style="{StaticResource LightSegmentStyle}" Grid.Column="0" />
+                                                <Button x:Uid="OnexCaption1635" x:Name="LightFan1" Content="Quiet" Tag="1" Style="{StaticResource LightSegmentStyle}" Grid.Column="1" />
+                                                <Button x:Uid="OnexCaption1636" x:Name="LightFan2" Content="Cooling" Tag="2" Style="{StaticResource LightSegmentStyle}" Grid.Column="2" />
+                                                <Button x:Uid="OnexCaption1637" x:Name="LightFan3" Content="Custom" Tag="3" Style="{StaticResource LightSegmentStyle}" Grid.Column="3" />
+                                            </Grid.Children>
+                                        </Grid>
+                                    </StackPanel.Children>
+                                </StackPanel>
+                            </Border.Child>
+                        </Border>
+                        <Border Style="{StaticResource LightGlassCardStyle}" Margin="0" Padding="20,8">
+                            <Border.Child>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.Children>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <StackPanel.Children>
+                                                <TextBlock x:Uid="OnexCaption1638" Text="PL2" FontSize="13" Foreground="#FFFFFFFF" />
+                                                <TextBlock x:Uid="OnexCaption1639" Text="A second knob on the power slider for the short-term boost." FontSize="11" Foreground="{StaticResource HintTextBrush}" TextWrapping="Wrap" />
+                                            </StackPanel.Children>
+                                        </StackPanel>
+                                    </Grid.Children>
+                                </Grid>
+                            </Border.Child>
+                        </Border>
+                        <Border Style="{StaticResource LightGlassCardStyle}" Margin="0" Padding="20,8">
+                            <Border.Child>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.Children>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <StackPanel.Children>
+                                                <TextBlock x:Uid="OnexCaption1640" Text="Tiles" FontSize="13" Foreground="#FFFFFFFF" />
+                                                <TextBlock x:Uid="OnexCaption1641" Text="Show the four tiles at the top." FontSize="11" Foreground="{StaticResource HintTextBrush}" TextWrapping="Wrap" />
+                                            </StackPanel.Children>
+                                        </StackPanel>
+                                        <ToggleSwitch x:Name="LightTilesToggleInTab" Style="{StaticResource LightToggleStyle}" IsOn="False" Grid.Column="1" />
+                                    </Grid.Children>
+                                </Grid>
+                            </Border.Child>
+                        </Border>
+                        <Border x:Name="LightProfileCard" Style="{StaticResource LightGlassCardStyle}" Margin="0" Padding="20,8" Visibility="Collapsed">
+                            <Border.Child>
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.Children>
+                                        <Grid Width="36" Height="36" VerticalAlignment="Center">
+                                            <Grid.Children>
+                                                <FontIcon x:Name="LightProfileGlyph" FontFamily="Segoe Fluent Icons" Glyph="" FontSize="22" Foreground="{StaticResource ThemeAccentBrush}" />
+                                                <Image x:Name="LightGameIcon" Width="36" Height="36" Stretch="UniformToFill" Visibility="Collapsed" />
+                                            </Grid.Children>
+                                        </Grid>
+                                        <StackPanel VerticalAlignment="Center" Grid.Column="1">
+                                            <StackPanel.Children>
+                                                <TextBlock x:Uid="OnexCaption1642" x:Name="LightGameName" Text="Global profile" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFFFF" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                                <TextBlock x:Uid="OnexCaption1643" x:Name="LightProfileState" Text="Global profile" FontSize="12" Foreground="{StaticResource HintTextBrush}" Visibility="Collapsed" />
+                                            </StackPanel.Children>
+                                        </StackPanel>
+                                        <ToggleSwitch x:Name="LightProfileToggle" Style="{StaticResource LightToggleStyle}" Visibility="Collapsed" Grid.Column="2" />
+                                    </Grid.Children>
+                                </Grid>
+                            </Border.Child>
+                        </Border>
+                    </StackPanel>
+                </StackPanel.Children>
+            </StackPanel>
+        </ScrollViewer.Content>
+    </ScrollViewer>
+</UserControl>

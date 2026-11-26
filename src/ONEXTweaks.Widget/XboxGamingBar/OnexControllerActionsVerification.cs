@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Windows.Data.Json;
+using Windows.Storage;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Automation.Peers;
+namespace XboxGamingBar
+{
+ public sealed partial class GamingWidget
+ {
+  private async Task VerifyOnexControllerActionsAsync(JsonObject report)
+  {
+   void Check(bool value,string message){if(!value)throw new InvalidOperationException(message);}
+   var folder=ApplicationData.Current.LocalFolder;string run=Guid.NewGuid().ToString("N"),ownId=null,name="ONEXQA Actions293 "+run.Substring(0,10);int step=0;var original=GetVisibleNavigationItems().FirstOrDefault(nav=>nav.IsChecked==true);
+   async Task Write(string file,string value){for(int n=0;;n++){try{File.WriteAllText(Path.Combine(folder.Path,file),value);return;}catch(IOException)when(n<25){await Task.Delay(20);}}}
+   async Task Input(string key)
+   {
+    var control=FocusManager.GetFocusedElement() as FrameworkElement;Check(control!=null,"Actions input target missing");var peer=FrameworkElementAutomationPeer.FromElement(control)??FrameworkElementAutomationPeer.CreatePeerForElement(control);var r=peer.GetBoundingRectangle();double scale=Windows.Graphics.Display.DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;string id=run+":"+(++step);await Write("onex-gamepad-qa-state.json",new JsonObject{{"id",JsonValue.CreateStringValue(id)},{"button",JsonValue.CreateStringValue(key)},{"x",JsonValue.CreateNumberValue(r.X+r.Width/2+widget.WindowBounds.X*scale)},{"y",JsonValue.CreateNumberValue(r.Y+r.Height/2+widget.WindowBounds.Y*scale)}}.Stringify());bool ack=false;for(int n=0;n<120;n++){await Task.Delay(60);try{ack=await FileIO.ReadTextAsync(await folder.GetFileAsync("onex-gamepad-qa-ack.txt"))==id;}catch{}if(ack)break;}Check(ack,"Actions input timeout at "+step);await Task.Delay(130);
+   }
+   async Task Focus(Control control){control.StartBringIntoView(new BringIntoViewOptions{AnimationDesired=false});await Task.Delay(120);Check(control.Focus(FocusState.Keyboard),"Actions focus failed: "+control.Name);await Task.Delay(40);}
+   async Task Saved(){for(int n=0;n<180&&(_onexControllerPending!=null||_onexControllerBusy);n++)await Task.Delay(50);Check(_onexControllerPending==null&&!_onexControllerBusy,"Actions save did not settle");await ReadOnexControllerAsync();Check(ControllerEditorId==ownId,"Actions escaped QA profile");}
+   async Task Pick(ComboBox choice,int index){await Focus(choice);int before=choice.SelectedIndex;await Input("a");Check(choice.IsDropDownOpen,"Action picker did not open");for(int n=before;n<index;n++)await Input("down");for(int n=before;n>index;n--)await Input("up");await Input("a");await Saved();Check(choice.SelectedIndex==index,"Action picker selection mismatch");}
+   async Task Source(string id){await Focus(_onexControllerInputTiles[id]);await Input("a");Check(_onexControllerMappingFlyout.IsOpen&&ControllerSourceId==id,"Source editor failed");}
+   try
+   {
+    LegionNavItem.IsChecked=true;await ReadOnexControllerAsync();Check(!_onexControllerState.GetNamedBoolean("enabled",false)&&!_onexControllerState.GetNamedBoolean("manualOverride",false)&&ControllerEditorId=="global","Protect owner mode/selection");var marker=new JsonObject{{"run",JsonValue.CreateStringValue(run)},{"name",JsonValue.CreateStringValue(name)},{"beforeIds",new JsonArray()}};foreach(var item in _onexControllerState.GetNamedArray("entries"))marker.GetNamedArray("beforeIds").Add(item.GetObject()["id"]);await Write("onex-controller-actions293-qa-owned.json",marker.Stringify());await ChangeOnexControllerAsync(new JsonObject{{"operation",JsonValue.CreateStringValue("create")},{"name",JsonValue.CreateStringValue(name)}});ownId=ControllerEditorId;Check(ownId!="global","Own QA profile missing");marker["createdId"]=JsonValue.CreateStringValue(ownId);await Write("onex-controller-actions293-qa-owned.json",marker.Stringify());
+    var keys=new JsonArray();foreach(int key in new[]{17,16,18,112,113})keys.Add(JsonValue.CreateNumberValue(key));var policy=JsonObject.Parse(ControllerEditorPolicy.Stringify());policy["gamepadRemappingDisabled"]=JsonValue.CreateBooleanValue(false);policy["bindings"]=new JsonObject{{"A",new JsonObject{{"kind",JsonValue.CreateStringValue("gamepad")},{"target",JsonValue.CreateStringValue("A")}}},{"B",new JsonObject{{"kind",JsonValue.CreateStringValue("mouse")},{"target",JsonValue.CreateStringValue("left")}}},{"X",new JsonObject{{"kind",JsonValue.CreateStringValue("keyboard")},{"keys",keys}}}};policy["oem"]=new JsonObject{{"bindings",new JsonObject{{"M1",new JsonObject{{"kind",JsonValue.CreateStringValue("gamepad")},{"target",JsonValue.CreateStringValue("A")}}}}}};await ChangeOnexControllerAsync(new JsonObject{{"operation",JsonValue.CreateStringValue("edit")},{"id",JsonValue.CreateStringValue(ownId)},{"policy",policy}});
+    if(_onexControllerOpen!="mapping")SetOnexControllerCard("mapping");await Source("A");Check(_onexControllerPadTarget.Items.Count==25,"Guide missing or duplicate");int guide=_onexControllerPadTarget.Items.OfType<ComboBoxItem>().Select((item,index)=>new{item,index}).Single(value=>(string)value.item.Tag=="Guide").index;await Pick(_onexControllerPadTarget,guide);Check(ControllerText(ControllerEditorPolicy.GetNamedObject("bindings").GetNamedObject("A"),"target")=="Guide"&&_onexControllerInputSummaries["A"].Text=="Xbox / Guide","Guide did not autosave/describe");await SaveOnexImage("onex-controller-guide293.png",_onexControllerMappingEditor,100);await Input("b");
+    await Source("B");Check(_onexControllerMouse.Items.Count==7,"Horizontal mouse choices missing");await Pick(_onexControllerMouse,5);Check(ControllerText(ControllerEditorPolicy.GetNamedObject("bindings").GetNamedObject("B"),"target")=="wheelLeft"&&_onexControllerInputSummaries["B"].Text=="Scroll left","Horizontal wheel did not autosave/describe");await Pick(_onexControllerMouse,6);Check(ControllerText(ControllerEditorPolicy.GetNamedObject("bindings").GetNamedObject("B"),"target")=="wheelRight","Right scroll did not autosave");await Input("b");
+    await Source("X");Check((_onexControllerKeyboard.SelectedItem as ComboBoxItem)?.Tag is int[] selected&&selected.Length==5,"Five-key choice did not display");await Input("b");await Source("OEM:M1");await Pick(_onexControllerPadTarget,guide);Check(ControllerText(ControllerEditorPolicy.GetNamedObject("oem").GetNamedObject("bindings").GetNamedObject("M1"),"target")=="Guide","OEM Guide did not autosave");await Input("b");
+    string saved=ControllerEditorPolicy.Stringify();await ChangeOnexControllerAsync(new JsonObject{{"operation",JsonValue.CreateStringValue("select")},{"id",JsonValue.CreateStringValue("global")}});await ChangeOnexControllerAsync(new JsonObject{{"operation",JsonValue.CreateStringValue("select")},{"id",JsonValue.CreateStringValue(ownId)}});Check(saved==ControllerEditorPolicy.Stringify(),"Actions changed across profile selection");var invalid=JsonObject.Parse(saved);var all=new JsonObject();foreach(string source in new[]{"Home","GKey","KeyboardMouse","Onex","M1","M2"})all[source]=new JsonObject{{"kind",JsonValue.CreateStringValue("gamepad")},{"target",JsonValue.CreateStringValue("Guide")}};invalid["oem"]=new JsonObject{{"bindings",all}};bool rejected=false;try{await ChangeOnexControllerAsync(new JsonObject{{"operation",JsonValue.CreateStringValue("edit")},{"id",JsonValue.CreateStringValue(ownId)},{"policy",invalid}});}catch{rejected=true;}await ReadOnexControllerAsync();Check(rejected&&saved==ControllerEditorPolicy.Stringify(),"Last widget protection rejected late or changed profile");
+    foreach(string key in new[]{"guideChoiceAndAutosave","horizontalMouseChoicesAndAutosave","fiveKeyDisplay","oemGuideAutosave","selectionPersistence","lastWidgetGuardBeforeSave"})report[key]=JsonValue.CreateBooleanValue(true);report["injectedGamepadSteps"]=JsonValue.CreateNumberValue(step);report["physicalOwnerInputTested"]=JsonValue.CreateBooleanValue(false);report["productionCaptureEnabled"]=JsonValue.CreateBooleanValue(false);
+   }
+   finally
+   {
+    _onexControllerMappingFlyout?.Hide();if(ownId!=null){await ReadOnexControllerAsync();var own=_onexControllerState.GetNamedArray("entries").Select(value=>value.GetObject()).SingleOrDefault(value=>ControllerText(value,"id")==ownId);if(own!=null){Check(ControllerText(own,"name")==name,"Own QA identity changed; not deleting");await ChangeOnexControllerAsync(new JsonObject{{"operation",JsonValue.CreateStringValue("delete")},{"id",JsonValue.CreateStringValue(ownId)}});await ChangeOnexControllerAsync(new JsonObject{{"operation",JsonValue.CreateStringValue("automatic")}});}var marker=await folder.TryGetItemAsync("onex-controller-actions293-qa-owned.json");if(marker!=null)await marker.DeleteAsync();}if(_onexControllerOpen!=null)SetOnexControllerCard(null);if(original!=null)original.IsChecked=true;await Write("onex-gamepad-qa-state.json","{\"finished\":true}");
+   }
+  }
+ }
+}

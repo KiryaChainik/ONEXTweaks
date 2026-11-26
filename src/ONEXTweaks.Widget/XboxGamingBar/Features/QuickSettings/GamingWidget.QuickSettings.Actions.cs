@@ -1,0 +1,3376 @@
+using Microsoft.Gaming.XboxGameBar;
+using Microsoft.Gaming.XboxGameBar.Input;
+using Microsoft.UI.Xaml.Controls;
+using NLog;
+using Shared.Data;
+using Shared.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.Data.Json;
+using Windows.Foundation;
+using Windows.Foundation.Metadata;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Navigation;
+using Windows.System.Power;
+using Windows.Storage;
+using Windows.System;
+using Windows.UI.Xaml.Input;
+using System.Runtime.InteropServices;
+using Windows.UI;
+using XboxGamingBar.Data;
+using XboxGamingBar.Event;
+using XboxGamingBar.IPC;
+using XboxGamingBar.QuickSettings;
+using Shared.Enums;
+
+namespace XboxGamingBar
+{
+    public sealed partial class GamingWidget
+    {
+
+        /// <summary>
+        /// Handle Quick Settings tile clicks
+        /// </summary>
+        private void QuickSettingsTile_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string tileTag)
+            {
+                try
+                {
+                    if(OnexFrontend.UsesOwnBackend&&SuppressOnexHeldClick(button))return;
+                    if(OnexFrontend.UsesOwnBackend&&TryOnexHomeAction(button,tileTag))return;
+                    // Custom action tiles (predefined action type) and keyboard shortcut tiles
+                    // are handled first and return early. Standard built-in tiles fall through
+                    // to the switch block below.
+                    if (qsTileMap.TryGetValue(tileTag, out var mappedTile))
+                    {
+                        // Unavailable tile: reachable and readable, but inert. This is the ONLY place
+                        // that refuses the action — the button stays IsEnabled=true so it keeps its
+                        // place in XY focus (SetTileActionable explains why that matters).
+                        //
+                        // It also closes a hole that IsEnabled never covered: SimulateTileHotkeyFired
+                        // builds a throwaway Button and calls this handler directly, so a controller
+                        // hotkey used to fire tiles that were greyed out in the UI.
+                        if (!mappedTile.IsActionable)
+                        {
+                            Logger.Info($"Quick tile '{mappedTile.Id}' is not actionable right now " +
+                                        $"(state: {mappedTile.StateText?.Text ?? "?"}) - press ignored");
+                            return;
+                        }
+
+                        // Check for predefined action first
+                        if (mappedTile.ActionType != TileActionType.None &&
+                            mappedTile.ActionType != TileActionType.KeyboardShortcut)
+                        {
+                            _ = ExecuteTileActionAsync(mappedTile.ActionType, mappedTile.Name, mappedTile.ActionParam);
+                            UpdateQuickSettingsTileStates();
+                            return;
+                        }
+                        // Keyboard shortcut tile
+                        if (!string.IsNullOrEmpty(mappedTile.CustomShortcut))
+                        {
+                            _ = SendCustomShortcutAsync(mappedTile.CustomShortcut, mappedTile.Name);
+                            UpdateQuickSettingsTileStates();
+                            return;
+                        }
+                        // Standard tile with no action/shortcut — fall through to switch below
+                    }
+                    // Fallback: Check QuickSettingsConfig by ID (tile IDs are now GUIDs for custom tiles)
+                    else if (QuickSettings.QuickSettingsConfig.Instance.GetTile(tileTag) is QuickSettings.QuickSettingsTile configTile
+                             && configTile.Type == QuickSettings.TileType.CustomShortcut
+                             && !string.IsNullOrEmpty(configTile.CustomShortcut))
+                    {
+                        _ = SendCustomShortcutAsync(configTile.CustomShortcut, configTile.Name);
+                    }
+
+                    // Standard built-in tiles: always reached when no action/shortcut matched above
+                    switch (tileTag)
+                    {
+                        // NOTE: this block was previously inside `else` which made it unreachable
+                        // for tiles already found in qsTileMap. Moved outside so standard tiles work.
+                            case "TDPMode":
+                                if (_isControllerTriggered) CycleTDPMode();
+                                else ShowTDPDropdown(button);
+                                break;
+                            case "Profile":
+                                TogglePerGameProfile();
+                                break;
+                            case "Power":
+                                ShowPowerDropdown(button);
+                                break;
+                            case "Overlay":
+                                if (_isControllerTriggered) CyclePerformanceOverlay();
+                                else ShowOverlayDropdown(button);
+                                break;
+                            case "PowerMode":
+                                CyclePowerMode();
+                                break;
+                            case "FPSCombined":
+                                if (_isControllerTriggered) CycleFPSForCurrentMode();
+                                else ShowFPSCombinedDropdown(button);
+                                break;
+                            case "FPSLimit":               // kept for legacy/settings persistence
+                                CycleFPSLimit();
+                                break;
+                            case "IntelFpsTier":           // kept for legacy/settings persistence
+                                CycleIntelFpsTier();
+                                break;
+                            case "Resolution":
+                                CycleResolution();
+                                break;
+                            // DISABLED: FPS Limiter tile removed from the grid (see QuickSettings.cs).
+                            // FPS limiting is handled only by the Performance-tab controls now.
+                            // case "FpsLimiter":
+                            //     // Cycle FPS caps in the CURRENT mode (RTSS or Intel), incl. Off.
+                            //     CycleFPSForCurrentMode();
+                            //     break;
+                            case "ChargeLimiter":
+                                ToggleChargeLimiterTile();
+                                break;
+                            case "Rotation":
+                                CycleRotation();
+                                break;
+                            case "HDR":
+                                ToggleHDR();
+                                break;
+                            case "LosslessScaling":
+                                ToggleLosslessScaling();
+                                break;
+                            case "OptiScaler":
+                                // Close Game Bar, then send Insert key (OptiScaler overlay toggle)
+                                _ = SendCustomShortcutAsync("Insert", "OptiScaler");
+                                break;
+                            case "ReShade":
+                                // Close Game Bar, then send Home/Pos1 key (ReShade overlay toggle)
+                                _ = SendCustomShortcutAsync("Home", "ReShade");
+                                break;
+                            case "RIS":
+                                ToggleRIS();
+                                break;
+                            case "AFMF":
+                                ToggleAFMF();
+                                break;
+                            case "RSR":
+                                ToggleRSR();
+                                break;
+                            case "AntiLag":
+                                ToggleAntiLag();
+                                break;
+                            case "RadeonChill":
+                                ToggleRadeonChill();
+                                break;
+                            case "CPUBoost":
+                                ToggleCPUBoost();
+                                break;
+                            case "LedToggle":
+                                ToggleLedLighting();
+                                break;
+                            case "EPP":
+                                CycleEPP();
+                                break;
+                            case "ScreenSaver":
+                                ToggleScreenSaver();
+                                break;
+                            case "Keyboard":
+                                // Open the keyboard AND dismiss Game Bar (delayed) — you always
+                                // leave Game Bar to type with the virtual keyboard.
+                                OpenKeyboardThenDismissGameBar();
+                                break;
+                            case "LegionTouchpad":
+                                ToggleLegionTouchpad();
+                                break;
+                            case "LegionLightMode":
+                                CycleLegionLightMode();
+                                break;
+                            case "LegionDesktopControls":
+                                ToggleLegionDesktopControls();
+                                break;
+                            case "LegionRemapControls":
+                                ToggleRemapControlsProfile();
+                                break;
+                            case "LegionChargeLimit":
+                                ToggleLegionChargeLimit();
+                                break;
+                            // Action tiles
+                            case "ActionTaskManager":
+                                LaunchTaskManager();
+                                break;
+                            case "ActionExplorer":
+                                LaunchExplorer();
+                                break;
+                            case "ActionEndTask":
+                                SendAltF4();
+                                break;
+                            case "Fullscreen":
+                                ToggleFullscreen();
+                                break;
+                            case "ActionHibernate":
+                                ExecuteHibernate();
+                                break;
+                            case "LegionPowerLight":
+                                ToggleLegionPowerLight();
+                                break;
+                            case "LegionFanFullSpeed":
+                                ToggleLegionFanFullSpeed();
+                                break;
+                            case "ControllerEmulation":
+                                ToggleControllerEmulation();
+                                break;
+                            case "MSIClawDesktopMode":
+                                ToggleMSIClawDesktopMode();
+                                break;
+                            case "MsiCenter":
+                                ToggleMsiCenter();
+                                break;
+                            case "ExternalGamepadMode":
+                                ToggleExternalGamepadMode();
+                                break;
+                            case "MsiClawHwMouse":
+                                ToggleMsiClawHwMouse();
+                                break;
+                    }
+
+                    // Update tile states after action
+                    UpdateQuickSettingsTileStates();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Error handling Quick Settings tile click ({tileTag}): {ex}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the helper fires a tile hotkey for a widget-side action (standard tile or
+        /// action type 21-24). Simulates a tile button click by reusing the existing click dispatcher.
+        /// </summary>
+        // Set while a controller hotkey fires a tile action — tiles that normally open a
+        // flyout dropdown switch to headless cycle behavior instead (no visual anchor needed).
+        private bool _isControllerTriggered = false;
+
+        private void SimulateTileHotkeyFired(string tileId)
+        {
+            if (string.IsNullOrEmpty(tileId)) return;
+            Logger.Info($"SimulateTileHotkeyFired: '{tileId}'");
+
+            // Left MSI button Action mode: "__action__{TileActionType int}"
+            // Game Bar is NOT open when the physical button fires — skip Win+G close step.
+            if (tileId.StartsWith("__action__"))
+            {
+                if (int.TryParse(tileId.Substring("__action__".Length), out int actionInt))
+                {
+                    var actionType = (XboxGamingBar.QuickSettings.TileActionType)actionInt;
+                    string displayName = XboxGamingBar.QuickSettings.TileActionHelper.GetDisplayName(actionType);
+                    Logger.Info($"SimulateTileHotkeyFired: dispatching physical-button action {actionType} ({displayName})");
+                    _ = ExecutePhysicalButtonActionAsync(actionType, displayName);
+                }
+                return;
+            }
+            _isControllerTriggered = true;
+            try
+            {
+                var fakeBtn = new Button { Tag = tileId };
+                QuickSettingsTile_Click(fakeBtn, new Windows.UI.Xaml.RoutedEventArgs());
+            }
+            finally { _isControllerTriggered = false; }
+
+            // Show the new tile state in the RTSS OSD so the user sees what changed.
+            // UpdateQuickSettingsTileStates() has already run inside QuickSettingsTile_Click,
+            // so the StateText now reflects the new state.
+            if (qsTileMap.TryGetValue(tileId, out var tile) && tile.StateText != null)
+            {
+                string tileName  = tile.Name  ?? tileId;
+                string stateText = tile.StateText.Text ?? "";
+                string notif = string.IsNullOrEmpty(stateText) || stateText == tileName
+                    ? tileName
+                    : $"{tileName}\n{stateText}";
+                _ = SendActionNotificationAsync(notif);
+            }
+        }
+
+        private void CycleTDPMode()
+        {
+            if (TDPModeComboBox == null) return;
+
+
+            bool isLegion = legionGoDetected?.Value == true;
+
+            // ── Legion non-custom: hardware mode cycle (unchanged) ─────────────────
+            if (isLegion && !(useCustomTDPPresets && tdpPresets != null && tdpPresets.Count > 0))
+            {
+                int[] modeValues = { 1, 2, 3, 255 };
+                int currentMode = legionPerformanceMode?.Value ?? 2;
+                int nextMode;
+                switch (currentMode)
+                {
+                    case 1: nextMode = 2; break;
+                    case 2: nextMode = 3; break;
+                    case 3: nextMode = 255; break;
+                    case 255: nextMode = 1; break;
+                    default: nextMode = 2; break;
+                }
+                legionPerformanceMode?.SetValue(nextMode);
+                int nextIdx = Array.IndexOf(modeValues, nextMode);
+                if (nextIdx >= 0) { lastTDPModeIndex = nextIdx; TDPModeComboBox.SelectedIndex = nextIdx; }
+                if (nextMode == 255) ScheduleQsTdpReapply();
+                Logger.Info($"TDP Mode cycled (Legion): {currentMode} → {nextMode}");
+                return;
+            }
+
+            // ── Non-Legion OR custom-presets: preset cycle via SelectionChanged ──────
+            // Determine the ordered list of presets to cycle through.
+
+            int itemCount = TDPModeComboBox.Items.Count;
+            int presetCount;
+            if (useCustomTDPPresets && tdpPresets != null && tdpPresets.Count > 0)
+                presetCount = tdpPresets.Count;
+            else
+                presetCount = itemCount > 1 ? itemCount - 1 : itemCount;
+
+            // Use lastTDPModeIndex as source of truth — SelectedIndex can be corrupted by
+            // helper pipe echo-backs that remap the index differently after SetValue.
+            int cur = lastTDPModeIndex >= 0 ? lastTDPModeIndex : TDPModeComboBox.SelectedIndex;
+
+            // ── Diagnostic log (remove once cycle confirmed working) ──────────────
+            Logger.Info($"[CycleTDP] ENTER — useCustomPresets={useCustomTDPPresets}, " +
+                        $"tdpPresets.Count={tdpPresets?.Count ?? -1}, " +
+                        $"itemCount={itemCount}, presetCount={presetCount}, " +
+                        $"selectedIndex(cur)={cur}, lastTDPModeIndex={lastTDPModeIndex}, " +
+                        $"tdp?={(tdp == null ? "NULL" : "ok")}, " +
+                        $"isApplyingHelperUpdate={isApplyingHelperUpdate}, " +
+                        $"isLoadingProfile={isLoadingProfile}, isInitialSync={isInitialSync}");
+
+            if (presetCount <= 0) { Logger.Warn("[CycleTDP] presetCount=0 → abort"); return; }
+
+            if (cur < 0 || cur >= presetCount) cur = 0;
+            int next = (cur + 1) % presetCount;
+
+            // Resolve preset TDP and name
+            int presetTdp  = 0;
+            int legionMode = 255;
+            string name    = $"Preset {next}";
+
+            if (useCustomTDPPresets && tdpPresets != null && next < tdpPresets.Count)
+            {
+                var p  = tdpPresets[next];
+                presetTdp  = p.TdpWatts;
+                legionMode = p.LegionModeValue ?? 255;
+                name       = p.Name;
+            }
+            else
+            {
+                int[] defaultWatts = { 30, 25, 17, 12, 8 };
+                string[] defaultNames = { "Max", "Standard", "Balanced", "Battery", "Super Battery" };
+                if (next < defaultWatts.Length)  presetTdp = defaultWatts[next];
+                if (next < defaultNames.Length)  name = defaultNames[next];
+            }
+
+            Logger.Info($"[CycleTDP] {cur} → {next} | preset='{name}' {presetTdp}W | legionMode={legionMode}");
+
+            // Delegate to the same code path as SetTDPModeByIndex so SelectionChanged runs its
+            // full TDP-apply logic (legionPerformanceMode, ForceSetValue, boost preset, profile save).
+            // Do NOT pre-set lastTDPModeIndex here — SelectionChanged must see selectedIndex != last
+            // in order to proceed past the equality guard.
+            isUserInitiatedTDPModeChange = true;
+            try { TDPModeComboBox.SelectedIndex = next; }
+            finally { isUserInitiatedTDPModeChange = false; }
+
+            Logger.Info($"[CycleTDP] after SelectedIndex={TDPModeComboBox.SelectedIndex}, lastTDPModeIndex={lastTDPModeIndex}");
+
+            // Refresh Quick Settings tile label (SelectionChanged already handles the rest)
+            UpdateQuickSettingsTileStates();
+        }
+
+        /// <summary>
+        /// Called when the dropdown chevron on a split tile is tapped.
+        /// The tag on the button is "{TileId}_dropdown".
+        /// </summary>
+        /// <summary>
+        /// Availability check for a split tile's sub-button, whose tag is "{TileId}_dropdown" /
+        /// "_left" / "_right". Same rule as the main tile: reachable, but inert while unavailable.
+        /// </summary>
+        private bool IsSubButtonTileActionable(string tag)
+        {
+            int cut = tag.LastIndexOf('_');
+            if (cut <= 0) return true;
+            return !qsTileMap.TryGetValue(tag.Substring(0, cut), out var tile) || tile.IsActionable;
+        }
+
+        private void TileDropdown_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is Button btn)) return;
+            string tag = btn.Tag as string ?? "";
+            if (!IsSubButtonTileActionable(tag)) return;
+
+            if (tag == "TDPMode_dropdown")
+                ShowTDPDropdown(btn);
+            else if (tag == "FPSCombined_dropdown")
+                SwitchFPSCapMode();
+            else if (tag == "Overlay_dropdown")
+                ShowOverlayDropdown(btn);
+        }
+
+        /// <summary>
+        /// Left sub-button on a dual-button tile — tag is "{TileId}_left".
+        /// FPSCombined: switches between RTSS and Intel mode.
+        /// </summary>
+        private void TileLeftButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is Button btn)) return;
+            string tag = btn.Tag as string ?? "";
+
+            if (!IsSubButtonTileActionable(tag)) return;
+
+            if (tag == "FPSCombined_left")
+                SwitchFPSCapMode();
+        }
+
+        /// <summary>
+        /// Right sub-button on a dual-button tile — tag is "{TileId}_right".
+        /// FPSCombined: opens a dropdown with all available FPS values for the current mode.
+        /// </summary>
+        private void TileRightButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is Button btn)) return;
+            string tag = btn.Tag as string ?? "";
+
+            if (!IsSubButtonTileActionable(tag)) return;
+
+            if (tag == "FPSCombined_right")
+                ShowFPSCombinedDropdown(btn);
+        }
+
+        /// <summary>
+        /// Opens a dynamic MenuFlyout with the FPS values for the currently active mode.
+        /// Both modes offer the SAME values (Off, 30, 40, 60, 90, 120 FPS): IGCL caps at an arbitrary
+        /// fps, so the old Intel-only 3-tier list (Performance/Balanced/Efficiency) is gone. It also
+        /// wrote its list INDEX as the value, which reached the driver as 1/2/3 fps.
+        /// </summary>
+        private void ShowFPSCombinedDropdown(Button anchor)
+        {
+            if(OnexFrontend.UsesOwnBackend){ShowOnexFpsMenu(anchor);return;}
+            bool isIntel = fpsCapMode?.Value == 1;
+            var flyout = new MenuFlyout();
+
+            if (isIntel)
+            {
+                if (intelFpsTier == null) return;
+                int current = MigrateIntelFps(intelFpsTier.Value);
+                int[] values = { 0, 30, 40, 60, 90, 120 };
+                string[] labels = { "Off", "30 FPS", "40 FPS", "60 FPS", "90 FPS", "120 FPS" };
+                for (int i = 0; i < values.Length; i++)
+                {
+                    int fps = values[i];
+                    var item = new MenuFlyoutItem { Text = labels[i] };
+                    if (fps == current)
+                        item.Icon = new FontIcon { Glyph = "", FontSize = 12 };  // checkmark
+                    item.Click += (s, ev) =>
+                    {
+                        intelFpsTier.SetValue(fps);
+                        UpdateQuickSettingsTileStates();
+                        if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+                            SaveWidgetUiStateToProfile(currentProfileName);
+                    };
+                    flyout.Items.Add(item);
+                }
+            }
+            else
+            {
+                if (fpsLimit == null) return;
+                int current = fpsLimit.Value;
+                int[] values = { 0, 30, 40, 60, 90, 120 };
+                string[] labels = { "Off", "30 FPS", "40 FPS", "60 FPS", "90 FPS", "120 FPS" };
+                for (int i = 0; i < values.Length; i++)
+                {
+                    int fps = values[i];
+                    var item = new MenuFlyoutItem { Text = labels[i] };
+                    if (fps == current)
+                        item.Icon = new FontIcon { Glyph = "", FontSize = 12 };  // checkmark
+                    item.Click += (s, ev) =>
+                    {
+                        fpsLimit.SetValue(fps);
+                        // Sync the Performance tab controls
+                        isApplyingHelperUpdate = true;
+                        try
+                        {
+                            if (fps > 0) { FPSLimitToggle.IsOn = true; FPSLimitSlider.Value = fps; }
+                            else         { FPSLimitToggle.IsOn = false; }
+                        }
+                        finally { isApplyingHelperUpdate = false; }
+                        UpdateQuickSettingsTileStates();
+                        if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+                            SaveWidgetUiStateToProfile(currentProfileName);
+                    };
+                    flyout.Items.Add(item);
+                }
+            }
+
+            flyout.ShowAt(anchor);
+        }
+
+        /// <summary>
+        /// Switch FPS cap mode between RTSS and Intel.
+        /// Mirrors the mutual-exclusion logic from FPSModeRadio_Changed:
+        /// disables the old limiter immediately so it doesn't overlap with the new mode.
+        /// </summary>
+        private void SwitchFPSCapMode()
+        {
+            if(OnexFrontend.UsesOwnBackend){SwitchOnexFpsProvider();return;}
+            if (fpsCapMode == null) return;
+
+            bool switchToIntel = fpsCapMode.Value == 0;  // currently RTSS → switch to Intel
+            fpsCapMode.SetValue(switchToIntel ? 1 : 0);
+            Logger.Info($"FPS mode switched from tile to {(switchToIntel ? "Intel" : "RTSS")}");
+
+            // Mutual exclusion: disable old limiter, reset new one to 60fps
+            if (switchToIntel)
+            {
+                Logger.Info("[FPS-Mode] Tile: switching to Intel, disabling RTSS, setting Intel to 60fps");
+                fpsLimit?.SetValue(0);
+                intelFpsTier?.SetValue(60); // real fps (was tier 1)
+                isApplyingHelperUpdate = true;
+                try
+                {
+                    if (FPSLimitSlider != null) FPSLimitSlider.Value = 60;
+                    if (FPSLimitToggle != null) FPSLimitToggle.IsOn = true;
+                }
+                finally { isApplyingHelperUpdate = false; }
+            }
+            else
+            {
+                Logger.Info("[FPS-Mode] Tile: switching to RTSS, disabling Intel, setting RTSS to 60fps");
+                intelFpsTier?.SetValue(0);
+                fpsLimit?.SetValue(60);
+                isApplyingHelperUpdate = true;
+                try
+                {
+                    if (FPSLimitSlider != null) FPSLimitSlider.Value = 60;
+                    if (FPSLimitToggle != null) FPSLimitToggle.IsOn = true;
+                }
+                finally { isApplyingHelperUpdate = false; }
+            }
+
+            // Sync Performance tab radio button state
+            UpdateFPSLimiterPanels();
+            UpdateFPSCapDisplayText();
+            UpdateQuickSettingsTileStates();
+
+            // Persist to profile
+            if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+                SaveWidgetUiStateToProfile(currentProfileName);
+        }
+
+        /// <summary>
+        /// Cycle FPS values for whichever mode (RTSS or Intel) is currently active.
+        /// Called by both the main tile click and the right sub-button.
+        /// </summary>
+        private void CycleFPSForCurrentMode()
+        {
+            if(OnexFrontend.UsesOwnBackend){ToggleOnexFps();return;}
+            bool isIntel = fpsCapMode?.Value == 1;
+            if (isIntel)
+                CycleIntelFpsTier();
+            else
+                CycleFPSLimit();
+        }
+
+        /// <summary>
+        /// Opens a MenuFlyout listing all TDP presets / modes for direct selection.
+        /// The currently active mode is indicated with a checkmark icon.
+        /// </summary>
+        private void ShowTDPDropdown(Button anchor)
+        {
+            var flyout = new MenuFlyout();
+            int currentIndex = TDPModeComboBox?.SelectedIndex ?? 0;
+
+            if (useCustomTDPPresets && tdpPresets != null && tdpPresets.Count > 0)
+            {
+                for (int i = 0; i < tdpPresets.Count; i++)
+                {
+                    int capturedIndex = i;
+                    var preset = tdpPresets[i];
+                    string label = preset.TdpWatts > 0
+                        ? $"{preset.Name} ({preset.TdpWatts}W)"
+                        : preset.Name;
+                    var item = new MenuFlyoutItem { Text = label };
+                    if (i == currentIndex)
+                        item.Icon = new FontIcon { Glyph = "", FontSize = 12 }; // ✓
+                    item.Click += (s, ev) => SetTDPModeByIndex(capturedIndex);
+                    flyout.Items.Add(item);
+                }
+                int sliderIdx = tdpPresets.Count;
+                var sliderItem = new MenuFlyoutItem { Text = global::XboxGamingBar.OnexStrings.Get("Slider (Manual)") };
+                if (currentIndex == sliderIdx)
+                    sliderItem.Icon = new FontIcon { Glyph = "", FontSize = 12 };
+                sliderItem.Click += (s, ev) => SetTDPModeByIndex(sliderIdx);
+                flyout.Items.Add(sliderItem);
+            }
+            else if (legionGoDetected?.Value == true)
+            {
+                string[] modes = { "Quiet", "Balanced", "Performance", "Slider" };
+                for (int i = 0; i < modes.Length; i++)
+                {
+                    int capturedIndex = i;
+                    var item = new MenuFlyoutItem { Text = modes[i] };
+                    if (i == currentIndex)
+                        item.Icon = new FontIcon { Glyph = "", FontSize = 12 };
+                    item.Click += (s, ev) => SetTDPModeByIndex(capturedIndex);
+                    flyout.Items.Add(item);
+                }
+            }
+            else
+            {
+                // MSI Claw default modes
+                string[] modes = { "Max (30W)", "Standard (25W)", "Balanced (17W)", "Battery (12W)", "Super Battery (8W)", "Slider" };
+                for (int i = 0; i < modes.Length; i++)
+                {
+                    int capturedIndex = i;
+                    var item = new MenuFlyoutItem { Text = modes[i] };
+                    if (i == currentIndex)
+                        item.Icon = new FontIcon { Glyph = "", FontSize = 12 }; // ✓ active mode
+                    item.Click += (s, ev) => SetTDPModeByIndex(capturedIndex);
+                    flyout.Items.Add(item);
+                }
+            }
+
+            flyout.ShowAt(anchor);
+        }
+
+        /// <summary>
+        /// Opens a MenuFlyout listing RTSS overlay levels (0–4) for direct selection.
+        /// </summary>
+        private void ShowOverlayDropdown(Button anchor)
+        {
+            if(OnexFrontend.UsesOwnBackend){ShowOnexOverlayMenu(anchor);return;}
+            if (osd == null) return;
+
+            var flyout = new MenuFlyout();
+            int current = (int)osd.Value;
+
+            string[] labels = { "Off", "Basic", "Horizontal", "Horizontal Custom", "Vertical Custom" };
+            for (int i = 0; i < labels.Length; i++)
+            {
+                int level = i;
+                var item = new MenuFlyoutItem { Text = labels[i] };
+                if (level == current)
+                    item.Icon = new FontIcon { Glyph = "", FontSize = 12 };
+                item.Click += (s, ev) =>
+                {
+                    osd.SetValue(level);
+                    UpdateQuickSettingsTileStates();
+                };
+                flyout.Items.Add(item);
+            }
+
+            flyout.ShowAt(anchor);
+        }
+
+        /// <summary>
+        /// Power tile: opens a controller-navigable MenuFlyout (upward) with the system power actions,
+        /// each with a Fluent (Segoe MDL2) icon. The flyout opens above the tile and is traversed from
+        /// the bottom up, so the list is ordered Power Off → … → Reboot to BIOS to keep the most-used
+        /// (Power Off, Reboot) where the cursor lands first. Each runs forced/immediate on the helper
+        /// (see ExecutePowerAction).
+        /// </summary>
+        private void ShowPowerDropdown(Button anchor)
+        {
+            var flyout = new MenuFlyout { Placement = FlyoutPlacementMode.Top };
+
+            // (label, action, Segoe MDL2 glyph). Order reversed vs. the visual list because the
+            // upward flyout is navigated bottom-up on the controller.
+            var entries = new (string Label, string Action, string Glyph)[]
+            {
+                ("Power Off",      "poweroff",  ""), // PowerButton
+                ("Reboot",         "reboot",    ""), // UpdateRestore (restart)
+                ("Sleep",          "sleep",     ""), // QuietHours (crescent moon)
+                ("Hibernate",      "hibernate", ""), // Save (state written to disk)
+                ("Reboot to BIOS", "bios",      ""), // Settings (firmware)
+            };
+
+            foreach (var entry in entries)
+            {
+                string act = entry.Action;
+                var item = new MenuFlyoutItem
+                {
+                    Text = entry.Label,
+                    Icon = new FontIcon { Glyph = entry.Glyph, FontSize = 14 }
+                };
+                item.Click += (s, ev) => SendPowerActionAsync(act);
+                flyout.Items.Add(item);
+            }
+
+            flyout.ShowAt(anchor);
+        }
+
+        /// <summary>Sends a forced power action to the helper, which owns the actual shutdown/suspend.</summary>
+        private async void SendPowerActionAsync(string action)
+        {
+            try
+            {
+                if (!App.IsConnected)
+                {
+                    Logger.Warn($"Power action '{action}' ignored — no helper connection");
+                    return;
+                }
+                var message = new Windows.Foundation.Collections.ValueSet { { "PowerAction", action } };
+                await App.SendMessageAsync(message);
+                Logger.Info($"Sent PowerAction '{action}' to helper");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"SendPowerActionAsync('{action}'): {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Directly applies TDP mode by ComboBox index — used by the dropdown for direct selection.
+        /// Mirrors CycleTDPMode() but for a specific target index instead of next-in-cycle.
+        /// </summary>
+        private void SetTDPModeByIndex(int index)
+        {
+
+            bool isLegion = legionGoDetected?.Value == true;
+
+            // Apply via ComboBox — SelectionChanged handler applies the actual TDP to hardware
+            if (TDPModeComboBox != null)
+            {
+                isUserInitiatedTDPModeChange = true;
+                try { TDPModeComboBox.SelectedIndex = index; }
+                finally { isUserInitiatedTDPModeChange = false; }
+            }
+
+            // For Legion: also set the hardware performance mode property
+            if (isLegion && legionPerformanceMode != null)
+            {
+                int[] modeValues = { 1, 2, 3, 255 };
+                int legionMode = (index >= 0 && index < modeValues.Length) ? modeValues[index] : 255;
+                legionPerformanceMode.SetValue(legionMode);
+                if (legionMode == 255)
+                    ScheduleQsTdpReapply();
+            }
+
+            UpdateQuickSettingsTileStates();
+            Logger.Info($"TDP Mode set from dropdown: index={index}, isLegion={isLegion}");
+        }
+
+        private void ScheduleQsTdpReapply()
+        {
+            try
+            {
+                // Cancel existing timer
+                if (qsTdpReapplyTimer != null)
+                {
+                    qsTdpReapplyTimer.Stop();
+                }
+
+                // Create new timer
+                qsTdpReapplyTimer = new Windows.UI.Xaml.DispatcherTimer();
+                qsTdpReapplyTimer.Interval = TimeSpan.FromSeconds(5);
+                qsTdpReapplyTimer.Tick += async (s, e) =>
+                {
+                    qsTdpReapplyTimer.Stop();
+                    // Reapply TDP - still in Custom/Slider mode?
+                    bool isCustomMode = IsCustomTdpModeSelected();
+                    if (isCustomMode)
+                    {
+                        // Read TDP value NOW (at timer fire time), not when scheduled
+                        // This ensures we use the current profile's TDP if profile switched
+                        int currentTdpValue = (int)(TDPSlider?.Value ?? 15);
+
+                        // Ask helper to re-push current TDP to hardware. The previous
+                        // N-1/N trick corrupted global.xml by briefly writing TDP-1.
+                        try
+                        {
+                            if (App.IsConnected)
+                            {
+                                var request = new Windows.Foundation.Collections.ValueSet();
+                                request.Add("ReapplyTDP", true);
+                                await App.SendMessageAsync(request);
+                                Logger.Info($"Quick Settings: Asked helper to reapply current TDP ({currentTdpValue}W)");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Warn($"Quick Settings: ReapplyTDP send failed: {ex.Message}");
+                        }
+                    }
+                };
+                qsTdpReapplyTimer.Start();
+                Logger.Info($"Quick Settings: Scheduled TDP reapply in 5 seconds");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error scheduling TDP reapply: {ex.Message}");
+            }
+        }
+
+        private void TogglePerGameProfile()
+        {
+            // Only allow toggling when a game is detected
+            if (perGameProfile != null && runningGame != null && runningGame.Value.IsValid())
+            {
+                bool newValue = !perGameProfile.Value;
+                isUserInitiatedProfileToggle = true; // Flag this as user-initiated
+                perGameProfile.SetValue(newValue);
+                isUserInitiatedProfileToggle = false;
+                Logger.Info($"Per-game profile toggled to {newValue}");
+            }
+            else
+            {
+                Logger.Info("Per-game profile toggle ignored - no game detected");
+            }
+        }
+
+        private async void TriggerOnScreenKeyboard()
+        {
+            await ToggleTouchKeyboard();
+        }
+
+        /// <summary>
+        /// Ask the helper to open the on-screen keyboard (OpenSmart: modern touch keyboard, or the classic
+        /// OSK over windowed browsers/Electron apps where the modern one won't stay).
+        /// </summary>
+        private async Task ToggleTouchKeyboard()
+        {
+            if(OnexFrontend.UsesOwnBackend){await InvokeOnexDesktopActionAsync("keyboard");return;}
+            try
+            {
+                if (App.IsConnected)
+                {
+                    // "gamebar" = tile clicked from the Game Bar widget → the helper closes Game Bar first,
+                    // so the app behind it is foreground before it decides modern-vs-OSK and shows the
+                    // keyboard. "direct" (app mode) → no dismiss. This replaces the old widget-side Win+G.
+                    string mode = (widget != null) ? "gamebar" : "direct";
+                    await App.SendMessageAsync(new Windows.Foundation.Collections.ValueSet { { "ToggleTouchKeyboard", mode } });
+                    Logger.Info($"Keyboard tile → helper OpenSmart (mode={mode})");
+                }
+                else
+                {
+                    // Fallback to Win+Ctrl+O (accessibility keyboard shortcut)
+                    QuickSettings.KeyboardShortcutHelper.SendShortcut("Win+Ctrl+O");
+                    Logger.Info("On-screen keyboard triggered via Win+Ctrl+O (fallback)");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error toggling touch keyboard: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Keyboard tile entry point. The helper's OpenSmart now dismisses Game Bar itself (so the app
+        /// behind it becomes foreground before deciding modern-vs-OSK) — no widget-side Win+G/delay.
+        /// </summary>
+        private void OpenKeyboardThenDismissGameBar()
+        {
+            TriggerOnScreenKeyboard();
+        }
+
+        /// <summary>
+        /// Toggle RTSS OSD between off and last used level
+        /// </summary>
+        private void ToggleRTSSOsd()
+        {
+            try
+            {
+                if (osd == null)
+                {
+                    Logger.Warn("ToggleRTSSOsd: osd property is null");
+                    return;
+                }
+
+                int currentLevel = (int)osd.Value;
+
+                if (currentLevel > 0)
+                {
+                    // Currently on - save level and turn off
+                    lastNonZeroOsdLevel = currentLevel;
+                    osd.SetValue(0);
+                    Logger.Info($"RTSS OSD toggled OFF (was level {currentLevel})");
+                }
+                else
+                {
+                    // Currently off - restore to last level
+                    osd.SetValue(lastNonZeroOsdLevel);
+                    Logger.Info($"RTSS OSD toggled ON to level {lastNonZeroOsdLevel}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error toggling RTSS OSD: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Launch Task Manager via helper
+        /// </summary>
+        private void LaunchTaskManager()
+        {
+            _ = InvokeOnexDesktopActionAsync("taskManager");
+        }
+
+        /// <summary>
+        /// Launch File Explorer via helper
+        /// </summary>
+        private void LaunchExplorer()
+        {
+            _ = InvokeOnexDesktopActionAsync("explorer");
+        }
+
+        /// <summary>
+        /// Close the foreground game window. Closes the Game Bar first with Win+G (same mechanism
+        /// as the custom-shortcut tiles), which dismisses the overlay and returns focus to the game
+        /// underneath, then sends Alt+F4 to close it. More reliable than Alt+Tab (that left the
+        /// Game Bar open in the background and could focus the wrong window).
+        /// </summary>
+        private async void SendAltF4()
+        {
+            await ConfirmOnexCloseWindowAsync();
+        }
+
+        /// <summary>
+        /// Toggle fullscreen for the foreground app. Sends BOTH of the two common
+        /// fullscreen shortcuts so it works across the widest range of apps on a handheld:
+        ///   • F11      — browsers, file managers, many apps and some games
+        ///   • Alt+Enter — emulators (RetroArch/DOSBox/MAME), terminals and exclusive-fullscreen games
+        /// One of them is a no-op in any given app, so the surviving one toggles fullscreen.
+        /// (Edge case: an app that binds *both* would toggle twice and stay as-is — rare, and
+        /// not a typical handheld foreground.) The Game Bar is closed first with Win+G (same
+        /// mechanism as the custom-shortcut tiles), which dismisses the overlay and returns focus
+        /// to the game underneath — more reliable than Alt+Tab (that left the Game Bar open in the
+        /// background and could focus the wrong window).
+        /// </summary>
+        private async void ToggleFullscreen()
+        {
+            try
+            {
+                // Close the Game Bar first (Win+G) so the overlay is gone and focus returns to the
+                // game underneath. Only when running as a widget. Mirrors SendCustomShortcutAsync.
+                if (widget != null)
+                {
+                    await SendKeyboardShortcutViaHelper("Win+G");
+                    Logger.Debug("Win+G sent to close Game Bar");
+                    await Task.Delay(150);
+                }
+
+                // F11 — the soft/universal fullscreen toggle (browsers, apps, many games)
+                await SendKeyboardShortcutViaHelper("F11");
+                Logger.Info("Fullscreen: F11 sent");
+
+                // Small gap so the two shortcuts don't collide in the input queue
+                await Task.Delay(120);
+
+                // Alt+Enter — emulators, terminals and exclusive-fullscreen games
+                await SendKeyboardShortcutViaHelper("Alt+Enter");
+                Logger.Info("Fullscreen: Alt+Enter sent");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error toggling fullscreen: {ex.Message}");
+            }
+        }
+
+        // Resolutions to exclude from quick cycling (odd resolutions that don't scale well)
+        private static readonly HashSet<string> excludedQuickResolutions = new HashSet<string>
+        {
+            "1680x1050"  // Odd 16:10 resolution that doesn't scale cleanly
+        };
+
+        private void CycleResolution()
+        {
+            if (resolution != null && resolutions?.Value != null && resolutions.Value.Count > 0)
+            {
+                // Filter out excluded resolutions for quick cycling
+                var quickResolutions = resolutions.Value
+                    .Where(r => !excludedQuickResolutions.Contains(r))
+                    .ToList();
+
+                if (quickResolutions.Count == 0)
+                {
+                    quickResolutions = resolutions.Value; // Fallback to all if filter removes everything
+                }
+
+                string currentRes = resolution.Value;
+                int currentIndex = quickResolutions.IndexOf(currentRes);
+
+                // If current resolution is not in quick list, start from first
+                if (currentIndex < 0) currentIndex = -1;
+
+                int nextIndex = (currentIndex + 1) % quickResolutions.Count;
+                string nextRes = quickResolutions[nextIndex];
+                resolution.SetValue(nextRes);
+                Logger.Info($"Resolution cycled from {currentRes} to {nextRes}");
+            }
+        }
+
+        /// <summary>
+        /// Cycles display orientation between Landscape (0) and Portrait (1).
+        /// </summary>
+        private void CycleRotation()
+        {
+            if (displayOrientation != null)
+            {
+                int currentOrientation = displayOrientation.Value;
+                // Cycle between Landscape (0) and Portrait (1)
+                // Skip flipped modes (2, 3) for simple toggle behavior
+                int nextOrientation = (currentOrientation == 0) ? 1 : 0;
+                displayOrientation.SetValue(nextOrientation);
+                Logger.Info($"Display orientation cycled from {currentOrientation} to {nextOrientation}");
+            }
+        }
+
+        private void ToggleHDR()
+        {
+            if (hdrEnabled != null && (hdrSupported?.Value ?? false))
+            {
+                bool newValue = !hdrEnabled.Value;
+                hdrEnabled.SetValue(newValue);
+                // Update the toggle so SettingChanged fires and saves to profile
+                if (HDRToggle != null)
+                    HDRToggle.IsOn = newValue;
+                Logger.Info($"HDR toggled to {newValue}");
+            }
+        }
+
+        private void ToggleLosslessScaling()
+        {
+            if (losslessScalingEnabled != null)
+            {
+                bool newValue = !losslessScalingEnabled.Value;
+                losslessScalingEnabled.SetValue(newValue);
+                Logger.Info($"Lossless Scaling toggled to {newValue}");
+            }
+        }
+
+        private void ToggleAFMF()
+        {
+            if (amdFluidMotionFrameEnabled != null && (amdFluidMotionFrameSupported?.Value ?? false))
+            {
+                bool newValue = !amdFluidMotionFrameEnabled.Value;
+                amdFluidMotionFrameEnabled.SetValue(newValue);
+                // Update the toggle so SettingChanged fires and saves to profile
+                if (AMDFluidMotionFrameToggle != null)
+                    AMDFluidMotionFrameToggle.IsOn = newValue;
+                Logger.Info($"AFMF toggled to {newValue}");
+            }
+        }
+
+        private void ToggleRSR()
+        {
+            if (amdRadeonSuperResolutionEnabled != null && (amdRadeonSuperResolutionSupported?.Value ?? false))
+            {
+                bool newValue = !amdRadeonSuperResolutionEnabled.Value;
+                amdRadeonSuperResolutionEnabled.SetValue(newValue);
+                // Update the toggle so SettingChanged fires and saves to profile
+                if (AMDRadeonSuperResolutionToggle != null)
+                    AMDRadeonSuperResolutionToggle.IsOn = newValue;
+                Logger.Info($"RSR toggled to {newValue}");
+            }
+        }
+
+        private void ToggleRIS()
+        {
+            if (amdImageSharpeningEnabled != null && (amdImageSharpeningSupported?.Value ?? false))
+            {
+                bool newValue = !amdImageSharpeningEnabled.Value;
+                amdImageSharpeningEnabled.SetValue(newValue);
+                AMDImageSharpeningToggle.IsOn = newValue;
+                Logger.Info($"RIS toggled to {newValue}");
+            }
+        }
+
+        private void ToggleAntiLag()
+        {
+            if (amdRadeonAntiLagEnabled != null && (amdRadeonAntiLagSupported?.Value ?? false))
+            {
+                bool newValue = !amdRadeonAntiLagEnabled.Value;
+                amdRadeonAntiLagEnabled.SetValue(newValue);
+                // Update the toggle so SettingChanged fires and saves to profile
+                if (AMDRadeonAntiLagToggle != null)
+                    AMDRadeonAntiLagToggle.IsOn = newValue;
+                Logger.Info($"Anti-Lag toggled to {newValue}");
+            }
+        }
+
+        private void ToggleRadeonChill()
+        {
+            if (amdRadeonChillEnabled != null && (amdRadeonChillSupported?.Value ?? false))
+            {
+                bool newValue = !amdRadeonChillEnabled.Value;
+                amdRadeonChillEnabled.SetValue(newValue);
+                // Update the toggle so SettingChanged fires and saves to profile
+                if (AMDRadeonChillToggle != null)
+                    AMDRadeonChillToggle.IsOn = newValue;
+                Logger.Info($"Radeon Chill toggled to {newValue}");
+            }
+        }
+
+        private void ToggleCPUBoost()
+        {
+            if(OnexFrontend.UsesOwnBackend){OnexBoostToggleChanged(!_onexBoostOn);return;}
+            if (cpuBoost != null)
+            {
+                bool newValue = !cpuBoost.Value;
+                cpuBoost.SetValue(newValue);
+                // Update the toggle so SettingChanged fires and saves to profile
+                if (CPUBoostToggle != null)
+                    CPUBoostToggle.IsOn = newValue;
+                Logger.Info($"CPU Boost toggled to {newValue}");
+            }
+        }
+
+        // Remembers the brightness to restore when the LED is toggled back on (in-session).
+        private int _lastLedBrightness = 100;
+
+        /// <summary>
+        /// Global LED on/off tile. Simple logic per request: when on, remember the current RGB
+        /// brightness and set it to 0 (lights off); when off, restore the last brightness. Drives the
+        /// existing Brightness slider so its ValueChanged pushes the value to the helper exactly like a
+        /// manual change — no separate code path.
+        /// </summary>
+        private void ToggleLedLighting()
+        {
+            // MSI Claw: the LED has its own path (MsiLedColor) — toggle brightness 0/100 there.
+            // The Legion brightness slider does not drive the Claw LED.
+            if (IsMsiClawDevice())
+            {
+                bool turnOn = !IsMsiLedOn();
+                ApplyMsiLedOnOff(turnOn);
+                UpdateQuickSettingsTileStates();
+                return;
+            }
+
+            if (LegionBrightnessSlider == null) return;
+
+            int current = (int)LegionBrightnessSlider.Value;
+            if (current > 0)
+            {
+                _lastLedBrightness = current;        // remember to restore later
+                LegionBrightnessSlider.Value = 0;    // off — ValueChanged pushes to helper
+                Logger.Info($"LED lighting toggled OFF (was {current}%)");
+            }
+            else
+            {
+                int restore = _lastLedBrightness > 0 ? _lastLedBrightness : 100;
+                LegionBrightnessSlider.Value = restore;
+                Logger.Info($"LED lighting toggled ON ({restore}%)");
+            }
+        }
+
+        private void CyclePowerMode()
+        {
+            if (osPowerMode != null)
+            {
+                // Cycle: Efficiency (0) -> Balanced (1) -> Performance (2) -> Efficiency (0)
+                int currentMode = osPowerMode.Value;
+                int nextMode = (currentMode + 1) % 3;
+                osPowerMode.SetValue(nextMode);
+
+                // Update the combobox and value text in Performance tab
+                isLoadingOSPowerMode = true;
+                try
+                {
+                    OSPowerModeComboBox.SelectedIndex = nextMode;
+                    OSPowerModeValue.Text = OSPowerModeNames[nextMode];
+                }
+                finally
+                {
+                    isLoadingOSPowerMode = false;
+                }
+
+                Logger.Info($"Power Mode cycled to {OSPowerModeNames[nextMode]}");
+
+                // Save the change to profile
+                if (!isInitialSync && !isApplyingHelperUpdate && !isLoadingProfile && SaveOSPowerMode)
+                {
+                    Logger.Info($"Saving OS Power Mode change to profile: {currentProfileName}");
+                    SaveWidgetUiStateToProfile(currentProfileName);
+                }
+            }
+        }
+
+        private void CycleEPP()
+        {
+            if (cpuEPP != null)
+            {
+                int currentValue = (int)cpuEPP.Value;
+                int nextValue;
+                switch (currentValue)
+                {
+                    case 0: nextValue = 30; break;
+                    case 30: nextValue = 80; break;
+                    case 80: nextValue = 100; break;
+                    case 100: nextValue = 0; break;
+                    default: nextValue = 0; break;
+                }
+                // This Set is the whole persistence path (plan §5.4). The helper's CPUEPP handler runs
+                // RouteProfileSave on every change and decides global-vs-per-game itself
+                // (Program.PropertyHandlers.cs, ProfileSaveFlagsState.CPUEPP) — verified, not assumed.
+                // The widget-store write that used to follow was a second copy of the same value, kept
+                // in a field nothing reads any more.
+                cpuEPP.SetValue(nextValue);
+
+                // Keep the slider in step so the tile and the Performance tab agree.
+                if (CPUEPPSlider != null)
+                {
+                    CPUEPPSlider.Value = nextValue;
+                }
+
+                Logger.Info($"EPP cycled from {currentValue} to {nextValue}");
+            }
+        }
+
+        private void CyclePerformanceOverlay()
+        {
+            if (osdProvider == 1) // AMD
+            {
+                // AMD has 4 overlay levels that cycle with Ctrl+Shift+X
+                // Ctrl+Shift+O toggles the overlay on/off completely
+                // Cycle: Off -> Level 1 -> Level 2 -> Level 3 -> Level 4 -> Off
+                if (amdOverlayLevel == 0)
+                {
+                    // Currently off, turn on (starts at level 1)
+                    SendAMDOverlayToggle();
+                    amdOverlayLevel = 1;
+                    SaveAMDOverlayLevel();
+                    Logger.Info("AMD Overlay toggled ON (Level 1)");
+                }
+                else if (amdOverlayLevel < 4)
+                {
+                    // Cycle to next level
+                    CycleAMDOverlayLevel();
+                    amdOverlayLevel++;
+                    SaveAMDOverlayLevel();
+                    Logger.Info($"AMD Overlay cycled to Level {amdOverlayLevel}");
+                }
+                else
+                {
+                    // At level 4, turn off
+                    SendAMDOverlayToggle();
+                    amdOverlayLevel = 0;
+                    SaveAMDOverlayLevel();
+                    Logger.Info("AMD Overlay toggled OFF");
+                }
+                UpdateQuickSettingsTileStates();
+            }
+            else // RTSS
+            {
+                if (osd != null)
+                {
+                    int currentLevel = (int)osd.Value;
+                    int nextLevel = (currentLevel + 1) % 5;  // 0=Off, 1=Basic, 2=Horizontal, 3=Horizontal Custom, 4=Vertical Custom
+                    osd.SetValue(nextLevel);
+                    Logger.Info($"RTSS Performance Overlay cycled from {currentLevel} to {nextLevel}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cycle FPS limit through: Off -> 30 -> 40 -> 60 -> 90 -> Off (fixed ascending values)
+        /// </summary>
+        private void CycleFPSLimit()
+        {
+            if(OnexFrontend.UsesOwnBackend){ToggleOnexFps();return;}
+            if (fpsLimit == null) return;
+
+            // Fixed FPS cap values in ascending order
+            int[] fpsValues = new int[]
+            {
+                0,   // Off (unlimited)
+                30,  // 30 FPS — power saving
+                40,  // 40 FPS — balanced
+                60,  // 60 FPS — smooth
+                90,  // 90 FPS — high performance
+                120  // 120 FPS — high refresh
+            };
+
+            // Find current index and cycle to next
+            int currentLimit = fpsLimit.Value;
+            int currentIndex = 0;
+            for (int i = 0; i < fpsValues.Length; i++)
+            {
+                if (fpsValues[i] == currentLimit)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            int nextIndex = (currentIndex + 1) % fpsValues.Length;
+            int nextLimit = fpsValues[nextIndex];
+
+            fpsLimit.SetValue(nextLimit);
+            Logger.Info($"FPS Limit cycled from {currentLimit} to {nextLimit}");
+
+            // Sync the Performance tab FPS Limit controls
+            isApplyingHelperUpdate = true;
+            try
+            {
+                // Keep the slider on the one range the rest of the FPS code uses. This used to be
+                // set from refreshRates.Max(), which could exceed 120 (see FpsSliderMax).
+                FPSLimitSlider.Maximum = FpsSliderMax();
+
+                if (nextLimit > 0)
+                {
+                    FPSLimitToggle.IsOn = true;
+                    FPSLimitSlider.Value = nextLimit;
+                }
+                else
+                {
+                    FPSLimitToggle.IsOn = false;
+                }
+            }
+            finally
+            {
+                isApplyingHelperUpdate = false;
+            }
+
+            // Save to profile if FPS Limit saving is enabled
+            if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+            {
+                SaveWidgetUiStateToProfile(currentProfileName);
+            }
+        }
+
+        /// <summary>
+        /// Cycle Intel IGCL Endurance Gaming tier: Off -> Performance(60) -> Balanced(40) -> Efficiency(30) -> Off.
+        /// Mutual exclusion (disable RTSS limit when Intel activates, and vice versa) is enforced
+        /// by the helper's FPSLimit_PropertyChanged / IntelFpsTier_PropertyChanged callbacks.
+        /// Ported from IntelGameBar.
+        /// </summary>
+        private void CycleIntelFpsTier()
+        {
+            if(OnexFrontend.UsesOwnBackend){ToggleOnexFps();return;}
+            if (intelFpsTier == null) return;
+
+            // intelFpsTier now carries a real FPS (0 = off). Cycle the same ascending set as RTSS.
+            int[] fpsValues = { 0, 30, 40, 60, 90, 120 };
+            int currentFps = MigrateIntelFps(intelFpsTier.Value);
+            int currentIndex = 0;
+            for (int i = 0; i < fpsValues.Length; i++) { if (fpsValues[i] == currentFps) { currentIndex = i; break; } }
+            int nextFps = fpsValues[(currentIndex + 1) % fpsValues.Length];
+            intelFpsTier.SetValue(nextFps);
+
+            Logger.Info($"Intel FPS cap cycled from {currentFps} to {nextFps}");
+
+            // Persist to the widget profile so a Game Bar reopen re-pushes THIS value.
+            // Mirror of CycleFPSLimit (RTSS): without this the Intel tier set from the tile is
+            // lost on reopen, because the stale widget profile gets pushed back to the helper.
+            // (QuickSettingsProperty_Changed only refreshes tile state — it does not save.)
+            if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+                SaveWidgetUiStateToProfile(currentProfileName);
+        }
+
+        // ── FPS-state cycle button ─────────────────────────────────────────────────
+        // States: 0 = Off, 1 = RTSS, 2 = Intel
+        // The 3-state cycle button replaces the old Toggle + Radio-button UI.
+        // Underlying hidden elements (FPSLimitToggle, FPSModeRTSSRadio) are still driven
+        // programmatically so existing save/load/profile code continues to work. The hidden
+        // IntelFpsTierComboBox is gone: Intel caps at an arbitrary fps, so there are no tiers to pick.
+
+        // ── Unified real-FPS model ─────────────────────────────────────────────────
+        // The slider carries an ACTUAL FPS value (not an index) for BOTH RTSS and Intel.
+        // Snap mode (default) rounds to FpsSnapSteps; the "stepless" option (FpsSteplessEnabled,
+        // widget-local) allows any integer FPS. Intel uses an arbitrary IGCL frame limit —
+        // intelFpsTier now carries an fps (0 = off), not a 0..3 tier (see MigrateIntelFps).
+
+        /// <summary>
+        /// Default snap positions (also the scale labels under the slider). Entries above the current
+        /// FpsSliderMax() are filtered out everywhere they are consumed, so the three high-refresh
+        /// steps only appear while the extended range is on.
+        /// </summary>
+        private static readonly int[] FpsSnapSteps = { 24, 30, 40, 45, 60, 72, 90, 100, 120, 144, 165, 180 };
+        private const int FpsSliderMin = 20;
+
+        /// <summary>Global "stepless FPS slider" preference (widget-local; pure UI behaviour).</summary>
+        private bool FpsSteplessEnabled
+        {
+            get { var v = Windows.Storage.ApplicationData.Current.LocalSettings.Values["FpsSteplessSlider"]; return v is bool b && b; }
+            set { Windows.Storage.ApplicationData.Current.LocalSettings.Values["FpsSteplessSlider"] = value; }
+        }
+
+        /// <summary>
+        /// Global "extended FPS range" preference (widget-local, OFF by default). Raises the slider's
+        /// ceiling from the panel's 120 Hz to 180 FPS. Deliberately opt-in: the Claw panel tops out at
+        /// 120, so for most users everything above it is dead track that only compresses the useful
+        /// part of the scale. It earns its keep on an external high-refresh display, and for a cap that
+        /// is meant to sit above the panel rate (frame pacing, latency tuning, VRR headroom).
+        /// </summary>
+        private bool FpsExtendedMaxEnabled
+        {
+            get { var v = Windows.Storage.ApplicationData.Current.LocalSettings.Values["FpsExtendedMaxSlider"]; return v is bool b && b; }
+            set { Windows.Storage.ApplicationData.Current.LocalSettings.Values["FpsExtendedMaxSlider"] = value; }
+        }
+
+        /// <summary>
+        /// Upper bound of the FPS slider. 120 — the Claw panel's refresh rate — unless the user opted
+        /// into the extended range (FpsExtendedMaxEnabled), which raises it to FpsSliderMaxFpsExtended.
+        ///
+        /// This used to follow the display: Math.Max(120, refreshRates.Value.Max()). That was wrong,
+        /// because GetSupportedRefreshRates() enumerates every mode of EVERY resolution without
+        /// filtering by the one actually in use, so a machine that offers, say, 480Hz at some tiny
+        /// legacy resolution pushed the slider to 20..480. Two visible symptoms followed: the
+        /// stepless slider allowed 480 FPS, and the scale labels (24..120) all crowded into the
+        /// leftmost fifth of the track and overlapped into an unreadable smear — the label maths was
+        /// fine, it was faithfully drawing a range that should never have existed.
+        ///
+        /// That is also why the extended range is a fixed, user-chosen 180 rather than a second attempt
+        /// at deriving a ceiling from the display: the failure above was not the number 480, it was
+        /// letting an unfiltered enumeration decide the scale at all.
+        /// </summary>
+        private const int FpsSliderMaxFps = 120;
+
+        /// <summary>Ceiling while FpsExtendedMaxEnabled is on. Highest snap step is 180.</summary>
+        private const int FpsSliderMaxFpsExtended = 180;
+
+        private int FpsSliderMax() => FpsExtendedMaxEnabled ? FpsSliderMaxFpsExtended : FpsSliderMaxFps;
+
+        /// <summary>Snap a raw slider FPS to the nearest step (snap mode) or just clamp it (stepless mode).</summary>
+        private int SnapFps(int raw)
+        {
+            int max = FpsSliderMax();
+            raw = Math.Max(FpsSliderMin, Math.Min(max, raw));
+            if (FpsSteplessEnabled) return raw;
+            int best = FpsSnapSteps[0];
+            foreach (int s in FpsSnapSteps)
+                if (s <= max && Math.Abs(s - raw) < Math.Abs(best - raw)) best = s;
+            return best;
+        }
+
+        /// <summary>Legacy Intel tier (1/2/3) → fps (60/40/30); a real fps (0 or ≥ 20) passes through.</summary>
+        private static int MigrateIntelFps(int v) => v == 1 ? 60 : v == 2 ? 40 : v == 3 ? 30 : v;
+
+        /// <summary>
+        /// FPS currently carried by the active limiter property (0 = off), clamped to the slider
+        /// range. The clamp matters for saved profiles: while FpsSliderMax() followed the display it
+        /// could reach far past 120, so a profile may hold a cap the slider can no longer represent.
+        /// Without this the readout would say "480 FPS" with the thumb sitting at 120; with it the
+        /// value reads as 120 everywhere and the next change commits a valid one.
+        /// </summary>
+        private int CurrentFpsValue()
+        {
+            int fps = fpsCapMode?.Value == 1
+                ? MigrateIntelFps(intelFpsTier?.Value ?? 0)
+                : fpsLimit?.Value ?? 0;
+            return fps > 0 ? Math.Min(FpsSliderMax(), fps) : fps;
+        }
+
+        /// <summary>
+        /// D-pad value change for the FPS slider. Snap mode steps to the previous/next FpsSnapStep;
+        /// stepless mode moves ±1. Setting the slider Value fires FPSLimitSlider_ValueChanged, which
+        /// commits the value to the active limiter (RTSS or Intel).
+        /// </summary>
+        private void AdjustFpsSlider(int dir)
+        {
+            if (FPSLimitSlider == null) return;
+            int max = FpsSliderMax();
+            int cur = (int)Math.Round(FPSLimitSlider.Value);
+            int next;
+            if (FpsSteplessEnabled)
+            {
+                next = Math.Max(FpsSliderMin, Math.Min(max, cur + dir));
+            }
+            else
+            {
+                var steps = new System.Collections.Generic.List<int>();
+                foreach (int s in FpsSnapSteps) if (s <= max) steps.Add(s);
+                if (steps.Count == 0) return;
+                int idx = 0;
+                for (int i = 1; i < steps.Count; i++)
+                    if (Math.Abs(steps[i] - cur) < Math.Abs(steps[idx] - cur)) idx = i;
+                idx = Math.Max(0, Math.Min(steps.Count - 1, idx + dir));
+                next = steps[idx];
+            }
+            if (next != cur) FPSLimitSlider.Value = next; // fires ValueChanged → snap + apply
+        }
+
+        /// <summary>
+        /// Derive current FPS state from the underlying hidden properties.
+        ///   0 = Off, 1 = RTSS, 2 = Intel
+        /// </summary>
+        private int GetCurrentFpsState()
+        {
+            if (FPSLimitToggle?.IsOn != true) return 0;
+            return fpsCapMode?.Value == 1 ? 2 : 1;
+        }
+
+        /// <summary>
+        /// Returns the next cycle state, skipping modes that have no available driver.
+        /// Cycle order: Off → RTSS → Intel → Off → …
+        /// </summary>
+        private int GetNextFpsState(int currentState)
+        {
+            bool rtssAvail  = rtssInstalled?.Value == true;
+            bool intelAvail = intelFpsTier != null;
+            for (int step = 1; step <= 3; step++)
+            {
+                int candidate = (currentState + step) % 3;
+                if (candidate == 0) return 0;
+                if (candidate == 1 && rtssAvail)  return 1;
+                if (candidate == 2 && intelAvail) return 2;
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Sync the FPS cycle button text and slider properties from the underlying state.
+        /// Safe to call from any context (guards against null).
+        /// </summary>
+        private void SyncFpsStateButton()
+        {
+            if(OnexFrontend.UsesOwnBackend){SyncOnexFpsControls();return;}
+            bool isOn    = FPSLimitToggle?.IsOn == true;
+            bool isIntel = fpsCapMode?.Value == 1;
+
+            // Mode label always shows the selected mode (RTSS / Intel) — independent of on/off.
+            if (FPSStateCycleText != null)
+                FPSStateCycleText.Text = isIntel ? global::XboxGamingBar.OnexStrings.Get("Intel") : global::XboxGamingBar.OnexStrings.Get("RTSS");
+
+            // Keep both toggles in sync without triggering their Toggled handlers.
+            _fpsCycleToggling = true;
+            try
+            {
+                if (FPSStateCycleButton != null) FPSStateCycleButton.IsOn = isOn;      // On/Off
+                if (FPSModeToggle       != null) FPSModeToggle.IsOn       = isIntel;   // Off=RTSS, On=Intel
+            }
+            finally { _fpsCycleToggling = false; }
+
+            if (FPSLimitSlider == null) return;
+
+            int max = FpsSliderMax();
+            FPSLimitSlider.Minimum = FpsSliderMin;
+            FPSLimitSlider.Maximum = max;
+            int curFps = CurrentFpsValue();
+
+            if (!isOn)
+            {
+                FPSLimitSlider.IsEnabled = false;
+                isApplyingHelperUpdate = true;
+                try { FPSLimitSlider.Value = Math.Max(FpsSliderMin, Math.Min(max, curFps > 0 ? curFps : 60)); }
+                finally { isApplyingHelperUpdate = false; }
+                if (FPSLimitValue != null) FPSLimitValue.Text = "";
+                BuildFpsScaleLabels(-1);
+            }
+            else
+            {
+                FPSLimitSlider.IsEnabled = true;
+                int fps = curFps > 0 ? curFps : 60;
+                isApplyingHelperUpdate = true;
+                try { FPSLimitSlider.Value = Math.Max(FpsSliderMin, Math.Min(max, fps)); }
+                finally { isApplyingHelperUpdate = false; }
+                if (FPSLimitValue != null) FPSLimitValue.Text = global::XboxGamingBar.OnexStrings.Format("{0} FPS",fps);
+                BuildFpsScaleLabels(fps);
+            }
+        }
+
+        /// <summary>
+        /// Rebuilds the row of per-step FPS numbers under the limiter slider. The value set
+        /// differs by mode (RTSS = 24/30/40/60/90/100/120, Intel = 30/40/60), so this is
+        /// regenerated whenever the mode or on/off state changes. The active step is
+        /// highlighted green; inactive steps are dimmed.
+        /// </summary>
+        private void BuildFpsScaleLabels(int activeFps)
+        {
+            if (FPSLimitScaleLabels == null) return;
+
+            FPSLimitScaleLabels.Children.Clear();
+
+            int max = FpsSliderMax();
+            var values = new System.Collections.Generic.List<int>();
+            foreach (int s in FpsSnapSteps) if (s <= max) values.Add(s);
+            if (values.Count == 0) return;
+
+            // Highlight the step nearest the active FPS (none when the cap is off).
+            int activeIndex = -1;
+            if (activeFps > 0)
+            {
+                int best = 0;
+                for (int i = 1; i < values.Count; i++)
+                    if (Math.Abs(values[i] - activeFps) < Math.Abs(values[best] - activeFps)) best = i;
+                activeIndex = best;
+            }
+
+            var green = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 0x4C, 0xAF, 0x50));
+            var dim   = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 0x88, 0x88, 0x88));
+
+            for (int i = 0; i < values.Count; i++)
+            {
+                var tb = new Windows.UI.Xaml.Controls.TextBlock
+                {
+                    Text = values[i].ToString(),
+                    FontSize = 10,
+                    Tag = values[i], // carries the FPS value for proportional positioning
+                    Foreground = (i == activeIndex) ? green : dim,
+                    FontWeight = (i == activeIndex)
+                        ? Windows.UI.Text.FontWeights.SemiBold
+                        : Windows.UI.Text.FontWeights.Normal
+                };
+                FPSLimitScaleLabels.Children.Add(tb);
+            }
+
+            PositionFpsScaleLabels();
+        }
+
+        private void FPSLimitScaleLabels_SizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
+            => PositionFpsScaleLabels();
+
+        /// <summary>Place each scale label under the point on the LINEAR slider track where its FPS value
+        /// sits — center = inset + (v-min)/(max-min) · usable — so labels line up with the thumb instead of
+        /// being evenly spaced (the snap steps are not linearly distributed). Edge labels are clamped in.</summary>
+        private void PositionFpsScaleLabels()
+        {
+            if (FPSLimitScaleLabels == null) return;
+            double w = FPSLimitScaleLabels.ActualWidth;
+            if (w <= 0) return;
+
+            int max = FpsSliderMax();
+            double span = Math.Max(1, max - FpsSliderMin);
+            const double inset = 9; // ≈ slider thumb half-width, so labels track the thumb ends
+
+            foreach (var child in FPSLimitScaleLabels.Children)
+            {
+                if (!(child is Windows.UI.Xaml.Controls.TextBlock tb) || !(tb.Tag is int v)) continue;
+                double frac = Math.Max(0, Math.Min(1, (v - FpsSliderMin) / span));
+                tb.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
+                double tw = tb.DesiredSize.Width;
+                double left = inset + frac * Math.Max(1, w - 2 * inset) - tw / 2;
+                left = Math.Max(0, Math.Min(w - tw, left));
+                Windows.UI.Xaml.Controls.Canvas.SetLeft(tb, left);
+                Windows.UI.Xaml.Controls.Canvas.SetTop(tb, 0);
+            }
+        }
+
+        /// <summary>
+        /// Apply a new FPS state (0=Off, 1=RTSS, 2=Intel). Unified real-FPS model: the active limiter
+        /// carries an actual FPS. Enabling restores the last shown slider value (MSI-like — the value is
+        /// retained while off), falling back to the saved limiter value, else 60. (isUserTransition is
+        /// kept for signature compatibility; the value is now always taken from the retained slider.)
+        /// </summary>
+        private void ApplyFpsState(int state, bool isUserTransition = false)
+        {
+            if (FPSLimitToggle == null) return;
+
+            int max = FpsSliderMax();
+            isApplyingHelperUpdate = true;
+            try
+            {
+                if (FPSLimitSlider != null)
+                {
+                    FPSLimitSlider.Minimum = FpsSliderMin;
+                    FPSLimitSlider.Maximum = max;
+                }
+
+                switch (state)
+                {
+                    case 0: // Off
+                        FPSLimitToggle.IsOn = false;
+                        fpsLimit?.SetValue(0);
+                        intelFpsTier?.SetValue(0);
+                        if (FPSLimitSlider != null) FPSLimitSlider.IsEnabled = false;
+                        // Mode label keeps showing the last-selected mode; only the On/Off toggle goes off.
+                        if (FPSStateCycleText   != null) FPSStateCycleText.Text = (fpsCapMode?.Value == 1) ? global::XboxGamingBar.OnexStrings.Get("Intel") : global::XboxGamingBar.OnexStrings.Get("RTSS");
+                        if (FPSStateCycleButton != null) FPSStateCycleButton.IsOn = false;
+                        if (FPSLimitValue       != null) FPSLimitValue.Text = "";
+                        fpsCapMode?.SetValue(fpsCapMode?.Value ?? 0); // preserve mode for next activation
+                        BuildFpsScaleLabels(-1);
+                        break;
+
+                    case 1: // RTSS
+                    {
+                        fpsCapMode?.SetValue(0);
+                        FPSLimitToggle.IsOn = true;
+                        intelFpsTier?.SetValue(0);
+                        // MSI-like: re-enabling restores the last shown slider value (retained while off),
+                        // falling back to the saved limiter value, else 60.
+                        int fps = FPSLimitSlider != null ? (int)Math.Round(FPSLimitSlider.Value) : 0;
+                        if (fps < FpsSliderMin) fps = fpsLimit?.Value > 0 ? fpsLimit.Value : 60;
+                        fps = Math.Max(FpsSliderMin, Math.Min(max, fps));
+                        if (FPSLimitSlider != null) { FPSLimitSlider.IsEnabled = true; FPSLimitSlider.Value = fps; }
+                        fpsLimit?.SetValue(fps);
+                        if (FPSStateCycleText   != null) FPSStateCycleText.Text = global::XboxGamingBar.OnexStrings.Get("RTSS");
+                        if (FPSStateCycleButton != null) FPSStateCycleButton.IsOn = true;
+                        if (FPSModeToggle       != null) FPSModeToggle.IsOn = false; // RTSS
+                        if (FPSLimitValue       != null) FPSLimitValue.Text = global::XboxGamingBar.OnexStrings.Format("{0} FPS",fps);
+                        BuildFpsScaleLabels(fps);
+                        break;
+                    }
+
+                    case 2: // Intel
+                    {
+                        fpsCapMode?.SetValue(1);
+                        FPSLimitToggle.IsOn = true;
+                        fpsLimit?.SetValue(0);
+                        int cur = MigrateIntelFps(intelFpsTier?.Value ?? 0);
+                        // MSI-like: re-enabling restores the last shown slider value (retained while off).
+                        int fps = FPSLimitSlider != null ? (int)Math.Round(FPSLimitSlider.Value) : 0;
+                        if (fps < FpsSliderMin) fps = cur > 0 ? cur : 60;
+                        fps = Math.Max(FpsSliderMin, Math.Min(max, fps));
+                        if (FPSLimitSlider != null) { FPSLimitSlider.IsEnabled = true; FPSLimitSlider.Value = fps; }
+                        intelFpsTier?.SetValue(fps);
+                        if (FPSStateCycleText   != null) FPSStateCycleText.Text = global::XboxGamingBar.OnexStrings.Get("Intel");
+                        if (FPSStateCycleButton != null) FPSStateCycleButton.IsOn = true;
+                        if (FPSModeToggle       != null) FPSModeToggle.IsOn = true; // Intel
+                        if (FPSLimitValue       != null) FPSLimitValue.Text = global::XboxGamingBar.OnexStrings.Format("{0} FPS",fps);
+                        BuildFpsScaleLabels(fps);
+                        break;
+                    }
+                }
+            }
+            finally { isApplyingHelperUpdate = false; }
+
+            if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+                SaveWidgetUiStateToProfile(currentProfileName);
+        }
+
+        // Guard: prevents SyncFpsStateButton / ApplyFpsState from triggering the Toggled
+        // handlers re-entrantly when they programmatically update the toggles' IsOn.
+        private bool _fpsCycleToggling = false;
+
+        /// <summary>
+        /// On/Off toggle (far right). Turning ON enables the limiter in the currently selected
+        /// mode (RTSS or Intel, per FPSModeToggle); turning OFF disables it entirely.
+        /// </summary>
+        private void FPSStateCycleButton_Toggled(object sender, RoutedEventArgs e)
+        {
+            if(OnexFrontend.UsesOwnBackend){if(!_onexFpsSyncing&&!_fpsCycleToggling&&!isApplyingHelperUpdate&&_onexFpsState!=null)_=SetOnexFpsAsync(OnexFpsProvider,FPSStateCycleButton.IsOn,OnexFpsValue);return;}
+            if (_fpsCycleToggling || isApplyingHelperUpdate || isLoadingProfile) return;
+
+            bool on = FPSStateCycleButton?.IsOn == true;
+            if (!on)
+            {
+                ApplyFpsState(0, isUserTransition: true);          // Off
+            }
+            else
+            {
+                bool intel = FPSModeToggle?.IsOn == true;
+                ApplyFpsState(intel ? 2 : 1, isUserTransition: true); // enable in current mode
+            }
+        }
+
+        /// <summary>
+        /// Mode toggle (middle): Off = RTSS, On = Intel. Only changes the active limiter when
+        /// the On/Off toggle is on; otherwise it just records the mode preference (reflected by
+        /// the toggle position and applied next time the limiter is switched on).
+        /// </summary>
+        private void FPSModeToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if(OnexFrontend.UsesOwnBackend){if(!_onexFpsSyncing&&!_fpsCycleToggling&&!isApplyingHelperUpdate&&_onexFpsState!=null)_=SetOnexFpsAsync(FPSModeToggle.IsOn?"Intel":"RTSS",OnexFpsEnabled,OnexFpsValue);return;}
+            if (_fpsCycleToggling || isApplyingHelperUpdate || isLoadingProfile) return;
+
+            bool intel = FPSModeToggle?.IsOn == true;
+
+            if (FPSStateCycleButton?.IsOn == true)
+            {
+                // Limiter is active — switch the live mode.
+                ApplyFpsState(intel ? 2 : 1, isUserTransition: true);
+            }
+            else
+            {
+                // Limiter off — just record preference + update the mode label.
+                fpsCapMode?.SetValue(intel ? 1 : 0);
+                if (FPSStateCycleText != null) FPSStateCycleText.Text = intel ? global::XboxGamingBar.OnexStrings.Get("Intel") : global::XboxGamingBar.OnexStrings.Get("RTSS");
+            }
+        }
+
+        // ── end FPS On/Off + Mode toggles ──────────────────────────────────────────
+
+        /// <summary>
+        /// FPS Limit toggle changed - set FPS limit to slider value or 0 (off)
+        /// </summary>
+        private void FPSLimitToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if(OnexFrontend.UsesOwnBackend){if(!_onexFpsSyncing&&!isApplyingHelperUpdate&&_onexFpsState!=null)_=SetOnexFpsAsync(OnexFpsProvider,FPSLimitToggle.IsOn,OnexFpsValue);return;}
+            if (isApplyingHelperUpdate || isLoadingProfile) return;
+
+            bool isIntelMode = fpsCapMode?.Value == 1;
+
+            if (FPSLimitToggle.IsOn)
+            {
+                // Unified: enable at the slider's real FPS (snapped), default 60 if unset. The active
+                // backend (RTSS fpsLimit vs Intel intelFpsTier — now an fps) is chosen by fpsCapMode.
+                int max = FpsSliderMax();
+                FPSLimitSlider.Maximum = max;
+                int fps = SnapFps((int)Math.Round(FPSLimitSlider.Value));
+                if (fps < FpsSliderMin) { fps = 60; }
+                isApplyingHelperUpdate = true;
+                try { FPSLimitSlider.Value = Math.Min(max, fps); } finally { isApplyingHelperUpdate = false; }
+                if (isIntelMode) intelFpsTier?.SetValue(fps); else fpsLimit?.SetValue(fps);
+                if (FPSLimitValue != null) FPSLimitValue.Text = global::XboxGamingBar.OnexStrings.Format("{0} FPS",fps);
+                Logger.Info($"FPS Limit enabled ({(isIntelMode ? "Intel" : "RTSS")} mode): {fps}fps");
+            }
+            else
+            {
+                // Toggle OFF — disable only the currently active limiter, leave fpsCapMode unchanged
+                if (isIntelMode) { intelFpsTier?.SetValue(0); Logger.Info("FPS Limit disabled (Intel mode)"); }
+                else             { fpsLimit?.SetValue(0);     Logger.Info("FPS Limit disabled (RTSS mode)"); }
+            }
+
+            // Update the FPS limiter panels (show/hide RTSS or Intel section)
+            UpdateFPSLimiterPanels();
+
+            // Save to profile if FPS Limit saving is enabled
+            // Don't save during DGP restoration - values being restored to original state
+            if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+            {
+                SaveWidgetUiStateToProfile(currentProfileName);
+            }
+        }
+
+        /// <summary>
+        /// FPS limiter mode radio changed (RTSS ↔ Intel).
+        /// Updates panel visibility and sends the new mode to the helper.
+        /// </summary>
+        private void FPSModeRadio_Changed(object sender, RoutedEventArgs e)
+        {
+            if(OnexFrontend.UsesOwnBackend){if(!_onexFpsSyncing&&!isUpdatingFPSModeUI&&!isApplyingHelperUpdate&&_onexFpsState!=null)_=SetOnexFpsAsync(FPSModeIntelRadio.IsChecked==true?"Intel":"RTSS",OnexFpsEnabled,OnexFpsValue);return;}
+            if (isUpdatingFPSModeUI || isApplyingHelperUpdate || isLoadingProfile) return;
+
+            bool isIntel = FPSModeIntelRadio?.IsChecked == true;
+
+            // Show the matching sub-panel
+            if (FPSLimiterRTSSPanel != null)
+                FPSLimiterRTSSPanel.Visibility = isIntel ? Visibility.Collapsed : Visibility.Visible;
+            if (FPSLimiterIntelPanel != null)
+                FPSLimiterIntelPanel.Visibility = isIntel ? Visibility.Visible : Visibility.Collapsed;
+
+            // Push the new mode to the helper
+            if (fpsCapMode != null)
+            {
+                fpsCapMode.SetValue(isIntel ? 1 : 0);
+                Logger.Info($"FPS limiter mode changed to {(isIntel ? "Intel" : "RTSS")}");
+            }
+
+            // Mutual exclusion: disable the old limiter and reset the new one to 60 fps.
+            if (isIntel)
+            {
+                // Switching to Intel — disable RTSS, start Intel at 60fps.
+                // This sent a literal 1 until the tier cleanup: back when the Intel cap was a 0..3
+                // tier, 1 meant "Performance / 60 fps". IGCL takes an arbitrary fps now
+                // (IntelGpuManager.ApplyFrameLimit), so a 1 asked the driver for ONE frame per second.
+                Logger.Info("[FPS-Mode] Switching to Intel: disabling RTSS, setting Intel to 60fps");
+                if (fpsLimit != null)
+                    fpsLimit.SetValue(0);
+                intelFpsTier?.SetValue(60);
+                isApplyingHelperUpdate = true;
+                try
+                {
+                    if (FPSLimitSlider != null) FPSLimitSlider.Value = 60;
+                    if (FPSLimitToggle != null) FPSLimitToggle.IsOn = true;
+                }
+                finally { isApplyingHelperUpdate = false; }
+            }
+            else
+            {
+                // Switching to RTSS — disable Intel, start RTSS at 60fps
+                Logger.Info("[FPS-Mode] Switching to RTSS: disabling Intel, setting RTSS to 60fps");
+                if (intelFpsTier != null)
+                    intelFpsTier.SetValue(0);
+                fpsLimit?.SetValue(60);
+                isApplyingHelperUpdate = true;
+                try
+                {
+                    if (FPSLimitSlider != null) FPSLimitSlider.Value = 60;
+                    if (FPSLimitToggle != null) FPSLimitToggle.IsOn = true;
+                }
+                finally { isApplyingHelperUpdate = false; }
+            }
+
+            // Update the green FPS display to reflect the now-active limiter
+            UpdateFPSCapDisplayText();
+
+            // Persist to profile
+            if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+            {
+                SaveWidgetUiStateToProfile(currentProfileName);
+            }
+        }
+
+        /// <summary>
+        /// Guard flag to prevent FPSModeRadio_Changed from firing when UpdateFPSLimiterPanels
+        /// programmatically syncs the radio button state from fpsCapMode.Value.
+        /// </summary>
+        private bool isUpdatingFPSModeUI = false;
+
+        /// <summary>
+        /// Syncs the FPS limiter panel visibility (show/hide mode panel, RTSS vs Intel sub-panels)
+        /// based on FPSLimitToggle.IsOn and fpsCapMode.Value.
+        /// Call whenever the toggle state or fpsCapMode changes.
+        /// </summary>
+        private void UpdateFPSLimiterPanels()
+        {
+            if(OnexFrontend.UsesOwnBackend){SyncOnexFpsControls();return;}
+            if (FPSLimiterModePanel == null) return;
+
+            bool isOn = FPSLimitToggle?.IsOn == true;
+
+            // Always keep the mode panel VISIBLE so the radio buttons and slider
+            // remain focusable for D-Pad navigation (collapsed elements can't receive focus).
+            // When FPS limiter is off, grey the panel out so the user knows it's inactive.
+            FPSLimiterModePanel.Visibility = Visibility.Visible;
+            FPSLimiterModePanel.Opacity    = isOn ? 1.0 : 0.4;
+            FPSLimiterModePanel.IsHitTestVisible = isOn; // pointer interaction only when active
+
+            bool isIntel = fpsCapMode?.Value == 1;
+
+            if (FPSLimiterRTSSPanel != null)
+                FPSLimiterRTSSPanel.Visibility = isIntel ? Visibility.Collapsed : Visibility.Visible;
+            if (FPSLimiterIntelPanel != null)
+                FPSLimiterIntelPanel.Visibility = isIntel ? Visibility.Visible : Visibility.Collapsed;
+
+            // Sync radio buttons without re-triggering FPSModeRadio_Changed
+            isUpdatingFPSModeUI = true;
+            try
+            {
+                if (FPSModeIntelRadio != null) FPSModeIntelRadio.IsChecked = isIntel;
+                if (FPSModeRTSSRadio != null)  FPSModeRTSSRadio.IsChecked  = !isIntel;
+            }
+            finally
+            {
+                isUpdatingFPSModeUI = false;
+            }
+
+            // Update the green FPS cap number above the toggle to reflect the active limiter
+            UpdateFPSCapDisplayText();
+
+            // Sync the new cycle button text + slider enabled state
+            SyncFpsStateButton();
+
+            // Panel is always visible now
+            UpdatePerformanceTabXYNavigation();
+        }
+
+        /// <summary>
+        /// Updates the green FPS value display (FPSLimitValue) above the toggle. Unified model:
+        /// the slider carries the real FPS in both RTSS and Intel modes.
+        /// </summary>
+        private void UpdateFPSCapDisplayText()
+        {
+            if (FPSLimitValue == null || FPSLimitToggle?.IsOn != true) return;
+            int fps = FPSLimitSlider != null ? (int)Math.Round(FPSLimitSlider.Value) : 0;
+            if (fps <= 0) fps = CurrentFpsValue();
+            FPSLimitValue.Text = fps > 0 ? global::XboxGamingBar.OnexStrings.Format("{0} FPS",fps) : "";
+        }
+
+        /// <summary>
+        /// RSR toggle changed - disable RIS if RSR is enabled (mutually exclusive)
+        /// </summary>
+        private void AMDRadeonSuperResolutionToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            // RSR and RIS are mutually exclusive - enabling one disables the other
+            if (AMDRadeonSuperResolutionToggle.IsOn && AMDImageSharpeningToggle.IsOn && !isLoadingProfile && !isSwitchingProfile && !isApplyingHelperUpdate)
+            {
+                Logger.Info("RSR enabled - disabling RIS (mutually exclusive)");
+                AMDImageSharpeningToggle.IsOn = false;
+            }
+
+            // Call the generic setting changed handler
+            SettingChanged(sender, e);
+        }
+
+        /// <summary>
+        /// RIS toggle changed - disable RSR if RIS is enabled (mutually exclusive)
+        /// </summary>
+        private void AMDImageSharpeningToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            // RSR and RIS are mutually exclusive - enabling one disables the other
+            if (AMDImageSharpeningToggle.IsOn && AMDRadeonSuperResolutionToggle.IsOn && !isLoadingProfile && !isSwitchingProfile && !isApplyingHelperUpdate)
+            {
+                Logger.Info("RIS enabled - disabling RSR (mutually exclusive)");
+                AMDRadeonSuperResolutionToggle.IsOn = false;
+            }
+
+            // Call the generic setting changed handler
+            SettingChanged(sender, e);
+        }
+
+        /// <summary>
+        /// Radeon Anti-Lag toggle changed - disable Chill if Anti-Lag is enabled (mutually exclusive)
+        /// </summary>
+        private void AMDRadeonAntiLagToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            // Anti-Lag and Chill are mutually exclusive
+            if (AMDRadeonAntiLagToggle.IsOn && AMDRadeonChillToggle.IsOn && !isLoadingProfile && !isSwitchingProfile && !isApplyingHelperUpdate)
+            {
+                Logger.Info("Anti-Lag enabled - disabling Chill (mutually exclusive)");
+                AMDRadeonChillToggle.IsOn = false;
+            }
+
+            // Call the generic setting changed handler
+            SettingChanged(sender, e);
+        }
+
+        /// <summary>
+        /// Radeon Boost toggle changed - disable Chill if Boost is enabled (mutually exclusive)
+        /// </summary>
+        private void AMDRadeonBoostToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            // Boost and Chill are mutually exclusive
+            if (AMDRadeonBoostToggle.IsOn && AMDRadeonChillToggle.IsOn && !isLoadingProfile && !isSwitchingProfile && !isApplyingHelperUpdate)
+            {
+                Logger.Info("Boost enabled - disabling Chill (mutually exclusive)");
+                AMDRadeonChillToggle.IsOn = false;
+            }
+
+            // Call the generic setting changed handler
+            SettingChanged(sender, e);
+        }
+
+        /// <summary>
+        /// Radeon Chill toggle changed - disable Anti-Lag and Boost if Chill is enabled (mutually exclusive)
+        /// </summary>
+        private void AMDRadeonChillToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            // Chill is mutually exclusive with Anti-Lag and Boost
+            if (AMDRadeonChillToggle.IsOn && !isLoadingProfile && !isSwitchingProfile && !isApplyingHelperUpdate)
+            {
+                if (AMDRadeonAntiLagToggle.IsOn)
+                {
+                    Logger.Info("Chill enabled - disabling Anti-Lag (mutually exclusive)");
+                    AMDRadeonAntiLagToggle.IsOn = false;
+                }
+                if (AMDRadeonBoostToggle.IsOn)
+                {
+                    Logger.Info("Chill enabled - disabling Boost (mutually exclusive)");
+                    AMDRadeonBoostToggle.IsOn = false;
+                }
+            }
+
+            // Call the generic setting changed handler
+            SettingChanged(sender, e);
+        }
+
+        /// <summary>
+        /// FPS Limit slider changed — slider now uses discrete indices, not raw FPS values.
+        /// RTSS mode: index 0..6 maps to FpsRtssValues; sends to RTSS with debounce.
+        /// Intel mode: index 0..2 maps to FpsIntelValues; sends the corresponding Intel tier.
+        /// </summary>
+        private void FPSLimitSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if(OnexFrontend.UsesOwnBackend){QueueOnexFpsSlider();return;}
+            if (isApplyingHelperUpdate) return;
+
+            int state = GetCurrentFpsState();
+            if (state == 0) return; // Off — slider disabled
+
+            int fps = SnapFps((int)Math.Round(e.NewValue));
+            // In snap mode, re-align the thumb to the snapped value (guarded so we don't recurse).
+            if (!FpsSteplessEnabled && (int)Math.Round(e.NewValue) != fps)
+            {
+                isApplyingHelperUpdate = true;
+                try { FPSLimitSlider.Value = fps; } finally { isApplyingHelperUpdate = false; }
+            }
+            if (FPSLimitValue != null) FPSLimitValue.Text = global::XboxGamingBar.OnexStrings.Format("{0} FPS",fps);
+            BuildFpsScaleLabels(fps);
+
+            if (FPSLimitToggle?.IsOn != true) return;
+
+            if (state == 2) // Intel — cheap IGCL call, apply immediately
+            {
+                intelFpsTier?.SetValue(fps);
+                // The IGCL call is cheap; the profile save is NOT (it rebuilds every profile card, see
+                // GamingWidget.SliderCommit.cs). Mark it and let the commit boundary write it once.
+                if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+                    _slidersAwaitingProfileCommit.Add(FPSLimitSlider);
+            }
+            else // RTSS — debounce (avoids hammering RTSS on drag)
+            {
+                fpsLimitPendingValue = fps;
+                if (fpsLimitDebounceTimer == null)
+                {
+                    fpsLimitDebounceTimer          = new DispatcherTimer();
+                    fpsLimitDebounceTimer.Interval = TimeSpan.FromMilliseconds(FPS_LIMIT_DEBOUNCE_MS);
+                    fpsLimitDebounceTimer.Tick    += FPSLimitDebounceTimer_Tick;
+                }
+                fpsLimitDebounceTimer.Stop();
+                fpsLimitDebounceTimer.Start();
+            }
+        }
+
+        /// <summary>
+        /// "Stepless" checkbox toggled. Persists the global preference and re-snaps the current
+        /// slider value under the new mode (snap → nearest step, stepless → keep raw).
+        /// </summary>
+        private void FpsSteplessCheckBox_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (isApplyingHelperUpdate) return;
+            bool on = FpsSteplessCheckBox?.IsChecked == true;
+            FpsSteplessEnabled = on;
+            Logger.Info($"FPS slider stepless mode: {on}");
+            RefreshFpsSliderRange();
+        }
+
+        /// <summary>
+        /// "Extended range" checkbox toggled. Persists the global preference and rebuilds the slider
+        /// around the new ceiling. Turning it OFF while the cap sits above 120 pulls the value down —
+        /// see RefreshFpsSliderRange for why that has to be an explicit, guarded step.
+        /// </summary>
+        private void FpsExtendedMaxCheckBox_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (isApplyingHelperUpdate) return;
+            bool on = FpsExtendedMaxCheckBox?.IsChecked == true;
+            FpsExtendedMaxEnabled = on;
+            Logger.Info($"FPS slider extended range: {on} (max {FpsSliderMax()} FPS)");
+            RefreshFpsSliderRange();
+        }
+
+        /// <summary>
+        /// Re-apply the slider's bounds and re-snap its value after a stepless/extended-range change,
+        /// then commit the result to the active limiter.
+        ///
+        /// The ORDER of the Maximum/Value writes is load-bearing. WinUI coerces Value into the range
+        /// whenever Maximum drops below it, and that coercion raises ValueChanged like any other
+        /// change — outside our guard it would reach the limiter as if the user had dragged the thumb.
+        /// So when the ceiling drops we bring the value inside the new range first and lower Maximum
+        /// after; when it rises we raise Maximum first so the value has somewhere to go. Both writes
+        /// stay inside isApplyingHelperUpdate regardless.
+        /// </summary>
+        private void RefreshFpsSliderRange()
+        {
+            if (FPSLimitSlider == null) return;
+
+            int max = FpsSliderMax();
+            int fps = SnapFps((int)Math.Round(FPSLimitSlider.Value));
+
+            isApplyingHelperUpdate = true;
+            try
+            {
+                if (max >= FPSLimitSlider.Maximum)
+                {
+                    FPSLimitSlider.Maximum = max;
+                    FPSLimitSlider.Value   = fps;
+                }
+                else
+                {
+                    FPSLimitSlider.Value   = fps;
+                    FPSLimitSlider.Maximum = max;
+                }
+            }
+            finally { isApplyingHelperUpdate = false; }
+
+            int state = GetCurrentFpsState();
+            if (state == 0)
+            {
+                // Cap is off: keep the retained thumb position valid, but show no active step.
+                BuildFpsScaleLabels(-1);
+                return;
+            }
+
+            if (FPSLimitValue != null) FPSLimitValue.Text = global::XboxGamingBar.OnexStrings.Format("{0} FPS",fps);
+            BuildFpsScaleLabels(fps);
+
+            if (FPSLimitToggle?.IsOn == true)
+            {
+                if (state == 2) intelFpsTier?.SetValue(fps); else fpsLimit?.SetValue(fps);
+                if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+                    SaveWidgetUiStateToProfile(currentProfileName);
+            }
+        }
+
+        /// <summary>
+        /// Debounce timer tick - apply the pending FPS limit value
+        /// </summary>
+        private void FPSLimitDebounceTimer_Tick(object sender, object e)
+        {
+            fpsLimitDebounceTimer?.Stop();
+
+            if (fpsLimit != null && FPSLimitToggle.IsOn)
+            {
+                fpsLimit.SetValue(fpsLimitPendingValue);
+                Logger.Info($"FPS Limit changed (debounced): {fpsLimitPendingValue}");
+
+                // Save to profile if FPS Limit saving is enabled
+                if (SaveFPSLimit && !isLoadingProfile && !isSwitchingProfile)
+                {
+                    SaveWidgetUiStateToProfile(currentProfileName);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Update FPS Limit controls based on RTSS installed status and current fpsLimit value
+        /// </summary>
+        private void UpdateFPSLimitControls()
+        {
+            UpdateFPSLimitControls(rtssInstalled?.Value == true);
+        }
+
+        /// <summary>
+        /// Update FPS Limit controls based on RTSS installed status
+        /// </summary>
+        private void UpdateFPSLimitControls(bool rtssAvailable)
+        {
+            if(OnexFrontend.UsesOwnBackend){SyncOnexFpsControls();return;}
+            // Dispatch to UI thread since this may be called from property callback on non-UI thread
+            _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                try
+                {
+                    if (isUnloading) return;
+
+                    // Guard against null controls during initialization or shutdown
+                    if (FPSLimitToggle == null || FPSLimitSlider == null) return;
+
+                    // Keep hidden toggle enabled/disabled for profile-code compat.
+                    // FPSStateCycleButton is always enabled — navigation must never be blocked.
+                    bool intelIgclAvailable = intelFpsTier != null;
+                    FPSLimitToggle.IsEnabled = rtssAvailable || intelIgclAvailable;
+                    if (FPSStateCycleButton != null) FPSStateCycleButton.IsEnabled = true;
+
+                    // Sync toggle/slider with helper state (slider carries a real FPS value).
+                    if (fpsLimit != null)
+                    {
+                        isApplyingHelperUpdate = true;
+                        try
+                        {
+                            int max = FpsSliderMax();
+                            FPSLimitSlider.Minimum = FpsSliderMin;
+                            FPSLimitSlider.Maximum = max;
+
+                            int limit      = fpsLimit.Value;
+                            bool intelActive = fpsCapMode?.Value == 1 && (intelFpsTier?.Value ?? 0) > 0;
+
+                            if (limit > 0)
+                            {
+                                FPSLimitToggle.IsOn  = true;
+                                FPSLimitSlider.Value = Math.Max(FpsSliderMin, Math.Min(max, limit));
+                            }
+                            else if (intelActive)
+                            {
+                                FPSLimitToggle.IsOn  = true;
+                                int fps = MigrateIntelFps(intelFpsTier?.Value ?? 60);
+                                FPSLimitSlider.Value = Math.Max(FpsSliderMin, Math.Min(max, fps));
+                            }
+                            else
+                            {
+                                FPSLimitToggle.IsOn  = false;
+                                FPSLimitSlider.Value = Math.Min(max, 60);
+                            }
+                            // Reflect the persisted slider preferences (guarded — handlers no-op).
+                            if (FpsSteplessCheckBox   != null) FpsSteplessCheckBox.IsChecked   = FpsSteplessEnabled;
+                            if (FpsExtendedMaxCheckBox != null) FpsExtendedMaxCheckBox.IsChecked = FpsExtendedMaxEnabled;
+                        }
+                        finally { isApplyingHelperUpdate = false; }
+                    }
+
+                    // Sync the FPS limiter panels (RTSS/Intel selection + visibility)
+                    // — also calls SyncFpsStateButton() to update cycle button text + slider state.
+                    UpdateFPSLimiterPanels();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Error in UpdateFPSLimitControls: {ex.Message}");
+                }
+            });
+        }
+        private void ToggleLegionTouchpad()
+        {
+            if (legionGoDetected?.Value == true && legionTouchpadEnabled != null)
+            {
+                bool newValue = !legionTouchpadEnabled.Value;
+                legionTouchpadEnabled.SetValue(newValue);
+                Logger.Info($"Legion Touchpad toggled to {newValue}");
+            }
+        }
+
+        private void CycleLegionLightMode()
+        {
+            if (legionGoDetected?.Value == true && legionLightMode != null)
+            {
+                int currentMode = legionLightMode.Value;
+                int nextMode = (currentMode + 1) % 5; // 0-4: Off, Static, Breathing, Rainbow, Spiral
+                legionLightMode.SetValue(nextMode);
+                Logger.Info($"Legion Light Mode cycled from {currentMode} to {nextMode}");
+            }
+        }
+
+        private void ToggleLegionDesktopControls()
+        {
+            if (legionGoDetected?.Value == true && LegionDesktopControlsToggle != null)
+            {
+                bool newValue = !LegionDesktopControlsToggle.IsOn;
+                LegionDesktopControlsToggle.IsOn = newValue;
+                // The Toggled event handler will apply the mappings
+                Logger.Info($"Legion Desktop Controls toggled to {newValue}");
+            }
+        }
+
+        private void ToggleLegionChargeLimit()
+        {
+            if (legionGoDetected?.Value == true && legionChargeLimit != null)
+            {
+                bool newValue = !legionChargeLimit.Value;
+                legionChargeLimit.SetValue(newValue);
+                // Also update the toggle in Legion tab if it exists
+                if (LegionChargeLimitToggle != null)
+                {
+                    LegionChargeLimitToggle.IsOn = newValue;
+                }
+                Logger.Info($"Legion Charge Limit toggled to {(newValue ? "80%" : "Off")}");
+            }
+        }
+
+        // Cycle order for the Quick-tab Controller tile.
+        //   Legacy: every supported mode (0=Mouse, 1=Xbox Stick, 2=DS4 Motion, 3=DS4 Stick).
+        //   VIIPER: every supported virtual-device tag from ViiperDeviceTypeComboBox.
+        // Both cycles end at "Off" so the user can always get the tile back to disabled.
+        private static readonly int[] ControllerEmulationLegacyCycle = new[] { 0, 1, 2, 3 };
+        private static readonly string[] ControllerEmulationViiperCycle = new[]
+        {
+            "xbox360", "dualshock4", "dualsenseedge", "xboxelite2", "steam-generic", "switchpro"
+        };
+
+        private void ToggleControllerEmulation()
+        {
+            if (controllerEmulationEnabled == null)
+            {
+                return;
+            }
+            if (controllerEmulationAvailable?.Value != true)
+            {
+                Logger.Info("Controller Emulation tile click ignored — emulation not available on this device.");
+                return;
+            }
+
+            bool isViiper = emulationBackend?.Value == true;
+            bool currentlyEnabled = controllerEmulationEnabled.Value;
+
+            if (isViiper)
+            {
+                CycleControllerEmulationViiper(currentlyEnabled);
+            }
+            else
+            {
+                CycleControllerEmulationLegacy(currentlyEnabled);
+            }
+        }
+
+        private void CycleControllerEmulationLegacy(bool currentlyEnabled)
+        {
+            int[] cycle = ControllerEmulationLegacyCycle;
+
+            if (!currentlyEnabled)
+            {
+                int firstMode = cycle[0];
+                controllerEmulationMode?.SetValue(firstMode);
+                controllerEmulationEnabled.SetValue(true);
+                if (ControllerEmulationEnabledToggle != null)
+                {
+                    ControllerEmulationEnabledToggle.IsOn = true;
+                }
+                Logger.Info($"Controller Emulation (Legacy) cycled: Off -> mode {firstMode}");
+                return;
+            }
+
+            int current = controllerEmulationMode?.Value ?? cycle[0];
+            int currentIndex = Array.IndexOf(cycle, current);
+            int nextIndex = currentIndex + 1;
+
+            if (currentIndex < 0 || nextIndex >= cycle.Length)
+            {
+                // Current mode is outside the cycle (e.g. Mouse or PS4-Stick set via System tab),
+                // or we're at the end — flip to Off.
+                controllerEmulationEnabled.SetValue(false);
+                if (ControllerEmulationEnabledToggle != null)
+                {
+                    ControllerEmulationEnabledToggle.IsOn = false;
+                }
+                Logger.Info("Controller Emulation (Legacy) cycled: -> Off");
+            }
+            else
+            {
+                int nextMode = cycle[nextIndex];
+                controllerEmulationMode?.SetValue(nextMode);
+                Logger.Info($"Controller Emulation (Legacy) cycled: mode {current} -> mode {nextMode}");
+            }
+        }
+
+        private void CycleControllerEmulationViiper(bool currentlyEnabled)
+        {
+            string[] cycle = ControllerEmulationViiperCycle;
+
+            if (!currentlyEnabled)
+            {
+                string firstDevice = cycle[0];
+                viiperDeviceType?.SetValue(firstDevice);
+                controllerEmulationEnabled.SetValue(true);
+                if (ControllerEmulationEnabledToggle != null)
+                {
+                    ControllerEmulationEnabledToggle.IsOn = true;
+                }
+                Logger.Info($"Controller Emulation (VIIPER) cycled: Off -> {firstDevice}");
+                return;
+            }
+
+            string current = viiperDeviceType?.Value ?? cycle[0];
+            int currentIndex = Array.IndexOf(cycle, current);
+            int nextIndex = currentIndex + 1;
+
+            if (currentIndex < 0 || nextIndex >= cycle.Length)
+            {
+                controllerEmulationEnabled.SetValue(false);
+                if (ControllerEmulationEnabledToggle != null)
+                {
+                    ControllerEmulationEnabledToggle.IsOn = false;
+                }
+                Logger.Info("Controller Emulation (VIIPER) cycled: -> Off");
+            }
+            else
+            {
+                string nextDevice = cycle[nextIndex];
+                viiperDeviceType?.SetValue(nextDevice);
+                Logger.Info($"Controller Emulation (VIIPER) cycled: {current} -> {nextDevice}");
+            }
+        }
+
+        private void ToggleRemapControlsProfile()
+        {
+            if (legionGoDetected?.Value != true)
+                return;
+
+            if (LegionControllerProfileToggle == null)
+                return;
+
+            // Toggle the per-game controller profile
+            LegionControllerProfileToggle.IsOn = !LegionControllerProfileToggle.IsOn;
+            Logger.Info($"Toggled per-game controller profile to: {LegionControllerProfileToggle.IsOn}");
+
+            // Update Quick Settings tiles
+            UpdateQuickSettingsTileStates();
+        }
+
+        /// <summary>
+        /// Show/hide customization panel
+        /// </summary>
+        private void QuickSettingsCustomize_Click(object sender, RoutedEventArgs e)
+        {
+            if (QuickSettingsCustomizePanel != null)
+            {
+                if(OnexFrontend.UsesOwnBackend)FillActionComboBox(CustomActionTypeComboBox);
+                // Enter edit mode
+                qsEditMode = true;
+                qsSelectedTileForMove = null;
+
+                QuickSettingsCustomizePanel.Visibility = Visibility.Visible;
+                QuickSettingsCustomizeButton.Visibility = Visibility.Collapsed;
+                QuickSettingsDefaultButton.Visibility=OnexFrontend.UsesOwnBackend?Visibility.Visible:Visibility.Collapsed;
+
+                // Register keyboard handler for B/Escape to deselect
+                QuickSettingsCustomizePanel.KeyDown -= QuickSettingsCustomizePanel_KeyDown;
+                QuickSettingsCustomizePanel.KeyDown += QuickSettingsCustomizePanel_KeyDown;
+
+                // Update column button visuals
+                UpdateColumnButtonVisuals();
+
+                // Rebuild UIs with edit mode enabled
+                BuildSortableGrid();
+                RebuildQuickSettingsTiles();  // Shows hidden tiles with overlay in edit mode
+                if(OnexFrontend.UsesOwnBackend)
+                {
+                    QuickSettingsTilesContainer.Visibility=Visibility.Collapsed;_releaseHome.StatsHost.Visibility=Visibility.Collapsed;_releaseHome.PowerSection.Visibility=Visibility.Collapsed;_releaseHome.MediaSection.Visibility=Visibility.Collapsed;
+                    if(QuickSettingsCustomizePanel.Child is StackPanel editor){editor.Children.Remove(QuickSettingsCustomizeActions);editor.Children.Insert(2,QuickSettingsCustomizeActions);}
+                    _=Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low,()=>{_releaseHome.Scroll.ChangeView(null,0,null,true);QuickSettingsCustomizeCloseTopButton.Focus(FocusState.Programmatic);});
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Toggle visibility of a tile via the split-tile Show/Hide sub-button
+        /// </summary>
+        private void SortableTileVisibility_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!(sender is Button button) || !(button.Tag is string tagId))
+                    return;
+
+                // Strip "_vis" suffix added in CreateMiniTileForSort
+                string tileId = tagId.EndsWith("_vis") ? tagId.Substring(0, tagId.Length - 4) : tagId;
+
+                if (!qsTileMap.TryGetValue(tileId, out var tile))
+                    return;
+
+                tile.IsVisible = !tile.IsVisible;
+                qsSelectedTileForMove = null;
+                UpdateSelectedTileIndicator(null);
+                BuildSortableGridPreserveScroll(tileId);
+                if(OnexFrontend.UsesOwnBackend)SaveQuickSettingsConfig();
+                Logger.Info($"Toggled visibility for {tile.Name} via Show/Hide button: {tile.IsVisible}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error handling tile visibility click: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Open the controller-button binding Flyout for this tile (delegated to Grid.cs).
+        /// </summary>
+        private void SortableTileButtonBind_Click(object sender, RoutedEventArgs e)
+            => OpenBtnBindFlyout(sender, e);
+
+        /// <summary>
+        /// Handle keyboard input in customize panel (B/Escape to deselect)
+        /// </summary>
+        private void QuickSettingsCustomizePanel_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Escape ||
+                e.Key == Windows.System.VirtualKey.GamepadB)
+            {
+                if (qsSelectedTileForMove != null)
+                {
+                    qsSelectedTileForMove = null;
+                    UpdateSelectedTileIndicator(null);
+                    BuildSortableGrid();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Close customization panel
+        /// </summary>
+        private void QuickSettingsCustomizeDone_Click(object sender, RoutedEventArgs e)
+        {
+            if (QuickSettingsCustomizePanel != null)
+            {
+                // Exit edit mode
+                qsEditMode = false;
+                qsSelectedTileForMove = null;
+                UpdateSelectedTileIndicator(null);
+
+                QuickSettingsCustomizePanel.Visibility = Visibility.Collapsed;
+                QuickSettingsCustomizeButton.Visibility = Visibility.Visible;
+
+                if(OnexFrontend.UsesOwnBackend){QuickSettingsTilesContainer.Visibility=Visibility.Visible;_releaseHome.StatsHost.Visibility=Visibility.Visible;_releaseHome.PowerSection.Visibility=Visibility.Visible;_releaseHome.MediaSection.Visibility=Visibility.Visible;}
+                // Save config and rebuild tiles without edit overlays
+                SaveQuickSettingsConfig();
+                RebuildQuickSettingsTiles();
+                UpdateQuickSettingsTileStates();
+            }
+        }
+
+        /// <summary>
+        /// Set column count to 3
+        /// </summary>
+        private void ColumnCount3_Click(object sender, RoutedEventArgs e)
+        {
+            if (qsColumnCount != 3)
+            {
+                qsColumnCount = 3;
+                if(OnexFrontend.UsesOwnBackend)SaveQuickSettingsConfig();
+                UpdateColumnButtonVisuals();
+                BuildSortableGrid();
+                RebuildQuickSettingsTiles();
+            }
+        }
+
+        /// <summary>
+        /// Set column count to 4
+        /// </summary>
+        private void ColumnCount4_Click(object sender, RoutedEventArgs e)
+        {
+            if (qsColumnCount != 4)
+            {
+                qsColumnCount = 4;
+                if(OnexFrontend.UsesOwnBackend)SaveQuickSettingsConfig();
+                UpdateColumnButtonVisuals();
+                BuildSortableGrid();
+                RebuildQuickSettingsTiles();
+            }
+        }
+
+        /// <summary>
+        /// Set column count to 5
+        /// </summary>
+        private void ColumnCount5_Click(object sender, RoutedEventArgs e)
+        {
+            if (qsColumnCount != 5)
+            {
+                qsColumnCount = 5;
+                if(OnexFrontend.UsesOwnBackend)SaveQuickSettingsConfig();
+                UpdateColumnButtonVisuals();
+                BuildSortableGrid();
+                RebuildQuickSettingsTiles();
+            }
+        }
+
+        private void ColumnCount6_Click(object sender, RoutedEventArgs e)
+        {
+            if(qsColumnCount==6)return;
+            qsColumnCount=6;
+            if(OnexFrontend.UsesOwnBackend)SaveQuickSettingsConfig();
+            UpdateColumnButtonVisuals();BuildSortableGrid();RebuildQuickSettingsTiles();
+        }
+
+        /// <summary>
+        /// Update column button visuals to show current selection
+        /// </summary>
+        private void UpdateColumnButtonVisuals()
+        {
+            if (Column3Button == null || Column4Button == null || Column5Button == null || Column6Button == null) return;
+
+            var selectedBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 120, 180));
+            var normalBrush = tileOffBrush ?? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 26, 28, 30));
+
+            Column3Button.Background = qsColumnCount == 3 ? selectedBrush : normalBrush;
+            Column4Button.Background = qsColumnCount == 4 ? selectedBrush : normalBrush;
+            Column5Button.Background = qsColumnCount == 5 ? selectedBrush : normalBrush;
+            Column6Button.Background = qsColumnCount == 6 ? selectedBrush : normalBrush;
+        }
+
+        /// <summary>
+        /// Add a custom shortcut or action tile
+        /// </summary>
+        private void AddCustomShortcut_Click(object sender, RoutedEventArgs e)
+        {
+            string name = CustomShortcutNameBox?.Text?.Trim();
+
+            // For shortcut tiles the name is required; for action tiles it is auto-derived below
+            if (string.IsNullOrEmpty(name) && !_isTileTypeAction)
+            {
+                Logger.Warn("Custom tile name is empty");
+                return;
+            }
+
+            if (_isTileTypeAction)
+            {
+                // Action tile branch
+                if (CustomActionTypeComboBox == null ||
+                    !(CustomActionTypeComboBox.SelectedItem is ComboBoxItem selectedItem) ||
+                    !(selectedItem.Tag is ActionChoice choice))
+                {
+                    Logger.Warn("No action selected");
+                    return;
+                }
+
+                TileActionType actionType = choice.Type;
+                // Auto-derive tile name: user entries keep their friendly name (sans "(User)"),
+                // built-ins use the short name.
+                if (!string.IsNullOrEmpty(choice.Param))
+                {
+                    string disp = choice.Display ?? "";
+                    name = disp.EndsWith(" (User)") ? disp.Substring(0, disp.Length - " (User)".Length) : disp;
+                    if (name.Length > 12) name = name.Substring(0, 12);
+                }
+                else
+                {
+                    name = TileActionHelper.GetShortName(actionType);
+                }
+
+                if(OnexFrontend.UsesOwnBackend&&RejectDuplicateOnexTileInput(actionType,choice.Param))return;
+                if(CustomShortcutNameBox!=null)CustomShortcutNameBox.Description=null;
+                AddActionTile(name, actionType, choice.Param);
+
+                // Clear name input; leave ComboBox at last selection for convenience
+                if (CustomShortcutNameBox != null) CustomShortcutNameBox.Text = "";
+            }
+            else
+            {
+                // Keyboard shortcut tile branch (original)
+                string shortcut = GetCustomShortcutKeysString();
+                if (string.IsNullOrEmpty(shortcut))
+                {
+                    Logger.Warn("No keyboard shortcut defined");
+                    return;
+                }
+
+                if(OnexFrontend.UsesOwnBackend&&RejectDuplicateOnexTileInput(TileActionType.None,shortcut:shortcut))return;
+                if(CustomShortcutNameBox!=null)CustomShortcutNameBox.Description=null;
+                AddCustomShortcutTile(name, shortcut);
+
+                // Clear inputs
+                if (CustomShortcutNameBox != null) CustomShortcutNameBox.Text = "";
+                _customShortcutKeys.Clear();
+                UpdateCustomShortcutKeyTags();
+            }
+
+            UpdateQuickSettingsTileStates();
+        }
+
+        /// <summary>
+        /// Handle tile visibility checkbox changes
+        /// </summary>
+        private void TileVisibility_Changed(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && checkBox.Tag is string tileId)
+            {
+                bool isVisible = checkBox.IsChecked ?? true;
+
+                if (qsTileMap.TryGetValue(tileId, out var tile))
+                {
+                    tile.IsVisible = isVisible;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Toggle MSI Claw mode between Xbox controller emulation and Desktop mode.
+        ///
+        /// Controller mode (emulation ON):
+        ///   ClawButtonMonitor runs → virtual Xbox 360 controller via ViGEm → games receive gamepad input.
+        ///
+        /// Mouse mode (emulation OFF):
+        ///   ClawButtonMonitor stops → MSIClawDesktopModeForwarder starts.
+        ///   Right stick → cursor, left stick → scroll, LB → right click, RB → left click.
+        ///
+        /// Mirrors ToggleLegionDesktopControls() for MSI Claw: both toggle a single emulation-on/off flag.
+        /// OnMSIClawEmulationEnabledChanged in the helper handles ClawButtonMonitor + mouse forwarder lifecycle.
+        /// </summary>
+        private void ToggleMSIClawDesktopMode()
+        {
+            if (msiClawControllerMode == null) return;
+
+            bool newState = !msiClawControllerMode.Value;
+            msiClawControllerMode.SetValue(newState);
+
+            Logger.Info($"MSI Claw mode toggled → controllerOn={newState} ({(newState ? "Controller" : "Mouse")})");
+        }
+
+        /// <summary>
+        /// Toggle MSI Center M OEM software on/off.
+        /// When activating MSI Center: the virtual controller must be off first (see
+        /// <see cref="ShowMsiCenterNeedsHardwareControllerDialogAsync"/>).
+        /// When deactivating: stop processes/service/tasks via helper.
+        /// </summary>
+        private void ToggleMsiCenter()
+        {
+            if (msiCenterActive == null) return;
+            bool newState = !msiCenterActive.Value;
+
+            // Re-enabling MSI Center M while the virtual controller runs makes both fight over the
+            // pad: MSI Center M owns controller input and its driver collides with HidHide, so the
+            // services must not come up until the device is back on the hardware controller.
+            // Rather than switching the user's mode behind their back and waiting for the physical
+            // pad to re-enumerate, ask them to flip it themselves - it is their persisted choice, and
+            // a silent switch would leave them on Hardware after MSI Center M is turned off again.
+            if (newState && defaultControllerMode?.Value == 1)
+            {
+                Logger.Info("MSI Center M activation blocked — Main Controller Mode is Virtual; prompting user to switch to Hardware first");
+                _ = ShowMsiCenterNeedsHardwareControllerDialogAsync();
+                UpdateQuickSettingsTileStates();
+                return;
+            }
+
+            // The helper handles stopping ClawButtonMonitor + MouseForwarder in
+            // OnMsiCenterStateChanged(true) — no pre-stop needed here.
+            // Sending msiClawControllerMode=false first caused a race where the
+            // forwarder started (background task) and was immediately killed by
+            // the msiCenterActive=true message arriving milliseconds later.
+            msiCenterActive.SetValue(newState);
+            Logger.Info($"MSI Center M toggled → active={newState}");
+        }
+
+        /// <summary>
+        /// Explains why MSI Center M was not activated: the Main Controller Mode is still Virtual.
+        /// Info-only - the user changes the mode in the Controller tab and taps the tile again.
+        /// Mirrors ShowVersionMismatchRebootDialogAsync (GamingWidget.ConnectionBanner.cs), the
+        /// existing ContentDialog in this widget, so it inherits a layout that is known to work here.
+        /// </summary>
+        private async Task ShowMsiCenterNeedsHardwareControllerDialogAsync()
+        {
+            try
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = global::XboxGamingBar.OnexStrings.Get("Switch to the hardware controller first"),
+                    Content = global::XboxGamingBar.OnexStrings.Format("MSI Center M takes over the controller and cannot run alongside the virtual one.\n\nOpen the Controller tab, set Main Controller Mode to \"Hardware Controller\", then activate MSI Center M again."),
+                    CloseButtonText = global::XboxGamingBar.OnexStrings.Get("Got it"),
+                    DefaultButton = ContentDialogButton.Close
+                };
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                // Never let a failed dialog swallow the reason the tile did nothing.
+                Logger.Warn($"MSI Center M hardware-controller dialog failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Toggle External Gamepad Mode: when on, the helper hides ALL handheld controllers
+        /// (native MSI + virtual ViGEm) via HidHide so only an external gamepad remains.
+        /// Not persisted — always starts off after a helper start.
+        /// </summary>
+        private void ToggleExternalGamepadMode()
+        {
+            if (externalGamepadMode == null) return;
+            bool newState = !externalGamepadMode.Value;
+            externalGamepadMode.SetValue(newState);
+            Logger.Info($"External Gamepad Mode toggled → on={newState}");
+            // Refresh the Controller-Status card (the helper flips its state flag synchronously).
+            RequestControllerState();
+        }
+
+        /// <summary>
+        /// Toggle the HW-mouse killswitch: force the CLAW FIRMWARE into its native Desktop mouse mode
+        /// (stick→cursor, A→click) — a real hardware HID mouse that works on the UAC secure desktop,
+        /// where software SendInput cannot. Orthogonal to the software Controller/Mouse mode: the
+        /// virtual controller state is preserved (Viiper stays mounted, monitor suspended), so toggling
+        /// off restores it exactly. Not persisted — always starts off after a helper start. The helper
+        /// is authoritative and pushes state back, so the tile highlight follows reality (incl. auto-recovery).
+        /// </summary>
+        private void ToggleMsiClawHwMouse()
+        {
+            if (msiClawHwMouse == null) return;
+            bool newState = !msiClawHwMouse.Value;
+            msiClawHwMouse.SetValue(newState);
+            Logger.Info($"HW-mouse killswitch toggled → on={newState}");
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        // Tile type selector (Keyboard ↔ Action) in the Add Custom Tile panel
+        // ──────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Switch add-tile mode to "Keyboard shortcut"
+        /// </summary>
+        private void TileTypeKeyboard_Click(object sender, RoutedEventArgs e)
+        {
+            _isTileTypeAction = false;
+
+            // Show keyboard section + name field, hide action ComboBox
+            if (TileKeyboardSection != null) TileKeyboardSection.Visibility = Visibility.Visible;
+            if (CustomShortcutNameBox != null) CustomShortcutNameBox.Visibility = Visibility.Visible;
+            if (CustomActionTypeComboBox != null) CustomActionTypeComboBox.Visibility = Visibility.Collapsed;
+
+            // Highlight active button
+            var activeColor = Windows.UI.Color.FromArgb(255, 26, 106, 154);   // #1A6A9A — blue
+            var inactiveColor = Windows.UI.Color.FromArgb(255, 26, 28, 30);   // #1A1C1E — dark
+            var activeBorder = Windows.UI.Color.FromArgb(255, 34, 136, 204);  // #2288CC
+            var inactiveBorder = Windows.UI.Color.FromArgb(80, 85, 92, 0);    // #50555C
+
+            if (TileTypeKeyboardButton != null)
+            {
+                TileTypeKeyboardButton.Background = new SolidColorBrush(activeColor);
+                TileTypeKeyboardButton.BorderBrush = new SolidColorBrush(activeBorder);
+            }
+            if (TileTypeActionButton != null)
+            {
+                TileTypeActionButton.Background = new SolidColorBrush(inactiveColor);
+                TileTypeActionButton.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(80, 85, 92, 0));
+            }
+        }
+
+        /// <summary>
+        /// Switch add-tile mode to "Predefined action"
+        /// </summary>
+        private void TileTypeAction_Click(object sender, RoutedEventArgs e)
+        {
+            _isTileTypeAction = true;
+
+            // Hide keyboard section + name field, show action ComboBox
+            if (TileKeyboardSection != null) TileKeyboardSection.Visibility = Visibility.Collapsed;
+            if (CustomShortcutNameBox != null) CustomShortcutNameBox.Visibility = Visibility.Collapsed;
+            if (CustomActionTypeComboBox != null) CustomActionTypeComboBox.Visibility = Visibility.Visible;
+
+            // Highlight active button
+            var activeColor = Windows.UI.Color.FromArgb(255, 26, 106, 154);
+            var inactiveColor = Windows.UI.Color.FromArgb(255, 26, 28, 30);
+            var activeBorder = Windows.UI.Color.FromArgb(255, 34, 136, 204);
+
+            if (TileTypeActionButton != null)
+            {
+                TileTypeActionButton.Background = new SolidColorBrush(activeColor);
+                TileTypeActionButton.BorderBrush = new SolidColorBrush(activeBorder);
+            }
+            if (TileTypeKeyboardButton != null)
+            {
+                TileTypeKeyboardButton.Background = new SolidColorBrush(inactiveColor);
+                TileTypeKeyboardButton.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(80, 85, 92, 0));
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        // Predefined-action execution
+        // ──────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Execute an action triggered by the physical left MSI button (Game Bar is NOT open).
+        /// Uses SendKeyboardShortcutViaHelper directly — no Win+G prefix needed.
+        /// </summary>
+        /// <summary>Maps a launcher TileActionType to the helper-side launcher key string.</summary>
+        private static string LauncherKey(TileActionType actionType)
+        {
+            switch (actionType)
+            {
+                case TileActionType.SteamBigPicture: return "SteamBigPicture";
+                case TileActionType.Playnite:        return "Playnite";
+                case TileActionType.XboxApp:         return "XboxApp";
+                case TileActionType.OpenClawTweaksWindow: return "ClawTweaksWindow";
+                default:                             return "";
+            }
+        }
+
+        /// <summary>
+        /// Ask the helper to open a launcher (Steam Big Picture / Playnite / Xbox app). The helper
+        /// runs in the user session and launches it whether the launcher is already running or not.
+        /// Optionally closes the Game Bar first (tile-click path) so the launcher takes foreground.
+        /// </summary>
+        private async Task LaunchLauncherViaHelper(string which, bool closeGameBar)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(which)) return;
+
+                if (closeGameBar && widget != null)
+                {
+                    await SendKeyboardShortcutViaHelper("Win+G");
+                    await Task.Delay(150);
+                }
+
+                if (App.IsConnected)
+                {
+                    var msg = new Windows.Foundation.Collections.ValueSet { { "LaunchLauncher", which } };
+                    await App.SendMessageAsync(msg);
+                    Logger.Info($"LaunchLauncherViaHelper: requested '{which}' (closeGameBar={closeGameBar})");
+                }
+                else
+                {
+                    Logger.Warn($"LaunchLauncherViaHelper: helper not connected, cannot launch '{which}'");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"LaunchLauncherViaHelper({which}): {ex.Message}");
+            }
+        }
+
+        /// <summary>Ask the helper to launch a program target (a path, a URI scheme, or @DefaultBrowser).</summary>
+        private async Task LaunchProgramViaHelper(string target, bool closeGameBar)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(target)) return;
+                if (closeGameBar && widget != null)
+                {
+                    await SendKeyboardShortcutViaHelper("Win+G");
+                    await Task.Delay(150);
+                }
+                if (App.IsConnected)
+                {
+                    var msg = new Windows.Foundation.Collections.ValueSet { { "LaunchProgram", target } };
+                    await App.SendMessageAsync(msg);
+                    Logger.Info($"LaunchProgramViaHelper: requested '{target}' (closeGameBar={closeGameBar})");
+                }
+                else Logger.Warn($"LaunchProgramViaHelper: helper not connected ('{target}')");
+            }
+            catch (Exception ex) { Logger.Error($"LaunchProgramViaHelper({target}): {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// Opens ONEXTweaks Center (the desktop app) from the button next to the Quick Metrics row.
+        /// The "@ClawTweaksCenter" token is resolved helper-side (registry, then the per-user install
+        /// dir) rather than hardcoding a path here - see ResolveClawTweaksCenterExe in
+        /// Program.HotkeyHandlers.cs. Game Bar is closed first so Center comes to the foreground.
+        ///
+        /// Routed through the shared handler so a user who does NOT have Center gets told so and is
+        /// offered the download, instead of clicking a button that silently does nothing.
+        /// </summary>
+        private async void OpenCenterButton_Click(object sender, RoutedEventArgs e)
+        {
+            await OpenCenterOrOfferInstallAsync();
+        }
+
+        /// <summary>Ask the helper to open a URL in the default browser.</summary>
+        private async Task LaunchUrlViaHelper(string url, bool closeGameBar)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(url)) return;
+                if (closeGameBar && widget != null)
+                {
+                    await SendKeyboardShortcutViaHelper("Win+G");
+                    await Task.Delay(150);
+                }
+                if (App.IsConnected)
+                {
+                    var msg = new Windows.Foundation.Collections.ValueSet { { "LaunchUrl", url } };
+                    await App.SendMessageAsync(msg);
+                    Logger.Info($"LaunchUrlViaHelper: requested '{url}' (closeGameBar={closeGameBar})");
+                }
+                else Logger.Warn($"LaunchUrlViaHelper: helper not connected ('{url}')");
+            }
+            catch (Exception ex) { Logger.Error($"LaunchUrlViaHelper({url}): {ex.Message}"); }
+        }
+
+        /// <summary>Resolves the launch target for a program action (default token or the user param).</summary>
+        private static string ResolveProgramTarget(TileActionType actionType, string actionParam)
+        {
+            if (actionType == TileActionType.LaunchUserProgram) return actionParam;
+            return TileActionHelper.GetDefaultProgramTarget(actionType);
+        }
+
+        /// <summary>Resolves the URL for a website action (default URL or the user param).</summary>
+        private static string ResolveWebsiteUrl(TileActionType actionType, string actionParam)
+        {
+            if (actionType == TileActionType.OpenUserWebsite) return actionParam;
+            return TileActionHelper.GetDefaultWebsiteUrl(actionType);
+        }
+
+        /// <summary>Media-key token for a media action, or null.</summary>
+        private static string MediaShortcut(TileActionType actionType)
+        {
+            switch (actionType)
+            {
+                case TileActionType.MediaNextTrack: return "MEDIA_NEXT_TRACK";
+                case TileActionType.MediaPrevTrack: return "MEDIA_PREV_TRACK";
+                case TileActionType.MediaPlayPause: return "MEDIA_PLAY_PAUSE";
+                default: return null;
+            }
+        }
+
+        private async Task ExecutePhysicalButtonActionAsync(TileActionType actionType, string actionName, string actionParam = null)
+        {
+            try
+            {
+                switch (actionType)
+                {
+                    case TileActionType.AltTab:
+                    case TileActionType.AltTabBack:
+                        await SendKeyboardShortcutViaHelper("Alt+Tab");
+                        break;
+                    case TileActionType.GoToDesktop:
+                        await SendKeyboardShortcutViaHelper("Win+D");
+                        break;
+                    case TileActionType.ShowKeyboard:
+                        TriggerOnScreenKeyboard();
+                        break;
+                    case TileActionType.BrightnessUp:
+                    case TileActionType.BrightnessDown:
+                        await AdjustBrightnessViaHelperAsync(actionType == TileActionType.BrightnessUp ? 5 : -5);
+                        break;
+                    case TileActionType.VolumeUp:
+                    case TileActionType.VolumeDown:
+                        await AdjustVolumeViaHelperAsync(actionType == TileActionType.VolumeUp ? 5 : -5);
+                        break;
+                    case TileActionType.CycleOverlayMode:
+                        CyclePerformanceOverlay();
+                        break;
+                    case TileActionType.TDPIncrBy1W:
+                        AdjustTDPByWatts(+1);
+                        break;
+                    case TileActionType.TDPDecrBy1W:
+                        AdjustTDPByWatts(-1);
+                        break;
+                    case TileActionType.CycleLimiterMode:
+                        CycleFPSForCurrentMode();
+                        break;
+                    case TileActionType.ToggleControllerMouseMode:
+                        ToggleMSIClawDesktopMode();
+                        break;
+                    case TileActionType.ToggleHwMouse:
+                        ToggleMsiClawHwMouse();
+                        break;
+                    // Special Controller Buttons — momentary Xbox Guide tap (Steam BPM / overlay).
+                    case TileActionType.EmulateXboxGuide:
+                        emulateXboxGuide?.Trigger("tap" + (++_emulateXboxGuideSeq));
+                        break;
+                    // Launcher actions — Game Bar is already closed on this path.
+                    case TileActionType.SteamBigPicture:
+                    case TileActionType.Playnite:
+                    case TileActionType.XboxApp:
+                        await LaunchLauncherViaHelper(LauncherKey(actionType), closeGameBar: false);
+                        break;
+                    // Open ONEXTweaks as a standalone window — close Game Bar so the window comes
+                    // to the foreground (and the Game Bar widget host yields).
+                    case TileActionType.OpenClawTweaksWindow:
+                        await LaunchLauncherViaHelper(LauncherKey(actionType), closeGameBar: true);
+                        break;
+                    // Media keys
+                    case TileActionType.MediaNextTrack:
+                    case TileActionType.MediaPrevTrack:
+                    case TileActionType.MediaPlayPause:
+                        await SendKeyboardShortcutViaHelper(MediaShortcut(actionType));
+                        break;
+                    // Program / Website actions
+                    case TileActionType.OpenDefaultBrowser:
+                    case TileActionType.OpenWindowsStore:
+                    case TileActionType.OpenChrome:
+                    case TileActionType.OpenSpotify:
+                    case TileActionType.LaunchUserProgram:
+                        await LaunchProgramViaHelper(ResolveProgramTarget(actionType, actionParam), closeGameBar: false);
+                        break;
+                    case TileActionType.OpenExophase:
+                    case TileActionType.OpenRetroAchievements:
+                    case TileActionType.OpenGoogle:
+                    case TileActionType.OpenClawTweaksReleases:
+                    case TileActionType.OpenClawTweaksFaq:
+                    case TileActionType.OpenYouTube:
+                    case TileActionType.OpenUserWebsite:
+                        await LaunchUrlViaHelper(ResolveWebsiteUrl(actionType, actionParam), closeGameBar: false);
+                        break;
+                }
+                await SendActionNotificationAsync(actionName);
+                Logger.Info($"ExecutePhysicalButtonActionAsync: executed {actionType} ({actionName}) param='{actionParam}'");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"ExecutePhysicalButtonActionAsync: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Execute a predefined tile action and show an RTSS OSD notification.
+        /// </summary>
+        private async Task ExecuteTileActionAsync(TileActionType actionType, string actionName, string actionParam = null)
+        {
+            try
+            {
+                switch (actionType)
+                {
+                    // ── OS key actions ─────────────────────────────────────
+                    // These must close Game Bar first (Win+G) before sending the
+                    // shortcut — otherwise the key fires behind the open overlay
+                    // and the effect is invisible to the user.
+                    case TileActionType.AltTab:
+                        await SendCustomShortcutAsync("Alt+Tab", actionName);
+                        break;
+
+                    case TileActionType.AltTabBack:
+                        await SendCustomShortcutAsync("Alt+Tab", actionName);
+                        break;
+
+                    case TileActionType.GoToDesktop:
+                        await SendCustomShortcutAsync("Win+D", actionName);
+                        break;
+
+                    case TileActionType.ShowKeyboard:
+                        TriggerOnScreenKeyboard();
+                        break;
+
+                    // ── Brightness / Volume (via helper) ───────────────────
+                    case TileActionType.BrightnessUp:
+                    case TileActionType.BrightnessDown:
+                        await AdjustBrightnessViaHelperAsync(actionType == TileActionType.BrightnessUp ? 5 : -5);
+                        break;
+
+                    case TileActionType.VolumeUp:
+                    case TileActionType.VolumeDown:
+                        await AdjustVolumeViaHelperAsync(actionType == TileActionType.VolumeUp ? 5 : -5);
+                        break;
+
+                    // ── App actions ─────────────────────────────────────────
+                    case TileActionType.CycleOverlayMode:
+                        CyclePerformanceOverlay();
+                        break;
+
+                    case TileActionType.CycleTDPMode:
+                        CycleTDPMode();
+                        break;
+
+                    case TileActionType.TDPStepUp:
+                        StepTDPMode(+1);
+                        break;
+
+                    case TileActionType.TDPStepDown:
+                        StepTDPMode(-1);
+                        break;
+
+                    case TileActionType.TDPIncrBy1W:
+                        AdjustTDPByWatts(+1);
+                        break;
+
+                    case TileActionType.TDPDecrBy1W:
+                        AdjustTDPByWatts(-1);
+                        break;
+
+                    case TileActionType.CycleLimiterMode:
+                        CycleFPSForCurrentMode();
+                        break;
+
+                    case TileActionType.ToggleControllerMouseMode:
+                        ToggleMSIClawDesktopMode();
+                        break;
+
+                    case TileActionType.ToggleHwMouse:
+                        ToggleMsiClawHwMouse();
+                        break;
+
+                    // ── Special Controller Buttons ──────────────────────────
+                    // Momentary Xbox Guide tap on the virtual ViGEm controller (Steam BPM / overlay).
+                    case TileActionType.EmulateXboxGuide:
+                        emulateXboxGuide?.Trigger("tap" + (++_emulateXboxGuideSeq));
+                        break;
+
+                    // Steam menu actions on a TILE: close Game Bar, then the helper injects with the
+                    // method that fits the target — Steam BPM uses keybd_event (Big Picture ignores
+                    // SendInput), the in-game overlay uses Shift+Tab via SendInput, and 77 picks per
+                    // game-running state. Without this the tiles fell through and did nothing.
+                    case TileActionType.SteamBpmSteamMenu:
+                    case TileActionType.SteamBpmQuickAccess:
+                    case TileActionType.SteamGameOverlay:
+                    case TileActionType.SteamMenuContextual:
+                        await SendSteamControllerActionViaHelperAsync((int)actionType, actionName);
+                        break;
+
+                    // ── Launcher actions ────────────────────────────────────
+                    // Launched by the helper (user session, works whether the launcher is
+                    // already running or not). Close Game Bar first so the launcher takes
+                    // the foreground cleanly.
+                    case TileActionType.SteamBigPicture:
+                    case TileActionType.Playnite:
+                    case TileActionType.XboxApp:
+                        await LaunchLauncherViaHelper(LauncherKey(actionType), closeGameBar: true);
+                        break;
+
+                    // ── Media keys (no need to close Game Bar) ──────────────
+                    case TileActionType.MediaNextTrack:
+                    case TileActionType.MediaPrevTrack:
+                    case TileActionType.MediaPlayPause:
+                        await SendKeyboardShortcutViaHelper(MediaShortcut(actionType));
+                        break;
+
+                    // ── Program Actions ─────────────────────────────────────
+                    case TileActionType.OpenDefaultBrowser:
+                    case TileActionType.OpenWindowsStore:
+                    case TileActionType.OpenChrome:
+                    case TileActionType.OpenSpotify:
+                    case TileActionType.LaunchUserProgram:
+                        await LaunchProgramViaHelper(ResolveProgramTarget(actionType, actionParam), closeGameBar: true);
+                        break;
+
+                    // ── Launch Website ──────────────────────────────────────
+                    case TileActionType.OpenExophase:
+                    case TileActionType.OpenRetroAchievements:
+                    case TileActionType.OpenGoogle:
+                    case TileActionType.OpenClawTweaksReleases:
+                    case TileActionType.OpenClawTweaksFaq:
+                    case TileActionType.OpenYouTube:
+                    case TileActionType.OpenUserWebsite:
+                        await LaunchUrlViaHelper(ResolveWebsiteUrl(actionType, actionParam), closeGameBar: true);
+                        break;
+                }
+
+                // Show RTSS OSD notification — tile name on line 1, action description on line 2
+                string actionDesc = TileActionHelper.GetDisplayName(actionType);
+                string notifText = (!string.IsNullOrEmpty(actionDesc) && actionDesc != "Unknown" &&
+                                    !actionName.Equals(actionDesc, StringComparison.OrdinalIgnoreCase))
+                    ? $"{actionName}\n{actionDesc}"
+                    : actionName;
+                await SendActionNotificationAsync(notifText);
+                Logger.Info($"ExecuteTileActionAsync: executed {actionType} ({actionName})");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"ExecuteTileActionAsync: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Ask the helper to adjust display brightness by <paramref name="delta"/> percent (±5 typical).
+        /// </summary>
+        private async Task AdjustBrightnessViaHelperAsync(int delta)
+        {
+            try
+            {
+                if (!App.IsConnected) return;
+
+                var request = new Windows.Foundation.Collections.ValueSet
+                {
+                    { "AdjustBrightness", delta }
+                };
+                await App.SendMessageAsync(request);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"AdjustBrightnessViaHelperAsync: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Show a transient line in the RTSS OSD overlay for a few seconds.
+        /// Helper side: RTSSManager.ShowNotification() handles the timeout.
+        /// </summary>
+        private async Task SendActionNotificationAsync(string actionName)
+        {
+            try
+            {
+                if (!App.IsConnected) return;
+
+                var request = new Windows.Foundation.Collections.ValueSet
+                {
+                    { "ShowOSDNotification", actionName }
+                };
+                await App.SendMessageAsync(request);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"SendActionNotificationAsync: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Step the TDP mode ComboBox up or down by one position (wraps around).
+        /// +1 = next mode, -1 = previous mode.
+        /// </summary>
+        /// <summary>
+        /// Adjust current TDP by ±1 W, staying in Custom/Slider mode.
+        /// PL1 clamped to [4 W, 36 W] so PL2 = PL1+1 ≤ 37 W (MSI Claw hardware limit).
+        /// </summary>
+        private void AdjustTDPByWatts(int delta)
+        {
+            if (TDPSlider == null || tdp == null) return;
+
+            // Switch to Custom/Slider mode so the watt value is applied directly
+            int sliderIndex = useCustomTDPPresets && tdpPresets != null
+                ? tdpPresets.Count          // Slider item is always last in custom preset list
+                : TDPModeComboBox?.Items.Count - 1 ?? 5; // last item = Slider in default list
+
+            if (TDPModeComboBox != null && !IsCustomTdpModeSelected())
+                SetTDPModeByIndex(sliderIndex);
+
+            const int TDP_MIN   = 4;
+            const int TDP_MAX   = 36;  // PL2 = PL1+1 = 37 W ≤ MSI Claw max PL2
+            int current = (int)Math.Round(TDPSlider.Value);
+            int next    = Math.Max(TDP_MIN, Math.Min(TDP_MAX, current + delta));
+
+            TDPSlider.Value = next;
+            tdp.SetValue(next);
+            if (SaveTDP && !isLoadingProfile)
+                SaveWidgetUiStateToProfile(currentProfileName);
+
+            Logger.Info($"AdjustTDPByWatts: {current}W → {next}W (delta={delta})");
+        }
+
+        private async Task AdjustVolumeViaHelperAsync(int delta)
+        {
+            try
+            {
+                if (!App.IsConnected) return;
+                var request = new Windows.Foundation.Collections.ValueSet { { "AdjustVolume", delta } };
+                await App.SendMessageAsync(request);
+            }
+            catch (Exception ex) { Logger.Warn($"AdjustVolumeViaHelperAsync: {ex.Message}"); }
+        }
+
+        private void StepTDPMode(int direction)
+        {
+            if (TDPModeComboBox == null) return;
+
+            int count = TDPModeComboBox.Items.Count;
+            if (count == 0) return;
+
+            int current = TDPModeComboBox.SelectedIndex;
+            int next = ((current + direction) % count + count) % count;  // wrap with positive modulo
+            SetTDPModeByIndex(next);
+        }
+
+    }
+}

@@ -1,0 +1,3246 @@
+﻿using Microsoft.Gaming.XboxGameBar;
+using Microsoft.Gaming.XboxGameBar.Input;
+using Microsoft.UI.Xaml.Controls;
+using NLog;
+using Shared.Data;
+using Shared.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.Data.Json;
+using Windows.Foundation;
+using Windows.Foundation.Metadata;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Navigation;
+using Windows.System.Power;
+using Windows.Storage;
+using Windows.System;
+using Windows.UI.Xaml.Input;
+using System.Runtime.InteropServices;
+using Windows.UI;
+using XboxGamingBar.Data;
+using XboxGamingBar.Event;
+using XboxGamingBar.IPC;
+using XboxGamingBar.QuickSettings;
+using Shared.Enums;
+
+namespace XboxGamingBar
+{
+    public sealed partial class GamingWidget
+    {
+        /// <summary>
+        /// Shows or hides the Legion tab based on device detection
+        /// </summary>
+        private void SetLegionTabVisibility(bool visible)
+        {
+            if (LegionNavItem != null)
+            {
+                // Keep the tab visible if Legion is detected OR controller emulation is supported
+                // (MSI Claw uses the same tab for its controller emulation settings)
+                bool showTab = OnexFrontend.UsesOwnBackend || visible || controllerEmulationSupported;
+                if(!OnexFrontend.UsesOwnBackend)LegionNavItem.Visibility = showTab ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"Legion tab visibility set to: {showTab} (legionDetected={visible}, controllerEmulationSupported={controllerEmulationSupported})");
+            }
+
+            // TDP Mode card: only show for actual Legion Go hardware.
+            // MSI Claw sets legionGoDetected=true to enable the controller tab, but does NOT
+            // have Legion hardware presets — showing TDPModeCard for Claw leaves an empty card.
+            bool isActualLegion = visible && msiClawControllerMode == null;
+            if (TDPModeCard != null)
+            {
+                TDPModeCard.Visibility = isActualLegion ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"TDP Mode card visibility set to: {(visible ? "Visible" : "Collapsed")} (Legion={visible})");
+
+                // Update XY focus bindings - TDP Mode card is always present now
+                UpdatePerformanceTabXYFocus(true);
+
+                // Sync TDP Mode with Legion Performance Mode if Legion device.
+                // Skip during initial sync - ApplyProfileTDPToHelper will set the correct value.
+                //
+                // CRITICAL: gate on isActualLegion (NOT just `visible`). On the MSI Claw the
+                // TDP-Mode card is hidden and the device always runs Slider/Custom — the slider
+                // is the source of truth. Copying LegionPerformanceModeComboBox.SelectedIndex
+                // into TDPModeComboBox here does NOT pre-set lastTDPModeIndex, so
+                // TDPModeComboBox_SelectionChanged fires as a "user change" and applies preset
+                // index 1 = "Standard" = 25W, which persists to the global profile. That is the
+                // recurring "global TDP resets to 25W on every Game Bar open" bug: harmless on
+                // real Legion (card visible, sync intended) but a silent clobber on the Claw.
+                if (isActualLegion && LegionPerformanceModeComboBox != null && TDPModeComboBox != null && !isInitialSync)
+                {
+                    TDPModeComboBox.SelectedIndex = LegionPerformanceModeComboBox.SelectedIndex;
+                }
+            }
+
+            // Show/hide Manufacturer WMI option in TDP Method dropdown based on Legion detection
+            if (TdpMethodWmiItem != null)
+            {
+                TdpMethodWmiItem.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"TDP Method WMI option visibility set to: {visible}");
+
+                // Auto-default only BEFORE the helper has supplied a value. After
+                // helper sync, the helper's persisted choice is authoritative — its
+                // queued NotifyPropertyChanged dispatcher entry will set SelectedIndex.
+                // Racing it with SelectedIndex=0 here would push WMI=0 UP and clobber
+                // the helper's PawnIO selection (issue #79 round-3 regression).
+                bool helperOwnsTdpMethod = tdpMethod != null && tdpMethod.HasReceivedHelperSync;
+
+                // If Legion detected and WMI option now visible, select it if not already selected.
+                // Skip when helper owns the value — its sync will land the right index momentarily.
+                if (visible && TdpMethodComboBox != null && TdpMethodComboBox.SelectedIndex < 0 && !helperOwnsTdpMethod)
+                {
+                    TdpMethodComboBox.SelectedIndex = 0; // ManufacturerWMI
+                }
+                // If Legion not detected and WMI was selected, switch to PawnIO.
+                // Same rationale: helper-driven values must not be overridden here.
+                else if (!visible && TdpMethodComboBox != null && !helperOwnsTdpMethod)
+                {
+                    var selectedItem = TdpMethodComboBox.SelectedItem as ComboBoxItem;
+                    if (selectedItem?.Tag is string tag && tag == "ManufacturerWMI")
+                    {
+                        // Find and select PawnIO
+                        for (int i = 0; i < TdpMethodComboBox.Items.Count; i++)
+                        {
+                            if (TdpMethodComboBox.Items[i] is ComboBoxItem item && item.Tag is string t && t == "PawnIO")
+                            {
+                                TdpMethodComboBox.SelectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Update the TDP Method description based on Legion detection
+            if (TdpMethodDescription != null)
+            {
+                if (visible)
+                {
+                    TdpMethodDescription.Text = global::XboxGamingBar.OnexStrings.Get("Select TDP control method. Manufacturer WMI (Legion) and PawnIO are anti-cheat safe.");
+                }
+                else
+                {
+                    TdpMethodDescription.Text = global::XboxGamingBar.OnexStrings.Get("Select TDP control method. PawnIO is anti-cheat safe. WinRing0 may trigger anti-cheat.");
+                }
+            }
+
+            // Refresh Quick Settings tiles to show/hide Legion-specific tiles
+            RefreshQuickSettingsForLegion();
+        }
+
+        /// <summary>
+        /// Updates the device name display in the Legion tab header.
+        /// </summary>
+        private void SetLegionDeviceName(string name)
+        {
+            if (LegionDeviceNameText != null && !string.IsNullOrEmpty(name))
+            {
+                LegionDeviceNameText.Text = name;
+                Logger.Info($"Legion device name set to: {name}");
+            }
+        }
+
+        /// <summary>
+        /// Shows or hides the Controller Remapping section based on device support.
+        /// Legion Go S has a different HID structure, so controller remapping doesn't work.
+        /// </summary>
+        private void SetControllerRemappingSectionVisibility(bool visible)
+        {
+            if (ControllerRemappingSection != null)
+            {
+                ControllerRemappingSection.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"Controller Remapping section visibility set to: {visible}");
+
+                if (visible)
+                {
+                    RefreshLegionEnhancedRemapUi();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shows or hides the Lighting section based on device support.
+        /// Legion Go S has a different HID structure, so RGB lighting control doesn't work.
+        /// </summary>
+        private void SetLightingSectionVisibility(bool visible)
+        {
+            if (LightingSection != null)
+            {
+                // The Controller-tab Lighting section was removed (duplicate of the System tab's
+                // "Controller LED Color" card). Keep it permanently hidden regardless of the
+                // device's RGB capability. The named controls are retained (not deleted) so the
+                // ~17 files that reference them still compile.
+                LightingSection.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Shows or hides the Gyro Settings card based on device support.
+        /// Legion Go S has a different HID structure, so gyro configuration doesn't work.
+        /// On MSI Claw the section is visible and the gyro button becomes "Recenter gyro"
+        /// (see UpdateGyroActionButtonForDevice).
+        /// </summary>
+        /// <summary>
+        /// Shows the firmware keyboard-remap backend toggle only when the helper reports the device
+        /// supports it (MSI Claw A2VM; verified EEPROM layout). Hidden on every other device.
+        /// </summary>
+        private void SetFwKeyboardRemapSectionVisibility(bool visible)
+        {
+            if (FwKeyboardRemapPanel != null)
+            {
+                FwKeyboardRemapPanel.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"Firmware keyboard-remap toggle visibility set to: {visible}");
+            }
+        }
+
+        /// <summary>
+        /// "Refresh" button under the firmware keyboard-remap toggle: asks the helper to read the live
+        /// firmware button→keyboard map from the controller EEPROM and push it back ("FwButtonMapResult").
+        /// </summary>
+        private async void FwButtonMapRefresh_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            try
+            {
+                if (!App.IsConnected)
+                {
+                    if (FwButtonMapText != null) FwButtonMapText.Text = global::XboxGamingBar.OnexStrings.Get("Helper not connected.");
+                    return;
+                }
+                if (FwButtonMapText != null) FwButtonMapText.Text = global::XboxGamingBar.OnexStrings.Get("Reading controller…");
+                await App.SendMessageAsync(new Windows.Foundation.Collections.ValueSet { { "ReadFwButtonMap", "1" } });
+                Logger.Info("ReadFwButtonMap requested");
+            }
+            catch (Exception ex) { Logger.Warn($"FwButtonMapRefresh_Click: {ex.Message}"); }
+        }
+
+        /// <summary>Helper pushed the decoded firmware button→key map (wired in GamingWidget.PipeClient).</summary>
+        internal void OnFirmwareButtonMapResult(string report)
+        {
+            try { if (FwButtonMapText != null) FwButtonMapText.Text = string.IsNullOrWhiteSpace(report) ? global::XboxGamingBar.OnexStrings.Get("(no data)") : report; }
+            catch (Exception ex) { Logger.Warn($"OnFirmwareButtonMapResult: {ex.Message}"); }
+        }
+
+        private void SetGyroSectionVisibility(bool visible)
+        {
+            if (GyroSection != null)
+            {
+                GyroSection.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"Gyro section visibility set to: {visible}");
+            }
+
+            UpdateGyroActionButtonForDevice();
+
+            // Controller Feedback card (stepless Vibration Intensity + stick deadzones) is wired to
+            // the MSI Claw ViGEm rumble passthrough / DInput deadzone in ClawButtonMonitor. Gate it on
+            // the device name (same as the LED / charge-limit cards), NOT on controllerEmulationAvailable
+            // — that value can arrive after this callback and would leave the card hidden. The primary
+            // owner of this card's visibility is InitializeMsiClawSettings(); this keeps the two in sync.
+            if (ControllerFeedbackCard != null)
+            {
+                ControllerFeedbackCard.Visibility = IsMsiClawDevice() ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Labels the gyro action button for the current device. It means two different things:
+        ///
+        /// Legion — "Calibrate gyro": a firmware command to the controllers, which capture a fresh
+        ///   bias in their own sensor while held still.
+        /// MSI Claw — "Recenter gyro": that firmware command cannot work here. It targets the sensor
+        ///   inside the pad, while the Claw gyro reads the Windows sensor, and there is no
+        ///   controller HID handle to send it to (the helper logs "no open HID handle" and the
+        ///   request fails). Instead the button discards the software gyro's learned zero point so
+        ///   the next resting moment re-learns it — see GyroBiasTracker.
+        ///
+        /// Device detection goes through IsMsiClawDevice(), NOT legionGoDetected: that value is TRUE
+        /// on the Claw too (it is internally flagged as a Legion — the tech-debt note in CLAUDE.md),
+        /// so the check this replaces believed the Claw was a Legion, left the firmware calibration
+        /// wired up, and every click failed silently.
+        ///
+        /// Called from SetGyroSectionVisibility and from InitializeMsiClawSettings, because
+        /// deviceDisplayName can arrive after the gyro-support callback has already run.
+        /// </summary>
+        internal void UpdateGyroActionButtonForDevice()
+        {
+            bool isMsiClaw = IsMsiClawDevice();
+
+            if (LegionCalibrateGyroButton != null)
+            {
+                LegionCalibrateGyroButton.IsEnabled = true;
+                LegionCalibrateGyroButton.Content = isMsiClaw ? global::XboxGamingBar.OnexStrings.Get("Recenter gyro") : global::XboxGamingBar.OnexStrings.Get("Calibrate gyro");
+            }
+
+            if (LegionCalibrateGyroStatus != null && isMsiClaw)
+            {
+                LegionCalibrateGyroStatus.Text =
+                    global::XboxGamingBar.OnexStrings.Get("Put the device down flat, then recenter — the gyro zero point is re-learned within a second.");
+            }
+        }
+
+        /// <summary>
+        /// Legion: fires a one-shot "CalibrateLegionGyro" — the helper sends the HID output report
+        /// to both controllers and their firmware captures a fresh bias while the pads are held
+        /// still. MSI Claw: fires "RecenterClawGyro" instead, which throws away the software gyro's
+        /// learned zero point (see SetGyroSectionVisibility for why the firmware path is useless
+        /// there). Same button, same handler — only the verb and the wording differ.
+        /// </summary>
+        private async void LegionCalibrateGyroButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            bool isMsiClaw = IsMsiClawDevice();
+            Logger.Info(isMsiClaw
+                ? "Claw gyro recenter requested from widget"
+                : "Legion gyro calibration requested from widget");
+
+            // Brief UI feedback: disable the button while the request is in flight.
+            Button button = LegionCalibrateGyroButton;
+            string originalText = button?.Content?.ToString() ?? (isMsiClaw ? "Recenter gyro" : "Calibrate gyro");
+            if (button != null)
+            {
+                button.IsEnabled = false;
+                button.Content = isMsiClaw ? global::XboxGamingBar.OnexStrings.Get("Recentering…") : global::XboxGamingBar.OnexStrings.Get("Calibrating…");
+            }
+            if (LegionCalibrateGyroStatus != null)
+                LegionCalibrateGyroStatus.Text = isMsiClaw
+                    ? global::XboxGamingBar.OnexStrings.Get("Keep the device still…")
+                    : global::XboxGamingBar.OnexStrings.Get("Hold the controllers still…");
+
+            try
+            {
+                if (App.PipeClient?.IsConnected == true)
+                {
+                    var request = new Windows.Foundation.Collections.ValueSet();
+                    request.Add(isMsiClaw ? "RecenterClawGyro" : "CalibrateLegionGyro", true);
+                    await App.SendMessageAsync(request);
+                    if (LegionCalibrateGyroStatus != null)
+                        LegionCalibrateGyroStatus.Text = isMsiClaw
+                            ? global::XboxGamingBar.OnexStrings.Get("Zero point discarded — keep the device still for a moment while it re-learns.")
+                            : global::XboxGamingBar.OnexStrings.Get("Calibration command sent. Keep the pads still for a moment.");
+                }
+                else
+                {
+                    if (LegionCalibrateGyroStatus != null)
+                        LegionCalibrateGyroStatus.Text = global::XboxGamingBar.OnexStrings.Get("Not connected to helper — try again after reconnecting.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"Gyro {(isMsiClaw ? "recenter" : "calibration")} send failed: {ex.Message}");
+                if (LegionCalibrateGyroStatus != null)
+                    LegionCalibrateGyroStatus.Text = global::XboxGamingBar.OnexStrings.Format("Send failed: {0}",ex.Message);
+            }
+            finally
+            {
+                await Task.Delay(1200);
+                if (button != null) { button.IsEnabled = true; button.Content = originalText; }
+            }
+        }
+
+        private void SetScrollWheelSectionVisibility(bool visible)
+        {
+            if (ScrollWheelSection != null)
+            {
+                ScrollWheelSection.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"Scroll wheel section visibility set to: {visible}");
+            }
+        }
+
+        // ---- Driver Updates (MSI Claw + Intel; Lenovo path shares the same renderer) ----
+        // The card lives in its own always-expanded "Drivers" tab now, so there is no
+        // expand toggle.
+
+        private async void DriverUpdatesCheckButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (DriverUpdatesCheckButton == null) return;
+
+            string originalContent = DriverUpdatesCheckButton.Content?.ToString() ?? "Check for updates";
+            DriverUpdatesCheckButton.IsEnabled = false;
+            DriverUpdatesCheckButton.Content = global::XboxGamingBar.OnexStrings.Get("Checking…");
+            if (DriverUpdatesStatusText != null)
+                DriverUpdatesStatusText.Text = IsMsiClawDevice()
+                    ? global::XboxGamingBar.OnexStrings.Get("Reading machine info and contacting MSI + Intel…")
+                    : global::XboxGamingBar.OnexStrings.Get("Reading machine info and contacting Lenovo…");
+            if (DriverUpdatesList != null)
+                DriverUpdatesList.Visibility = Visibility.Collapsed;
+
+            try
+            {
+                if (!App.IsConnected)
+                {
+                    if (DriverUpdatesStatusText != null)
+                        DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Helper not connected. Try again once the widget reconnects.");
+                    return;
+                }
+
+                var request = new Windows.Foundation.Collections.ValueSet();
+                request.Add("CheckDriverUpdates", true);
+                // Explicit user-initiated check → always rebuild the installed-driver
+                // snapshot. The cached probe is only for the instant startup/tab display;
+                // a manual "Check" after installing a driver must re-read PnP versions,
+                // otherwise a just-updated driver still shows the old version (stale cache).
+                request.Add("ForceRefresh", true);
+                var response = await App.SendMessageAsync(request);
+                if (response == null)
+                {
+                    if (DriverUpdatesStatusText != null)
+                        DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("No response from helper.");
+                    return;
+                }
+
+                if (!response.TryGetValue("DriverUpdateResult", out var payloadObj) || !(payloadObj is string payload))
+                {
+                    if (DriverUpdatesStatusText != null)
+                        DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Helper returned an unexpected response shape.");
+                    return;
+                }
+
+                RenderDriverUpdateResult(payload);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"DriverUpdatesCheckButton_Click failed: {ex.Message}");
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Format("Check failed: {0}",ex.Message);
+            }
+            finally
+            {
+                DriverUpdatesCheckButton.IsEnabled = true;
+                DriverUpdatesCheckButton.Content = originalContent;
+            }
+        }
+
+        private async void DriverUpdatesOpenPageButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            try
+            {
+                // If we already know the MT code from a previous Check, use that URL
+                // directly; otherwise ask the helper for a fresh snapshot so we can
+                // route to the correct machine-specific page.
+                string url = _lastDriverPageUrl;
+                if (string.IsNullOrEmpty(url) && App.IsConnected)
+                {
+                    var request = new Windows.Foundation.Collections.ValueSet();
+                    request.Add("CheckDriverUpdates", true);
+                    var response = await App.SendMessageAsync(request);
+                    if (response != null && response.TryGetValue("DriverUpdateResult", out var payloadObj) && payloadObj is string payload)
+                    {
+                        RenderDriverUpdateResult(payload);
+                        url = _lastDriverPageUrl;
+                    }
+                }
+                if (string.IsNullOrEmpty(url))
+                {
+                    // Last resort (helper unreachable): derive from the model shown in the card.
+                    url = MsiSupportPageFor(DriverUpdatesModel?.Text);
+                }
+                bool ok = await OpenExternalUrlAsync(url);
+                if (!ok && DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Couldn't open the browser for that link.");
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"DriverUpdatesOpenPageButton_Click failed: {ex.Message}");
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Format("Couldn't open browser: {0}",ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Opens an external URL. The widget runs in the Game Bar AppContainer where
+        /// Launcher.LaunchUriAsync is unreliable (returns false), so we ask the
+        /// full-trust helper to open it (via explorer.exe → default browser at user
+        /// integrity). Falls back to the Launcher when the helper isn't connected.
+        /// </summary>
+        private async System.Threading.Tasks.Task<bool> OpenExternalUrlAsync(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return false;
+            try
+            {
+                if (App.IsConnected)
+                {
+                    var req = new Windows.Foundation.Collections.ValueSet();
+                    req.Add("OpenExternalUrl", url);
+                    var resp = await App.SendMessageAsync(req);
+                    if (resp != null && resp.TryGetValue("OpenExternalUrlResult", out var v) && v is bool b && b)
+                        return true;
+                }
+            }
+            catch (Exception ex) { Logger.Warn($"OpenExternalUrl via helper failed: {ex.Message}"); }
+            try { return await Windows.System.Launcher.LaunchUriAsync(new Uri(url)); }
+            catch (Exception ex) { Logger.Warn($"LaunchUriAsync fallback failed: {ex.Message}"); return false; }
+        }
+
+        private string _lastDriverPageUrl;
+
+        /// <summary>Fallback MSI support page, used only when the helper did not supply a driverPageUrl.
+        /// The helper is the source of truth (it keys off the board's ModelCode); this just avoids
+        /// sending a Claw 8 EX owner to the A2VM page, whose drivers do not apply to Panther Lake.</summary>
+        private static string MsiSupportPageFor(string modelText)
+            => Shared.Data.ClawHardwareId.SupportPageUrlFor(modelText);
+
+        /// <summary>
+        /// Parses the helper's DriverUpdateResult JSON (shipped over the pipe as a
+        /// camelCase JSON string) and writes it into the UI. Uses Windows.Data.Json
+        /// because the UWP widget targets C# 7.3 without System.Text.Json. Defensive
+        /// against missing fields — any field the helper couldn't populate shows "—".
+        /// </summary>
+        private async void RenderDriverUpdateResult(string json, IPC.NamedPipeClient owner = null)
+        {
+            // Windows.Data.Json + Xaml property setters both require the UI
+            // thread (WinRT single-apartment). This method is reachable from
+            // the pipe-read threadpool path (PrefetchDriverUpdatesAsync /
+            // UpdateDriverUpdatesTile on startup push) so force a dispatch
+            // before we touch either. Without this the heartbeat-watcher
+            // reconnect after a long UAC gap threw RPC_E_WRONG_THREAD and
+            // left the driver list empty.
+            if (Dispatcher != null && !Dispatcher.HasThreadAccess)
+            {
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal,
+                    () => RenderDriverUpdateResult(json, owner));
+                return;
+            }
+            if (owner == null) ApplyDriverUpdateResult(json);
+            else TryRunForPipePush(owner, () => ApplyDriverUpdateResult(json));
+        }
+
+        private void ApplyDriverUpdateResult(string json)
+        {
+            try
+            {
+                if (!Windows.Data.Json.JsonObject.TryParse(json, out var root))
+                {
+                    if (DriverUpdatesStatusText != null)
+                        DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Helper returned a response the widget couldn't parse.");
+                    return;
+                }
+
+                string GetStr(string name) =>
+                    (root.TryGetValue(name, out var v) && v.ValueType == Windows.Data.Json.JsonValueType.String)
+                        ? v.GetString() ?? "" : "";
+                bool GetBool(string name) =>
+                    root.TryGetValue(name, out var v) && v.ValueType == Windows.Data.Json.JsonValueType.Boolean && v.GetBoolean();
+
+                string model = GetStr("model");
+                string modelVersion = GetStr("modelVersion");
+                string bios = GetStr("biosVersion");
+                string pageUrl = GetStr("driverPageUrl");
+                bool isLenovo = GetBool("isLenovo");
+                bool isMsiClaw = GetBool("isMsiClaw");
+                bool supported = isLenovo || isMsiClaw;
+                bool liveFetch = GetBool("liveFetchSucceeded");
+                string error = GetStr("errorMessage");
+
+                string defaultPage = isMsiClaw
+                    ? MsiSupportPageFor(model + " " + modelVersion)
+                    : "https://pcsupport.lenovo.com/";
+                _lastDriverPageUrl = string.IsNullOrEmpty(pageUrl) ? defaultPage : pageUrl;
+                if (DriverUpdatesModel != null)
+                {
+                    string modelText = string.IsNullOrEmpty(model) ? (string.IsNullOrEmpty(modelVersion) ? "—" : modelVersion) : model;
+                    DriverUpdatesModel.Text = modelText;
+                }
+                if (DriverUpdatesBios != null) DriverUpdatesBios.Text = string.IsNullOrEmpty(bios) ? "—" : bios;
+
+                if (!supported)
+                {
+                    if (DriverUpdatesStatusText != null)
+                        DriverUpdatesStatusText.Text = string.IsNullOrEmpty(error)
+                            ? global::XboxGamingBar.OnexStrings.Get("This feature only works on Lenovo Legion and MSI Claw devices.")
+                            : global::XboxGamingBar.OnexStrings.Format("Unsupported device: {0}",error);
+                    if (DriverUpdatesList != null) DriverUpdatesList.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                // Render the driver list if we got one. If Lenovo's API didn't respond
+                // (live fetch failed or returned empty), fall back to prompting the
+                // user to open the driver page in a browser.
+                var items = new System.Collections.Generic.List<DriverDisplay>();
+                if (root.TryGetValue("drivers", out var driversVal) && driversVal.ValueType == Windows.Data.Json.JsonValueType.Array)
+                {
+                    foreach (var elem in driversVal.GetArray())
+                    {
+                        if (elem.ValueType != Windows.Data.Json.JsonValueType.Object) continue;
+                        var d = elem.GetObject();
+                        string GetD(string key) =>
+                            (d.TryGetValue(key, out var vv) && vv.ValueType == Windows.Data.Json.JsonValueType.String)
+                                ? vv.GetString() ?? "" : "";
+                        int statusCode = 0;
+                        if (d.TryGetValue("updateStatus", out var usVal) && usVal.ValueType == Windows.Data.Json.JsonValueType.Number)
+                            statusCode = (int)usVal.GetNumber();
+                        string installed = GetD("installedVersion");
+                        string downloadUrl = GetD("downloadUrl");
+                        // MSI Claw extras: providerScope ("msi"/"intel") + action
+                        // ("install"/"deeplink"). On Lenovo these are empty/absent.
+                        string scope = GetD("providerScope");
+                        string action = GetD("action");
+                        bool isDeepLink = string.Equals(action, "deeplink", StringComparison.OrdinalIgnoreCase);
+                        bool isModded = string.Equals(action, "moddedwifi", StringComparison.OrdinalIgnoreCase);
+                        var (installLabel, installVis) = InstallButtonForStatus(statusCode, downloadUrl);
+                        if (isDeepLink && !string.IsNullOrWhiteSpace(downloadUrl))
+                        {
+                            // Deep-link rows always show a button that opens a page
+                            // (Intel download page / DSA for Intel rows, MSI support otherwise).
+                            installLabel = "Open page";
+                            installVis = Windows.UI.Xaml.Visibility.Visible;
+                        }
+                        if (isModded)
+                        {
+                            // Modded Wi-Fi: assisted install (download + open folder).
+                            installLabel = "Get driver";
+                            installVis = Windows.UI.Xaml.Visibility.Visible;
+                        }
+
+                        // Per-driver mute (scoped to the current latest version). Only
+                        // update rows can be muted; a muted row shows "Muted" + Unmute and
+                        // drops out of the count + Update all. Key MUST match the helper's.
+                        bool ignored = d.TryGetValue("ignored", out var igv)
+                            && igv.ValueType == Windows.Data.Json.JsonValueType.Boolean && igv.GetBoolean();
+                        string ignoreKey = (GetD("name").Trim() + "|" + GetD("version").Trim()).ToLowerInvariant();
+                        bool isUpdate = statusCode == 2; // UpdateAvailable
+                        string muteLabel = ignored ? "Unmute" : "Mute";
+                        var muteVis = (ignored || isUpdate)
+                            ? Windows.UI.Xaml.Visibility.Visible
+                            : Windows.UI.Xaml.Visibility.Collapsed;
+
+                        var cachedList = ParseCachedInstallers(d, downloadUrl, installed);
+
+                        items.Add(new DriverDisplay
+                        {
+                            Name = GetD("name"),
+                            Category = GetD("category"),
+                            CategoryIcon = CategoryToIconGlyph(GetD("category")),
+                            Version = GetD("version"),
+                            ReleaseDate = GetD("releaseDate"),
+                            DownloadUrl = downloadUrl,
+                            Severity = SeverityLabel(GetD("severity")),
+                            InstalledVersion = string.IsNullOrWhiteSpace(installed) ? "—" : installed,
+                            StatusLabel = ignored ? "Muted" : StatusLabelFor(statusCode),
+                            StatusColor = ignored
+                                ? new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 90, 90, 90))
+                                : StatusColorFor(statusCode),
+                            InstallButtonLabel = installLabel,
+                            // Muted: hide the install/open action (only Unmute remains).
+                            InstallButtonVisibility = ignored ? Windows.UI.Xaml.Visibility.Collapsed : installVis,
+                            ProviderScope = scope,
+                            IsDeepLink = isDeepLink,
+                            IsModdedWifi = isModded,
+                            IsIgnored = ignored,
+                            IgnoreKey = ignoreKey,
+                            MuteButtonLabel = muteLabel,
+                            MuteButtonVisibility = muteVis,
+                            Highlights = GetD("highlights"),
+                            IsBeta = d.TryGetValue("isBeta", out var bv)
+                                     && bv.ValueType == Windows.Data.Json.JsonValueType.Boolean && bv.GetBoolean(),
+                            CachedInstallers = cachedList,
+                        });
+                    }
+                }
+
+                // Remember the full list so the utilities/diagnostics checkbox
+                // can filter it on the fly without another helper round-trip.
+                _allDriverDisplays = items;
+
+                // Sync the two opt-in toggles without triggering their re-check handlers.
+                if (DriverUpdatesModdedWifiCheckbox != null || DriverUpdatesIntelBetaCheckbox != null)
+                {
+                    _isLoadingUpdatePreferenceCheckboxes = true;
+                    try
+                    {
+                        if (DriverUpdatesModdedWifiCheckbox != null)
+                            DriverUpdatesModdedWifiCheckbox.IsChecked = DriverUpdatesUseModdedWifi;
+                        if (DriverUpdatesIntelBetaCheckbox != null)
+                            DriverUpdatesIntelBetaCheckbox.IsChecked = DriverUpdatesUseIntelBeta;
+                    }
+                    finally { _isLoadingUpdatePreferenceCheckboxes = false; }
+                }
+
+                ApplyDriverFilters();
+                UpdateUpdateAllButtonVisibility();
+
+                if (DriverUpdatesStatusText != null)
+                {
+                    if (items.Count > 0)
+                    {
+                        int upToDate = 0, update = 0, unknown = 0, notInstalled = 0;
+                        foreach (var it in items)
+                        {
+                            switch (it.StatusLabel)
+                            {
+                                case "Up to date": upToDate++; break;
+                                case "Update": update++; break;
+                                case "Not installed": notInstalled++; break;
+                                default: unknown++; break;
+                            }
+                        }
+                        DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Format("{0} drivers checked — {1} up to date, {2} update available, {3} not installed, {4} unknown.",items.Count,upToDate,update,notInstalled,unknown);
+                    }
+                    else if (liveFetch)
+                    {
+                        DriverUpdatesStatusText.Text = isMsiClaw
+                            ? global::XboxGamingBar.OnexStrings.Get("No catalog entries for this model. Use Open page to browse MSI support / Intel DSA.")
+                            : global::XboxGamingBar.OnexStrings.Get("Lenovo returned no drivers for this machine type.");
+                    }
+                    else
+                    {
+                        DriverUpdatesStatusText.Text = isMsiClaw
+                            ? global::XboxGamingBar.OnexStrings.Get("Driver catalog unreachable. Use Open page to browse MSI support / Intel DSA.")
+                            : global::XboxGamingBar.OnexStrings.Get("Lenovo's live driver list is unreachable. Use Open Lenovo driver page to browse on lenovo.com.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"RenderDriverUpdateResult parse failed: {ex.Message}");
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Format("Couldn't parse response: {0}",ex.Message);
+            }
+        }
+
+        // Parses the helper's "cachedInstallers" array on a driver JSON object into the
+        // widget's CachedInstaller rows (formatting size/date and flagging older-than-installed).
+        private System.Collections.Generic.List<CachedInstaller> ParseCachedInstallers(
+            Windows.Data.Json.JsonObject d, string matchUrl, string installedVersion)
+        {
+            var list = new System.Collections.Generic.List<CachedInstaller>();
+            try
+            {
+                if (d == null || !d.TryGetValue("cachedInstallers", out var arrVal)
+                    || arrVal.ValueType != Windows.Data.Json.JsonValueType.Array)
+                    return list;
+
+                foreach (var el in arrVal.GetArray())
+                {
+                    if (el.ValueType != Windows.Data.Json.JsonValueType.Object) continue;
+                    var o = el.GetObject();
+                    string S(string k) => (o.TryGetValue(k, out var vv) && vv.ValueType == Windows.Data.Json.JsonValueType.String)
+                        ? vv.GetString() ?? "" : "";
+                    double N(string k) => (o.TryGetValue(k, out var vv) && vv.ValueType == Windows.Data.Json.JsonValueType.Number)
+                        ? vv.GetNumber() : 0;
+
+                    string version = S("version");
+                    string dateText = "";
+                    if (DateTimeOffset.TryParse(S("lastWriteUtc"), out var dto))
+                        dateText = dto.ToLocalTime().ToString("yyyy-MM-dd");
+
+                    list.Add(new CachedInstaller
+                    {
+                        FullPath = S("fullPath"),
+                        FileName = S("fileName"),
+                        VersionText = version,
+                        SizeText = FormatBytes((long)N("sizeBytes")),
+                        DateText = dateText,
+                        FolderText = S("folder"),
+                        MatchUrl = matchUrl,
+                        IsOlderThanInstalled = CompareVersions(version, installedVersion) < 0,
+                    });
+                }
+            }
+            catch (Exception ex) { Logger.Warn($"ParseCachedInstallers failed: {ex.Message}"); }
+            return list;
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes <= 0) return "";
+            string[] units = { "B", "KB", "MB", "GB" };
+            double v = bytes; int u = 0;
+            while (v >= 1024 && u < units.Length - 1) { v /= 1024; u++; }
+            return (u >= 2 ? v.ToString("0.#") : v.ToString("0")) + " " + units[u];
+        }
+
+        // Best-effort dotted-numeric version compare. Returns <0 if a<b, 0 if equal/unknown, >0 if a>b.
+        private static int CompareVersions(string a, string b)
+        {
+            if (string.IsNullOrWhiteSpace(a) || string.IsNullOrWhiteSpace(b)) return 0;
+            var pa = a.Split(new[] { '.', '_' }, StringSplitOptions.RemoveEmptyEntries);
+            var pb = b.Split(new[] { '.', '_' }, StringSplitOptions.RemoveEmptyEntries);
+            int n = Math.Max(pa.Length, pb.Length);
+            for (int i = 0; i < n; i++)
+            {
+                int va = (i < pa.Length && int.TryParse(pa[i], out var x)) ? x : 0;
+                int vb = (i < pb.Length && int.TryParse(pb[i], out var y)) ? y : 0;
+                if (va != vb) return va.CompareTo(vb);
+            }
+            return 0;
+        }
+
+        // Replaces one driver row's cached-installer list (matched by download URL) and re-renders
+        // the list in place — no full re-check, no network. Used after delete/run.
+        private void UpdateCachedInstallersForDriver(string matchUrl, System.Collections.Generic.List<CachedInstaller> newList)
+        {
+            if (_allDriverDisplays == null) return;
+            foreach (var dd in _allDriverDisplays)
+            {
+                if (string.Equals(dd.DownloadUrl, matchUrl, StringComparison.OrdinalIgnoreCase))
+                    dd.CachedInstallers = newList ?? new System.Collections.Generic.List<CachedInstaller>();
+            }
+            // Reassigning ItemsSource forces the nested per-row ItemsControls to rebuild.
+            ApplyDriverFilters();
+        }
+
+        private static string CategoryToIconGlyph(string category)
+        {
+            if (string.IsNullOrEmpty(category)) return "";
+            var c = category.ToLowerInvariant();
+            if (c.Contains("graphic") || c.Contains("gpu") || c.Contains("display") || c.Contains("arc")) return "";
+            if (c.Contains("bluetooth")) return "";
+            if (c.Contains("network") || c.Contains("wifi") || c.Contains("wi-fi") || c.Contains("wireless") || c.Contains("killer")) return "";
+            if (c.Contains("bios") || c.Contains("uefi") || c.Contains("chipset") || c.Contains("chip")) return "";
+            if (c.Contains("firmware") || c.Contains("controller")) return "";
+            if (c.Contains("audio") || c.Contains("sound") || c.Contains("speaker")) return "";
+            if (c.Contains("software") || c.Contains("app") || c.Contains("center")) return "";
+            if (c.Contains("lan") || c.Contains("ethernet")) return "";
+            if (c.Contains("usb")) return "";
+            return "";
+        }
+
+        private sealed class DriverDisplay
+        {
+            public string Name { get; set; }
+            public string Category { get; set; }
+            public string CategoryIcon { get; set; } = "";
+            public string Version { get; set; }
+            public string ReleaseDate { get; set; }
+            public string DownloadUrl { get; set; }
+            /// <summary>Human-readable severity label ("Critical", "Recommended", "Optional").</summary>
+            public string Severity { get; set; }
+            /// <summary>Installed driver version on this device (or "—" when unmatched).</summary>
+            public string InstalledVersion { get; set; }
+            /// <summary>Short badge label ("Up to date", "Update", "Not installed", "Unknown").</summary>
+            public string StatusLabel { get; set; }
+            /// <summary>Solid-color hex (#AARRGGBB) for the status pill background.</summary>
+            public Windows.UI.Xaml.Media.Brush StatusColor { get; set; }
+            /// <summary>"Install" when missing, "Update" when outdated — empty when neither applies (hides the button).</summary>
+            public string InstallButtonLabel { get; set; }
+            /// <summary>Visibility of the Install/Update button — hidden when the driver is up-to-date or has no download URL.</summary>
+            public Windows.UI.Xaml.Visibility InstallButtonVisibility { get; set; }
+            /// <summary>MSI Claw only: "msi" | "intel". Empty on Lenovo.</summary>
+            public string ProviderScope { get; set; }
+            /// <summary>MSI Claw only: true when the row's button opens a URL (Intel DSA / MSI page) instead of downloading+installing.</summary>
+            public bool IsDeepLink { get; set; }
+            /// <summary>MSI Claw only: true for the modded Wi-Fi row — its button triggers the assisted modded-driver install.</summary>
+            public bool IsModdedWifi { get; set; }
+            /// <summary>MSI Claw only: muted for the current latest version (excluded from count + Update all).</summary>
+            public bool IsIgnored { get; set; }
+            /// <summary>Mute key (name|version) passed to the helper. Empty hides the mute button.</summary>
+            public string IgnoreKey { get; set; }
+            /// <summary>"Mute" / "Unmute".</summary>
+            public string MuteButtonLabel { get; set; }
+            /// <summary>Visible only for update rows (and currently-muted rows).</summary>
+            public Windows.UI.Xaml.Visibility MuteButtonVisibility { get; set; } = Windows.UI.Xaml.Visibility.Collapsed;
+            /// <summary>Game-On Driver highlights from Intel ExtendedDetails (comma-separated, may be empty).</summary>
+            public string Highlights { get; set; } = "";
+            public Windows.UI.Xaml.Visibility HighlightsVisibility =>
+                string.IsNullOrWhiteSpace(Highlights) ? Windows.UI.Xaml.Visibility.Collapsed : Windows.UI.Xaml.Visibility.Visible;
+            /// <summary>True when this row offers one of Intel's beta builds instead of a WHQL-certified
+            /// one. Only ever true while the user opted in — but then the row has to say so, otherwise
+            /// the opt-in is invisible and a beta looks like any other update.</summary>
+            public bool IsBeta { get; set; }
+            public Windows.UI.Xaml.Visibility BetaBadgeVisibility =>
+                IsBeta ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
+            /// <summary>Installer files still on disk from earlier downloads of this driver
+            /// (re-run/downgrade/delete). Populated from the helper's "cachedInstallers".</summary>
+            public System.Collections.Generic.List<CachedInstaller> CachedInstallers { get; set; }
+                = new System.Collections.Generic.List<CachedInstaller>();
+            public Windows.UI.Xaml.Visibility CachedInstallersVisibility =>
+                (CachedInstallers != null && CachedInstallers.Count > 0)
+                    ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
+            public string CachedInstallersHeader =>
+                $"Downloaded installers ({CachedInstallers?.Count ?? 0})";
+        }
+
+        /// <summary>One installer file left on disk from a previous download (bound per-row in the
+        /// driver card). Mirrors the helper's CachedInstallerInfo JSON.</summary>
+        private sealed class CachedInstaller
+        {
+            public string FullPath { get; set; } = "";
+            public string FileName { get; set; } = "";
+            public string VersionText { get; set; } = "";
+            public string SizeText { get; set; } = "";
+            public string DateText { get; set; } = "";
+            public string FolderText { get; set; } = "";
+            /// <summary>The driver's download URL — needed to refresh this row's list after a delete.</summary>
+            public string MatchUrl { get; set; } = "";
+            public bool IsOlderThanInstalled { get; set; }
+            public string RunButtonLabel => IsOlderThanInstalled ? "Run (older)" : "Run";
+            /// <summary>Compact detail line: "1.2.3 • 812 MB • Downloads • 2026-07-01".</summary>
+            public string DetailText
+            {
+                get
+                {
+                    var parts = new System.Collections.Generic.List<string>();
+                    if (!string.IsNullOrWhiteSpace(VersionText)) parts.Add(VersionText);
+                    if (!string.IsNullOrWhiteSpace(SizeText)) parts.Add(SizeText);
+                    if (!string.IsNullOrWhiteSpace(FolderText)) parts.Add(FolderText);
+                    if (!string.IsNullOrWhiteSpace(DateText)) parts.Add(DateText);
+                    return string.Join("  •  ", parts);
+                }
+            }
+        }
+
+        // Cached full driver list so the "Show utilities and diagnostics"
+        // checkbox can toggle visibility without re-querying the helper.
+        // Populated by RenderDriverUpdateResult, consumed by ApplyDriverFilters.
+        private System.Collections.Generic.List<DriverDisplay> _allDriverDisplays = new System.Collections.Generic.List<DriverDisplay>();
+
+        // Categories suppressed by default. User toggles via the checkbox —
+        // persisted in LocalSettings so the preference survives widget
+        // restarts without needing a dedicated property.
+        private static readonly System.Collections.Generic.HashSet<string> _lowSignalDriverCategories =
+            new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
+            {
+                "Diagnostic",
+                "Software and Utilities",
+                "Tool",
+            };
+
+        private const string DriverUpdatesShowUtilitiesKey = "DriverUpdates_ShowUtilities";
+        // Kept for back-compat — same storage key, new meaning: "CheckOnStart".
+        // Historically this was "UpdateOnStart" (auto-install). Changed after
+        // users asked for a way to skip the Lenovo check entirely — the name
+        // stays so existing LocalSettings values carry over. Default true so
+        // first-install users still see the banner after startup probe.
+        private const string DriverUpdatesUpdateOnStartKey = "DriverUpdates_UpdateOnStart";
+        private const string DriverUpdatesHideBannerKey    = "DriverUpdates_HideBanner";
+        private const string DriverUpdatesModdedWifiKey    = "DriverUpdates_ModdedWifi";
+        private const string DriverUpdatesIntelBetaKey     = "DriverUpdates_IntelBeta";
+
+        private static bool GetBoolSetting(string key, bool defaultValue)
+        {
+            try
+            {
+                var settings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                if (settings.Values.TryGetValue(key, out var v) && v is bool b) return b;
+            }
+            catch { }
+            return defaultValue;
+        }
+
+        private static void SetBoolSetting(string key, bool value)
+        {
+            try { Windows.Storage.ApplicationData.Current.LocalSettings.Values[key] = value; }
+            catch { }
+        }
+
+        private bool DriverUpdatesCheckOnStart
+        {
+            // Default true: users who haven't explicitly opted out expect the
+            // helper's startup probe to populate the banner automatically.
+            get => GetBoolSetting(DriverUpdatesUpdateOnStartKey, true);
+            set => SetBoolSetting(DriverUpdatesUpdateOnStartKey, value);
+        }
+        private bool DriverUpdatesHideBanner
+        {
+            get => GetBoolSetting(DriverUpdatesHideBannerKey, false);
+            set => SetBoolSetting(DriverUpdatesHideBannerKey, value);
+        }
+        private bool DriverUpdatesUseModdedWifi
+        {
+            get => GetBoolSetting(DriverUpdatesModdedWifiKey, false);
+            set => SetBoolSetting(DriverUpdatesModdedWifiKey, value);
+        }
+
+        private bool DriverUpdatesUseIntelBeta
+        {
+            get => GetBoolSetting(DriverUpdatesIntelBetaKey, false);
+            set => SetBoolSetting(DriverUpdatesIntelBetaKey, value);
+        }
+
+        private async void DriverUpdatesModdedWifiCheckbox_Changed(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (_isLoadingUpdatePreferenceCheckboxes) return;
+            if (DriverUpdatesModdedWifiCheckbox == null) return;
+            bool on = DriverUpdatesModdedWifiCheckbox.IsChecked == true;
+            DriverUpdatesUseModdedWifi = on;
+            try
+            {
+                if (App.IsConnected)
+                {
+                    var req = new Windows.Foundation.Collections.ValueSet();
+                    req.Add("SetUseModdedWifi", on);
+                    await App.SendMessageAsync(req);
+                    // Re-check so the Wi-Fi row switches between stock and modded.
+                    var check = new Windows.Foundation.Collections.ValueSet();
+                    check.Add("CheckDriverUpdates", true);
+                    var resp = await App.SendMessageAsync(check);
+                    if (resp != null && resp.TryGetValue("DriverUpdateResult", out var po) && po is string p)
+                        RenderDriverUpdateResult(p);
+                }
+            }
+            catch (Exception ex) { Logger.Warn($"SetUseModdedWifi forward failed: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// Opt-in for Intel's beta graphics drivers. Off by default — Intel's catalog carries both a
+        /// certified and a beta build, and the beta is usually the higher version, so "newest wins"
+        /// handed out betas unannounced until this switch existed (verified in the live catalog on
+        /// 2026-08-04: 32.0.101.8864 beta vs 32.0.101.8860 certified).
+        /// </summary>
+        private async void DriverUpdatesIntelBetaCheckbox_Changed(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (_isLoadingUpdatePreferenceCheckboxes) return;
+            if (DriverUpdatesIntelBetaCheckbox == null) return;
+            bool on = DriverUpdatesIntelBetaCheckbox.IsChecked == true;
+            DriverUpdatesUseIntelBeta = on;
+            try
+            {
+                if (App.IsConnected)
+                {
+                    var req = new Windows.Foundation.Collections.ValueSet();
+                    req.Add("SetUseIntelBeta", on);
+                    await App.SendMessageAsync(req);
+                    // Re-check so the Intel rows switch between certified and beta.
+                    var check = new Windows.Foundation.Collections.ValueSet();
+                    check.Add("CheckDriverUpdates", true);
+                    var resp = await App.SendMessageAsync(check);
+                    if (resp != null && resp.TryGetValue("DriverUpdateResult", out var po) && po is string p)
+                        RenderDriverUpdateResult(p);
+                }
+            }
+            catch (Exception ex) { Logger.Warn($"SetUseIntelBeta forward failed: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// Called when the Drivers tab opens. If the list isn't populated yet, asks
+        /// the helper for the result — this serves the cached startup-probe result
+        /// (no live re-check), so the user sees the drivers without pressing "Check".
+        /// </summary>
+        internal async void EnsureDriverListLoaded()
+        {
+            if (_allDriverDisplays != null && _allDriverDisplays.Count > 0) return;
+            try
+            {
+                if (!App.IsConnected) return;
+                var req = new Windows.Foundation.Collections.ValueSet();
+                req.Add("CheckDriverUpdates", true); // force=false → cached probe result
+                var resp = await App.SendMessageAsync(req);
+                if (resp != null && resp.TryGetValue("DriverUpdateResult", out var po) && po is string p)
+                    RenderDriverUpdateResult(p);
+            }
+            catch (Exception ex) { Logger.Warn($"EnsureDriverListLoaded failed: {ex.Message}"); }
+        }
+
+        /// <summary>Mute/unmute a single driver update for its current latest version.</summary>
+        private async void DriverMuteButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            var button = sender as Windows.UI.Xaml.Controls.Button;
+            if (button == null) return;
+            var key = button.Tag as string;
+            if (string.IsNullOrWhiteSpace(key)) return;
+            var dd = button.DataContext as DriverDisplay;
+            bool newState = !(dd != null && dd.IsIgnored); // toggle
+            try
+            {
+                if (!App.IsConnected) return;
+                var req = new Windows.Foundation.Collections.ValueSet();
+                req.Add("SetDriverIgnore", key);
+                req.Add("IgnoreState", newState);
+                await App.SendMessageAsync(req);
+                // Re-fetch (cached; helper re-applies mutes) + re-render so the row updates.
+                var check = new Windows.Foundation.Collections.ValueSet();
+                check.Add("CheckDriverUpdates", true);
+                var resp = await App.SendMessageAsync(check);
+                if (resp != null && resp.TryGetValue("DriverUpdateResult", out var po) && po is string p)
+                    RenderDriverUpdateResult(p);
+            }
+            catch (Exception ex) { Logger.Warn($"DriverMuteButton_Click failed: {ex.Message}"); }
+        }
+
+        private async void DriverUpdatesUpdateOnStartCheckbox_Changed(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (_isLoadingUpdatePreferenceCheckboxes) return;
+            if (DriverUpdatesUpdateOnStartCheckbox == null) return;
+            bool on = DriverUpdatesUpdateOnStartCheckbox.IsChecked == true;
+            DriverUpdatesCheckOnStart = on;
+            // Forward to helper so its next startup honours the toggle.
+            // Helper persists via its own LocalSettingsHelper (separate store
+            // from widget LocalSettings) and reads the value before running
+            // the probe, so the following launch skips the Lenovo fetch when
+            // the box is unchecked.
+            try
+            {
+                if (App.IsConnected)
+                {
+                    var req = new Windows.Foundation.Collections.ValueSet();
+                    req.Add("SetDriverCheckOnStart", on);
+                    await App.SendMessageAsync(req);
+                }
+            }
+            catch (Exception ex) { Logger.Warn($"SetDriverCheckOnStart forward failed: {ex.Message}"); }
+        }
+
+        private void DriverUpdatesHideBannerCheckbox_Changed(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (_isLoadingUpdatePreferenceCheckboxes) return;
+            // Re-evaluate tile visibility right now so the setting has an
+            // immediate effect without waiting for the next helper push.
+            if (QuickDriverUpdatesTile != null && DriverUpdatesHideBanner)
+            {
+                QuickDriverUpdatesTile.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            }
+        }
+
+        private bool DriverUpdatesShowUtilities
+        {
+            get
+            {
+                try
+                {
+                    var settings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                    if (settings.Values.TryGetValue(DriverUpdatesShowUtilitiesKey, out var v) && v is bool b) return b;
+                }
+                catch { }
+                return false;
+            }
+            set
+            {
+                try
+                {
+                    Windows.Storage.ApplicationData.Current.LocalSettings.Values[DriverUpdatesShowUtilitiesKey] = value;
+                }
+                catch { }
+            }
+        }
+
+        /// <summary>
+        /// Called from the pipe-message handler when the helper pushes a
+        /// startup-probe result. Shows/hides the Quick-tab tile and updates
+        /// the count badge on the UI thread.
+        /// </summary>
+        private async void UpdateDriverUpdatesTile(IPC.NamedPipeClient owner, int count)
+        {
+            try
+            {
+                bool hideBanner = DriverUpdatesHideBanner;
+                bool checkOnStart = DriverUpdatesCheckOnStart;
+
+                await DispatchPipePushAsync(owner, () =>
+                {
+                    if (QuickDriverUpdatesTile == null) return;
+                    // Sync the checkboxes themselves with persisted state so
+                    // the user sees the current setting on first render.
+                    if (DriverUpdatesUpdateOnStartCheckbox != null && DriverUpdatesUpdateOnStartCheckbox.IsChecked != checkOnStart)
+                        DriverUpdatesUpdateOnStartCheckbox.IsChecked = checkOnStart;
+
+                    bool visible = count > 0
+                                   && ((legionGoDetected?.Value == true) || IsMsiClawDevice())
+                                   && !hideBanner;
+                    QuickDriverUpdatesTile.Visibility = visible
+                        ? Windows.UI.Xaml.Visibility.Visible
+                        : Windows.UI.Xaml.Visibility.Collapsed;
+                    if (QuickDriverUpdatesCountText != null)
+                        QuickDriverUpdatesCountText.Text = count.ToString();
+                    if (QuickDriverUpdatesTitleText != null)
+                        QuickDriverUpdatesTitleText.Text = count == 1
+                            ? global::XboxGamingBar.OnexStrings.Get("1 driver update available")
+                            : count + global::XboxGamingBar.OnexStrings.Get(" driver updates available");
+
+                    // Keep the in-card "Update all" button in sync with the
+                    // same count — it's visible whenever there's at least one
+                    // installable row (Install or Update).
+                    UpdateUpdateAllButtonVisibility();
+                });
+
+                // Pre-populate the driver list so a later tile/tab click shows
+                // it instantly instead of requiring another Check-for-updates
+                // press. Helper serves this from its startup-probe cache so
+                // there's no Lenovo round-trip here.
+                if (count > 0 && (_allDriverDisplays == null || _allDriverDisplays.Count == 0))
+                {
+                    await PrefetchDriverUpdatesAsync(owner);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"UpdateDriverUpdatesTile failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// A row qualifies for "Update all" only when:
+        ///   1. It has UpdateAvailable status (not NotInstalled — installing
+        ///      drivers Windows doesn't have yet would be surprising, and the
+        ///      user wasn't asking for that).
+        ///   2. It's currently visible in the list — the utilities/diagnostics
+        ///      filter + Tool category exclusion on the card shouldn't leak
+        ///      into a bulk install. User's previous run launched all 24
+        ///      candidate installers at once, including hidden ones, which
+        ///      was the opposite of what they asked for.
+        /// </summary>
+        private bool IsUpdateAllCandidate(DriverDisplay d)
+        {
+            if (d == null) return false;
+            // Deep-link rows (MSI Claw: Intel DSA / MSI page) are never batch-installed.
+            if (d.IsDeepLink) return false;
+            // Muted rows are excluded from "Update all" + the count.
+            if (d.IsIgnored) return false;
+            // Status label is set by StatusLabelFor — "Update" is the
+            // UpdateAvailable case, "Install" is NotInstalled, "Up to date"
+            // is UpToDate, "Unknown" otherwise.
+            if (!string.Equals(d.StatusLabel, "Update", StringComparison.Ordinal)) return false;
+            if (string.IsNullOrWhiteSpace(d.DownloadUrl)) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Shows "Update all" button when at least one visible row is an
+        /// actionable UpdateAvailable (the same set IsUpdateAllCandidate
+        /// returns true for — keeps the button visibility consistent with
+        /// what the button would actually install).
+        /// </summary>
+        private void UpdateUpdateAllButtonVisibility()
+        {
+            // "Update all" button removed from UI.
+        }
+
+        /// <summary>
+        /// Clicking the Quick-tab driver-updates tile programmatically checks
+        /// the Legion nav radio button, which NavRadioButton_Checked picks up
+        /// and uses to switch to the Legion tab (scrolling to top).
+        /// </summary>
+        private async void QuickDriverUpdatesTile_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            try
+            {
+                // Switch to the Drivers tab (idempotent if already selected). It used to open the
+                // Controls tab, which is where the driver list sat back when this was a Lenovo feature
+                // and everything Legion lived on one page — an odd place to land for a chipset or
+                // graphics driver.
+                if (DriverNavItem != null && DriverNavItem.IsChecked != true)
+                {
+                    DriverNavItem.IsChecked = true;
+                }
+
+                // If we haven't yet populated the driver list in this session
+                // (widget was re-opened since the helper pushed the count),
+                // request from helper now. Helper serves from cache after the
+                // first live fetch, so this is cheap — no Lenovo round-trip.
+                if (_allDriverDisplays == null || _allDriverDisplays.Count == 0)
+                {
+                    await PrefetchDriverUpdatesAsync();
+                }
+
+                // Let XAML lay out and the ScrollViewer recognise its new
+                // content before we try to bring the card into view — otherwise
+                // the viewport math is still pointing at the old tab.
+                await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, () =>
+                {
+                    try
+                    {
+                        if (DriverUpdatesCard != null)
+                        {
+                            DriverUpdatesCard.StartBringIntoView(new Windows.UI.Xaml.BringIntoViewOptions
+                            {
+                                VerticalAlignmentRatio = 0.0,
+                                AnimationDesired = true,
+                            });
+                        }
+                        else if (LegionScrollViewer != null)
+                        {
+                            // Fallback: no x:Name match, just scroll to the
+                            // bottom since the card sits at the end of the tab.
+                            LegionScrollViewer.ChangeView(null, LegionScrollViewer.ExtentHeight, null, false);
+                        }
+                    }
+                    catch (Exception ex) { Logger.Debug($"Scroll-to-card failed: {ex.Message}"); }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"QuickDriverUpdatesTile_Click failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Silently fetches the driver list from the helper cache and renders it
+        /// without toggling any button states. Used when the user clicks the
+        /// Quick-tab tile for the first time — they expect to see the list
+        /// already populated, not have to press "Check for updates" again.
+        /// </summary>
+        private async Task PrefetchDriverUpdatesAsync(IPC.NamedPipeClient owner = null)
+        {
+            try
+            {
+                if (owner == null && !App.IsConnected) return;
+                var request = new Windows.Foundation.Collections.ValueSet();
+                request.Add("CheckDriverUpdates", true);
+                Windows.Foundation.Collections.ValueSet response;
+                if (owner == null)
+                {
+                    response = await App.SendMessageAsync(request);
+                }
+                else
+                {
+                    Task<Windows.Foundation.Collections.ValueSet> pending = null;
+                    if (!TryRunForPipePush(owner, () => pending = owner.SendRequestAsync(request))) return;
+                    response = await pending;
+                    if (!TryRunForPipePush(owner, () => ResetOnexStatePushesAfterReply(owner, request, response))) return;
+                }
+                if (response == null) return;
+                if (response.TryGetValue("DriverUpdateResult", out var payloadObj) && payloadObj is string payload)
+                {
+                    RenderDriverUpdateResult(payload, owner);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"PrefetchDriverUpdatesAsync failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// "Update all" click: collect every row that has an Install/Update
+        /// button visible, send all URLs in one batch pipe message to the
+        /// helper. Helper downloads them in parallel then launches sequentially.
+        /// </summary>
+        private async void DriverUpdatesUpdateAllButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            // "Update all" button removed from UI.
+            await System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Binds the driver list. The MSI Claw list is small (a handful of rows), so
+        /// there's no utilities/diagnostics filtering — every row is shown.
+        /// </summary>
+        private void ApplyDriverFilters()
+        {
+            if (DriverUpdatesList == null) return;
+
+            DriverUpdatesList.ItemsSource = new System.Collections.Generic.List<DriverDisplay>(_allDriverDisplays);
+            DriverUpdatesList.Visibility = _allDriverDisplays.Count > 0
+                ? Windows.UI.Xaml.Visibility.Visible
+                : Windows.UI.Xaml.Visibility.Collapsed;
+
+            UpdateUpdateAllButtonVisibility();
+        }
+
+        // ── Controller navigation through the driver list ────────────────────────────────────────────
+        //
+        // The rows come from a DataTemplate, so there is nothing to point an XYFocus hint AT — the
+        // buttons do not exist until the list is bound, and their count changes with every check. That
+        // is why the D-pad could never reach a Download button and the whole tab was touch-only
+        // (user, 2026-08-02). The chain is therefore built at key-press time from the rows that are
+        // actually on screen.
+
+        /// <summary>
+        /// Every focusable button inside the driver list, in visual order. Collapsed buttons are left
+        /// out: a row can show Mute without Install (or the reverse), and stepping onto a hidden control
+        /// is how a focus chain silently dead-ends.
+        /// </summary>
+        private List<Control> CollectDriverRowButtons()
+        {
+            var result = new List<Control>();
+            if (DriverUpdatesList == null || DriverUpdatesList.Visibility != Visibility.Visible) return result;
+            CollectFocusableButtons(DriverUpdatesList, result);
+            return result;
+        }
+
+        private static void CollectFocusableButtons(DependencyObject parent, List<Control> into)
+        {
+            int count = Windows.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                var child = Windows.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is Windows.UI.Xaml.Controls.Button b
+                    && b.Visibility == Visibility.Visible && b.IsEnabled)
+                {
+                    into.Add(b);
+                    continue;   // a Button's own template has no further targets we want
+                }
+                CollectFocusableButtons(child, into);
+            }
+        }
+
+        /// <summary>Up/Down between the driver rows' action buttons; leaving at the top rejoins the
+        /// fixed controls above the list.</summary>
+        private void DriverRowButton_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            bool up = e.Key == Windows.System.VirtualKey.GamepadDPadUp
+                   || e.Key == Windows.System.VirtualKey.GamepadLeftThumbstickUp
+                   || e.Key == Windows.System.VirtualKey.Up;
+            bool down = e.Key == Windows.System.VirtualKey.GamepadDPadDown
+                     || e.Key == Windows.System.VirtualKey.GamepadLeftThumbstickDown
+                     || e.Key == Windows.System.VirtualKey.Down;
+            if (!up && !down) return;
+
+            var buttons = CollectDriverRowButtons();
+            int idx = buttons.IndexOf(sender as Control);
+            if (idx < 0) return;
+
+            Control target;
+            if (up)
+                target = idx > 0 ? buttons[idx - 1] : (Control)DriverUpdatesModdedWifiCheckbox;
+            else
+                target = idx < buttons.Count - 1 ? buttons[idx + 1] : null;
+
+            // No target below the last row: swallow the key rather than letting focus jump somewhere
+            // unrelated further down the page.
+            if (target != null)
+            {
+                try { target.Focus(FocusState.Keyboard); } catch { }
+            }
+            e.Handled = true;
+        }
+
+        /// <summary>The last fixed control above the list — Down enters the first driver row.</summary>
+        private void DriverUpdatesModdedWifiCheckbox_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key != Windows.System.VirtualKey.GamepadDPadDown
+                && e.Key != Windows.System.VirtualKey.GamepadLeftThumbstickDown
+                && e.Key != Windows.System.VirtualKey.Down) return;
+
+            var buttons = CollectDriverRowButtons();
+            if (buttons.Count == 0) return;   // nothing checked yet — leave default behaviour alone
+
+            try { buttons[0].Focus(FocusState.Keyboard); } catch { }
+            e.Handled = true;
+        }
+
+        private async void DriverUpdatesIntelDsaButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            bool ok = await OpenExternalUrlAsync("https://www.intel.com/content/www/us/en/support/intel-driver-support-assistant.html");
+            if (!ok && DriverUpdatesStatusText != null)
+                DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Couldn't open the browser for the Intel DSA page.");
+        }
+
+        internal void UpdateSteamXboxDriverUI(bool detected)
+        {
+            if (SteamXboxDriverWarning != null)
+                SteamXboxDriverWarning.Visibility = detected ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
+        }
+
+        // Tracks a button waiting for a large background download to finish.
+        // Set when the helper responds with async:true; cleared by OnDriverInstallComplete.
+        private Windows.UI.Xaml.Controls.Button _driverInstallInFlightButton;
+        private string _driverInstallInFlightOriginalLabel;
+
+        /// <summary>
+        /// Click handler for the per-row Install/Update button. Sends the
+        /// download URL to the helper, which runs elevated and can launch
+        /// the installer without an extra UAC prompt. Shows "Installing\u2026" during
+        /// the pipe round-trip; for large Intel CDN downloads the helper responds
+        /// with async:true immediately and pushes DriverInstallComplete when done.
+        /// </summary>
+        private async void DriverInstallButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            var button = sender as Windows.UI.Xaml.Controls.Button;
+            if (button == null) return;
+            var url = button.Tag as string;
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("No download URL for that driver.");
+                return;
+            }
+
+            // MSI Claw deep-link rows (Intel drivers via the Intel page/DSA, MSI BIOS
+            // page) open the URL in the browser instead of downloading + launching an
+            // installer. Detect via the row flag AND, as a robust fallback, via the
+            // host: installers are only ever served from the download CDNs, so any
+            // www.intel.com / www.msi.com page URL is a deep-link to open.
+            var displayItem = button.DataContext as DriverDisplay;
+
+            // Modded Wi-Fi row: assisted install — helper downloads + extracts + opens
+            // the folder; the user runs Setup.bat themselves.
+            if (displayItem != null && displayItem.IsModdedWifi)
+            {
+                if (!App.IsConnected)
+                {
+                    if (DriverUpdatesStatusText != null)
+                        DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Helper not connected — can't download.");
+                    return;
+                }
+                string lbl = button.Content?.ToString() ?? "Get driver";
+                button.IsEnabled = false;
+                button.Content = global::XboxGamingBar.OnexStrings.Get("Downloading…");
+                try
+                {
+                    var req = new Windows.Foundation.Collections.ValueSet();
+                    req.Add("InstallModdedWifi", true);
+                    var resp = await App.SendMessageAsync(req);
+                    string message = "Downloaded — run Setup.bat in the opened folder.";
+                    if (resp != null && resp.TryGetValue("ModdedWifiInstallResult", out var po) && po is string p
+                        && Windows.Data.Json.JsonObject.TryParse(p, out var mroot))
+                    {
+                        string msg = mroot.TryGetValue("message", out var m) && m.ValueType == Windows.Data.Json.JsonValueType.String ? m.GetString() : "";
+                        if (!string.IsNullOrWhiteSpace(msg)) message = msg;
+                    }
+                    if (DriverUpdatesStatusText != null) DriverUpdatesStatusText.Text = message;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn($"InstallModdedWifi failed: {ex.Message}");
+                    if (DriverUpdatesStatusText != null) DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Format("Modded Wi-Fi download failed: {0}",ex.Message);
+                }
+                finally { button.Content = lbl; button.IsEnabled = true; }
+                return;
+            }
+
+            bool isDeepLink = (displayItem != null && displayItem.IsDeepLink)
+                || url.IndexOf("www.intel.com", StringComparison.OrdinalIgnoreCase) >= 0
+                || url.IndexOf("www.msi.com", StringComparison.OrdinalIgnoreCase) >= 0
+                || url.IndexOf("support.lenovo.com", StringComparison.OrdinalIgnoreCase) >= 0;
+            if (isDeepLink)
+            {
+                bool ok = await OpenExternalUrlAsync(url);
+                if (!ok && DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Couldn't open the browser for that link.");
+                return;
+            }
+
+            string originalLabel = button.Content?.ToString() ?? "Install";
+            button.IsEnabled = false;
+            button.Content = global::XboxGamingBar.OnexStrings.Get("Installing…");
+
+            // The 800 MB+ Intel Arc graphics package is the only download big enough to warrant the
+            // background-download notice. Other Intel downloads (Bluetooth, Wi-Fi) also run async but
+            // are small, so the Arc-specific message + dialog must NOT fire for them.
+            bool isGraphicsDriver =
+                (displayItem != null && (displayItem.Category ?? "").IndexOf("graphic", StringComparison.OrdinalIgnoreCase) >= 0)
+                || url.IndexOf("gfx_win", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            bool asyncDownload = false;
+            try
+            {
+                if (!App.IsConnected)
+                {
+                    if (DriverUpdatesStatusText != null)
+                        DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Helper not connected — can't install.");
+                    return;
+                }
+
+                var request = new Windows.Foundation.Collections.ValueSet();
+                request.Add("InstallDriverUpdate", url);
+                var response = await App.SendMessageAsync(request);
+                string message = "Install started.";
+                if (response != null && response.TryGetValue("DriverInstallResult", out var payloadObj) && payloadObj is string payload)
+                {
+                    try
+                    {
+                        if (Windows.Data.Json.JsonObject.TryParse(payload, out var root))
+                        {
+                            bool success = root.TryGetValue("success", out var s) &&
+                                           s.ValueType == Windows.Data.Json.JsonValueType.Boolean && s.GetBoolean();
+                            asyncDownload = root.TryGetValue("async", out var a) &&
+                                            a.ValueType == Windows.Data.Json.JsonValueType.Boolean && a.GetBoolean();
+                            string msg = root.TryGetValue("message", out var m) &&
+                                         m.ValueType == Windows.Data.Json.JsonValueType.String ? m.GetString() : "";
+                            message = string.IsNullOrWhiteSpace(msg)
+                                ? (success ? "Installer launched." : "Install failed.")
+                                : msg;
+                        }
+                    }
+                    catch (Exception ex) { Logger.Warn($"DriverInstallButton parse failed: {ex.Message}"); }
+                }
+                if (asyncDownload)
+                {
+                    // Background download running; "Downloading\u2026" stays until OnDriverInstallComplete
+                    // restores the button. The Arc-specific 800 MB wording is only for the graphics driver.
+                    button.Content = global::XboxGamingBar.OnexStrings.Get("Downloading…");
+                    _driverInstallInFlightButton = button;
+                    _driverInstallInFlightOriginalLabel = originalLabel;
+                    message = isGraphicsDriver
+                        ? "Downloading in the background \u2014 this can take a while for large drivers "
+                          + "(the Intel Arc package is 800 MB+). You can keep using the device; the "
+                          + "installer will start on its own once the download finishes."
+                        // Deliberately does NOT promise a self-starting installer: every download now
+                        // takes this path, and BIOS/firmware .zip payloads are never auto-launched.
+                        // OnDriverInstallComplete reports what actually happened.
+                        : "Downloading in the background \u2014 you can keep using the device; "
+                          + "you'll get a message here when it finishes.";
+                }
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = message;
+
+                if (asyncDownload && isGraphicsDriver)
+                {
+                    // Only the big Intel Arc graphics package gets the one-shot dialog \u2014 the top-of-tab
+                    // status line is easy to miss and this download can take a very long time.
+                    try
+                    {
+                        var dlg = new ContentDialog
+                        {
+                            Title = global::XboxGamingBar.OnexStrings.Get("Download started in the background"),
+                            Content = global::XboxGamingBar.OnexStrings.Format("This is a large driver package (the Intel Arc download is over 800 MB), so it can take a long while.\n\nIt downloads in the background — you can keep using the device. The driver setup will start on its own once the download finishes."),
+                            CloseButtonText = global::XboxGamingBar.OnexStrings.Get("OK")
+                        };
+                        if (this.XamlRoot != null) dlg.XamlRoot = this.XamlRoot;
+                        await dlg.ShowAsync();
+                    }
+                    catch (Exception ex) { Logger.Warn($"Driver download dialog failed: {ex.Message}"); }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"DriverInstallButton_Click failed: {ex.Message}");
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Format("Install failed: {0}",ex.Message);
+            }
+            finally
+            {
+                // For async downloads the button stays disabled until the push arrives.
+                if (!asyncDownload)
+                {
+                    button.Content = originalLabel;
+                    button.IsEnabled = true;
+                }
+            }
+        }
+
+        // Re-runs a cached installer file (reinstall or downgrade to that version). The helper
+        // guards the path to the two managed folders and launches it elevated.
+        private async void DriverCachedRunButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (!((sender as Windows.UI.Xaml.Controls.Button)?.Tag is CachedInstaller ci)) return;
+            if (!App.IsConnected)
+            {
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Helper not connected — can't run installer.");
+                return;
+            }
+            try
+            {
+                var request = new Windows.Foundation.Collections.ValueSet
+                {
+                    { "ManageDriverInstaller", BuildManageInstallerPayload("launch", ci.MatchUrl, ci.FullPath) },
+                };
+                var response = await App.SendMessageAsync(request);
+                string msg = ReadInstallerResultMessage(response, "Installer launched.");
+                if (DriverUpdatesStatusText != null) DriverUpdatesStatusText.Text = msg;
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"DriverCachedRunButton_Click failed: {ex.Message}");
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Format("Run failed: {0}",ex.Message);
+            }
+        }
+
+        // Deletes a cached installer file (after confirmation) and refreshes the row in place.
+        private async void DriverCachedDeleteButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            if (!((sender as Windows.UI.Xaml.Controls.Button)?.Tag is CachedInstaller ci)) return;
+            if (!App.IsConnected)
+            {
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Helper not connected — can't delete.");
+                return;
+            }
+
+            try
+            {
+                var confirm = new ContentDialog
+                {
+                    Title = global::XboxGamingBar.OnexStrings.Get("Delete downloaded installer?"),
+                    Content = global::XboxGamingBar.OnexStrings.Format("Delete this file from disk?\n\n{0}\n({1} • {2})",ci.FileName,ci.SizeText,ci.FolderText),
+                    PrimaryButtonText = global::XboxGamingBar.OnexStrings.Get("Delete"),
+                    CloseButtonText = global::XboxGamingBar.OnexStrings.Get("Cancel"),
+                    DefaultButton = ContentDialogButton.Close
+                };
+                if (this.XamlRoot != null) confirm.XamlRoot = this.XamlRoot;
+                if (await confirm.ShowAsync() != ContentDialogResult.Primary) return;
+
+                var request = new Windows.Foundation.Collections.ValueSet
+                {
+                    { "ManageDriverInstaller", BuildManageInstallerPayload("delete", ci.MatchUrl, ci.FullPath) },
+                };
+                var response = await App.SendMessageAsync(request);
+                if (response != null && response.TryGetValue("DriverInstallerResult", out var payloadObj)
+                    && payloadObj is string payload
+                    && Windows.Data.Json.JsonObject.TryParse(payload, out var root))
+                {
+                    bool success = root.TryGetValue("success", out var s)
+                        && s.ValueType == Windows.Data.Json.JsonValueType.Boolean && s.GetBoolean();
+                    // Rebuild this driver's cached list from the fresh array the helper returned.
+                    var newList = new System.Collections.Generic.List<CachedInstaller>();
+                    if (root.TryGetValue("installers", out var arrVal)
+                        && arrVal.ValueType == Windows.Data.Json.JsonValueType.Array)
+                    {
+                        newList = ParseCachedInstallersArray(arrVal.GetArray(), ci.MatchUrl);
+                    }
+                    UpdateCachedInstallersForDriver(ci.MatchUrl, newList);
+                    if (DriverUpdatesStatusText != null)
+                        DriverUpdatesStatusText.Text = success ? global::XboxGamingBar.OnexStrings.Get("Installer deleted.") : global::XboxGamingBar.OnexStrings.Get("Delete failed.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"DriverCachedDeleteButton_Click failed: {ex.Message}");
+                if (DriverUpdatesStatusText != null)
+                    DriverUpdatesStatusText.Text = global::XboxGamingBar.OnexStrings.Format("Delete failed: {0}",ex.Message);
+            }
+        }
+
+        private static string BuildManageInstallerPayload(string action, string url, string path)
+        {
+            var o = new Windows.Data.Json.JsonObject
+            {
+                { "action", Windows.Data.Json.JsonValue.CreateStringValue(action ?? "") },
+                { "url", Windows.Data.Json.JsonValue.CreateStringValue(url ?? "") },
+                { "path", Windows.Data.Json.JsonValue.CreateStringValue(path ?? "") },
+            };
+            return o.ToString();
+        }
+
+        private static string ReadInstallerResultMessage(Windows.Foundation.Collections.ValueSet response, string fallback)
+        {
+            try
+            {
+                if (response != null && response.TryGetValue("DriverInstallerResult", out var payloadObj)
+                    && payloadObj is string payload
+                    && Windows.Data.Json.JsonObject.TryParse(payload, out var root))
+                {
+                    string msg = root.TryGetValue("message", out var m)
+                        && m.ValueType == Windows.Data.Json.JsonValueType.String ? m.GetString() : "";
+                    if (!string.IsNullOrWhiteSpace(msg)) return msg;
+                }
+            }
+            catch { }
+            return fallback;
+        }
+
+        // Parses a JsonArray of cachedInstaller objects (from a delete refresh) into CachedInstaller rows.
+        private System.Collections.Generic.List<CachedInstaller> ParseCachedInstallersArray(
+            Windows.Data.Json.JsonArray arr, string matchUrl)
+        {
+            var list = new System.Collections.Generic.List<CachedInstaller>();
+            try
+            {
+                foreach (var el in arr)
+                {
+                    if (el.ValueType != Windows.Data.Json.JsonValueType.Object) continue;
+                    var o = el.GetObject();
+                    string S(string k) => (o.TryGetValue(k, out var vv) && vv.ValueType == Windows.Data.Json.JsonValueType.String)
+                        ? vv.GetString() ?? "" : "";
+                    double N(string k) => (o.TryGetValue(k, out var vv) && vv.ValueType == Windows.Data.Json.JsonValueType.Number)
+                        ? vv.GetNumber() : 0;
+                    string dateText = "";
+                    if (DateTimeOffset.TryParse(S("lastWriteUtc"), out var dto))
+                        dateText = dto.ToLocalTime().ToString("yyyy-MM-dd");
+                    list.Add(new CachedInstaller
+                    {
+                        FullPath = S("fullPath"),
+                        FileName = S("fileName"),
+                        VersionText = S("version"),
+                        SizeText = FormatBytes((long)N("sizeBytes")),
+                        DateText = dateText,
+                        FolderText = S("folder"),
+                        MatchUrl = matchUrl,
+                    });
+                }
+            }
+            catch (Exception ex) { Logger.Warn($"ParseCachedInstallersArray failed: {ex.Message}"); }
+            return list;
+        }
+
+        private void OnDriverInstallComplete(string resultJson)
+        {
+            string message = "Driver installer launched.";
+            try
+            {
+                if (Windows.Data.Json.JsonObject.TryParse(resultJson, out var root))
+                {
+                    bool success = root.TryGetValue("success", out var s) &&
+                                   s.ValueType == Windows.Data.Json.JsonValueType.Boolean && s.GetBoolean();
+                    string msg = root.TryGetValue("message", out var m) &&
+                                 m.ValueType == Windows.Data.Json.JsonValueType.String ? m.GetString() : "";
+                    message = string.IsNullOrWhiteSpace(msg)
+                        ? (success ? "Driver installer launched." : "Driver install failed.")
+                        : msg;
+                }
+            }
+            catch (Exception ex) { Logger.Warn($"OnDriverInstallComplete parse failed: {ex.Message}"); }
+
+            if (_driverInstallInFlightButton != null)
+            {
+                _driverInstallInFlightButton.Content = _driverInstallInFlightOriginalLabel ?? "Install";
+                _driverInstallInFlightButton.IsEnabled = true;
+                _driverInstallInFlightButton = null;
+                _driverInstallInFlightOriginalLabel = null;
+            }
+            if (DriverUpdatesStatusText != null)
+                DriverUpdatesStatusText.Text = message;
+        }
+
+        /// <summary>
+        /// Returns ("Install", Visible) for NotInstalled drivers, ("Update",
+        /// Visible) for UpdateAvailable, and ("", Collapsed) otherwise.
+        /// No button for up-to-date / unknown status since there's nothing
+        /// actionable to download.
+        /// </summary>
+        private static (string label, Windows.UI.Xaml.Visibility vis) InstallButtonForStatus(int statusCode, string downloadUrl)
+        {
+            if (string.IsNullOrWhiteSpace(downloadUrl))
+                return ("", Windows.UI.Xaml.Visibility.Collapsed);
+            switch (statusCode)
+            {
+                case 2: return ("Update", Windows.UI.Xaml.Visibility.Visible);   // UpdateAvailable
+                case 3: return ("Install", Windows.UI.Xaml.Visibility.Visible);  // NotInstalled
+                default: return ("", Windows.UI.Xaml.Visibility.Collapsed);
+            }
+        }
+
+        /// <summary>
+        /// Maps Lenovo's numeric severity type (1/2/3) from the per-package XML
+        /// into a short human label for the widget. Unknown values pass through
+        /// so we don't hide information if Lenovo adds a new level.
+        /// </summary>
+        private static string SeverityLabel(string raw)
+        {
+            switch (raw?.Trim())
+            {
+                case "1": return "Critical";
+                case "2": return "Recommended";
+                case "3": return "Optional";
+                default:  return string.IsNullOrWhiteSpace(raw) ? "" : raw;
+            }
+        }
+
+        // UpdateStatus enum mirrors DriverUpdateStatus in the helper:
+        //   0 = Unknown, 1 = UpToDate, 2 = UpdateAvailable, 3 = NotInstalled
+        private static string StatusLabelFor(int code)
+        {
+            switch (code)
+            {
+                case 1: return "Up to date";
+                case 2: return "Update";
+                case 3: return "Not installed";
+                default: return "Unknown";
+            }
+        }
+
+        private static Windows.UI.Xaml.Media.Brush StatusColorFor(int code)
+        {
+            // Green for up-to-date, orange for "update available", dark gray
+            // for not-installed / unknown. Matches the rest of the widget's
+            // status chip palette.
+            byte r, g, b;
+            switch (code)
+            {
+                case 1: r = 0x55; g = 0xC8; b = 0x55; break; // #55C855 success green
+                case 2: r = 0xFF; g = 0xB0; b = 0x60; break; // #FFB060 warning orange
+                case 3: r = 0x66; g = 0x66; b = 0x66; break; // #666666 neutral gray
+                default: r = 0x55; g = 0x55; b = 0x55; break; // #555555 unknown
+            }
+            return new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, r, g, b));
+        }
+
+        private void SetControllerBatterySectionVisibility(bool visible)
+        {
+            if (ControllerBatterySection != null)
+            {
+                ControllerBatterySection.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"Controller battery section visibility set to: {visible}");
+            }
+        }
+
+        private void SetTouchpadVibrationSectionVisibility(bool visible)
+        {
+            if (TouchpadVibrationSection != null)
+            {
+                TouchpadVibrationSection.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"Touchpad & Vibration section visibility set to: {visible}");
+            }
+        }
+        /// <summary>
+        /// Updates XY focus bindings in Performance tab based on Legion detection
+        /// </summary>
+        private void UpdatePerformanceTabXYFocus(bool isLegion)
+        {
+            if (PerformanceOverlayComboBox != null && TDPModeComboBox != null && TDPSlider != null)
+            {
+                if (isLegion && TDPModeComboBox.Visibility == Visibility.Visible)
+                {
+                    // Legion: PerformanceOverlay -> TDPMode -> TDPSlider
+                    PerformanceOverlayComboBox.XYFocusDown = TDPModeComboBox;
+                    TDPSlider.XYFocusUp = TDPModeComboBox;
+                }
+                else
+                {
+                    // Everything else, INCLUDING the Claw: TDPModeCard is Collapsed there (Legion-only
+                    // card), and pointing XYFocusUp at a hidden control is how the PL1 slider ended up
+                    // with nowhere to go. The visibility test above is what routes the Claw here even
+                    // though it reports as a Legion device internally.
+                    PerformanceOverlayComboBox.XYFocusDown = TDPSlider;
+                    TDPSlider.XYFocusUp = FPSStateCycleButton ?? (Windows.UI.Xaml.Controls.Control)PerformanceOverlayComboBox;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates XY focus navigation for the Performance tab based on current state.
+        ///
+        /// Full card order (MSI Claw):
+        ///   Per-Game Profile  →  FPS Limit  →  (FPS Mode + Slider when expanded)
+        ///   →  TDP Power Limit  →  TDP Overboost (toggle + PL2 slider)
+        ///   →  OS Power Mode  →  CPU Boost  →  Overlay  →  (loop to top)
+        ///
+        /// The chain used to start with an optional Default Game Profile card; that feature was
+        /// removed on 2026-08-02, so Per-Game Profile is now unconditionally the first element.
+        /// </summary>
+        private void UpdatePerformanceTabXYNavigation()
+        {
+            // Early exit if critical UI elements aren't ready
+            if (PerformanceNavItem == null) return;
+
+            bool gameDetected = runningGame?.Value.IsValid() == true;
+
+            Logger.Debug($"UpdatePerformanceTabXYNavigation: gameDetected={gameDetected}");
+
+            // ── Determine the first focusable element below the nav bar ──────────────
+            // Always include Per-Game Profile (even when disabled/no-game — keeps navigation consistent)
+            // Fallbacks name FPSStateCycleButton, never FPSLimitToggle — the latter is a collapsed
+            // stub (see the TDP slider below) and is non-null, so it swallows every `??` it appears in.
+            Windows.UI.Xaml.Controls.Control firstElement =
+                (PerGameProfileToggle != null) ? (Windows.UI.Xaml.Controls.Control)PerGameProfileToggle :
+                (Windows.UI.Xaml.Controls.Control)FPSStateCycleButton;
+
+            PerformanceNavItem.XYFocusDown = firstElement;
+
+            // ── Per-Game Profile toggle ───────────────────────────────────────────────
+            // Always include (even disabled) so the user can see the current profile state.
+            if (PerGameProfileToggle != null)
+            {
+                PerGameProfileToggle.XYFocusUp   = PerformanceNavItem;
+                PerGameProfileToggle.XYFocusDown = FPSStateCycleButton ?? (Windows.UI.Xaml.Controls.Control)TDPSlider;
+            }
+
+            // ── FPS Limit toggle ──────────────────────────────────────────────────────
+            // Check FPS panel visibility FIRST — never point to an element in a collapsed panel.
+            // UWP does NOT reliably fall through collapsed XYFocus targets; spatial fallback is
+            // inconsistent depending on scroll position and which tab was previously active.
+            bool fpsExpanded = FPSLimiterModePanel?.Visibility == Visibility.Visible;
+
+            if (FPSLimitToggle != null)
+            {
+                FPSLimitToggle.XYFocusUp = (Windows.UI.Xaml.Controls.Control)PerGameProfileToggle ?? PerformanceNavItem;
+                // Only point into the expanded FPS panel if it is actually visible.
+                // Otherwise go directly to TDPSlider — no collapsed-element indirection.
+                if (fpsExpanded && FPSModeRTSSRadio != null)
+                    FPSLimitToggle.XYFocusDown = FPSModeRTSSRadio;
+                else if (TDPSlider != null)
+                    FPSLimitToggle.XYFocusDown = TDPSlider;
+            }
+
+            // ── TDP Power Limit slider ────────────────────────────────────────────────
+            if (TDPSlider != null)
+            {
+                // Up returns to the FPS limiter's On/Off switch — the element that is actually on
+                // screen above this slider.
+                //
+                // It pointed at FPSLimitToggle until 2026-08-06, and FPSLimitToggle is a DEAD STUB:
+                // `<ToggleSwitch x:Name="FPSLimitToggle" Visibility="Collapsed" IsTabStop="False"/>`,
+                // kept only so older code still compiles. Being non-null, it also defeated the `??`
+                // fallback beside it. A collapsed control cannot take focus, so FocusXYTarget failed,
+                // the page-level Up handler fell through its whole chain, and the press ended in the
+                // last-resort branch — which is what "Up jumps to the tab bar", and later "Up does
+                // nothing", both actually were. Never point an XYFocus target at a Collapsed element.
+                TDPSlider.XYFocusUp = FPSStateCycleButton ?? (Windows.UI.Xaml.Controls.Control)PerGameProfileToggle;
+                if (TDPBoostToggle != null)
+                    TDPSlider.XYFocusDown = TDPBoostToggle;
+            }
+
+            // ── TDP Overboost toggle + PL2 slider ────────────────────────────────────
+            // TDPBoostToggle Up=TDPSlider, Down=TDPBoostFPPTSliderCard — set in XAML, no change needed.
+            // TDPBoostFPPTSliderCard Up=TDPBoostToggle, Down=OSPowerModeComboBox — set in XAML.
+
+            // ── OS Power Mode ComboBox ────────────────────────────────────────────────
+            if (OSPowerModeComboBox != null)
+            {
+                // Up: TDP Boost PL2 slider (was wrongly pointing to TDPSlider in XAML)
+                if (TDPBoostFPPTSliderCard != null)
+                    OSPowerModeComboBox.XYFocusUp = TDPBoostFPPTSliderCard;
+                // Down: CPUBoostToggle — already set in XAML
+            }
+
+            // ── CPU Boost toggle ──────────────────────────────────────────────────────
+            if (CPUBoostToggle != null && PerformanceOverlayComboBox != null)
+            {
+                // Up: OSPowerModeComboBox — already set in XAML
+                // Down: Overlay card (was missing)
+                CPUBoostToggle.XYFocusDown = PerformanceOverlayComboBox;
+            }
+
+            // ── Overlay card (ComboBox + Expand button) ───────────────────────────────
+            // Overlay is now at the BOTTOM of the list, after CPU Boost.
+            if (PerformanceOverlayComboBox != null)
+            {
+                PerformanceOverlayComboBox.XYFocusUp   = CPUBoostToggle ?? (Windows.UI.Xaml.Controls.Control)OSPowerModeComboBox;
+                // Down from Overlay loops back to the top of the list
+                PerformanceOverlayComboBox.XYFocusDown = firstElement;
+            }
+            if (OSDCustomizeExpandButton != null)
+            {
+                OSDCustomizeExpandButton.XYFocusUp   = CPUBoostToggle ?? (Windows.UI.Xaml.Controls.Control)OSPowerModeComboBox;
+                OSDCustomizeExpandButton.XYFocusDown = firstElement;
+            }
+        }
+
+        /// <summary>
+        /// Updates WinRing0 option visibility in TDP Method dropdown based on file availability.
+        /// </summary>
+        private void UpdateWinRing0Visibility(bool available)
+        {
+            if (TdpMethodWinRing0Item != null)
+            {
+                TdpMethodWinRing0Item.Visibility = available ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"WinRing0 TDP option visibility set to: {available}");
+
+                // If WinRing0 was selected but is no longer available, switch to WMI or PawnIO
+                if (!available && TdpMethodComboBox != null)
+                {
+                    var selectedItem = TdpMethodComboBox.SelectedItem as ComboBoxItem;
+                    if (selectedItem?.Tag is string tag && tag == "WinRing0")
+                    {
+                        // Try to select ManufacturerWMI first, then PawnIO
+                        if (TdpMethodWmiItem?.Visibility == Visibility.Visible)
+                        {
+                            TdpMethodComboBox.SelectedItem = TdpMethodWmiItem;
+                        }
+                        else if (TdpMethodPawnIOItem?.Visibility == Visibility.Visible)
+                        {
+                            TdpMethodComboBox.SelectedItem = TdpMethodPawnIOItem;
+                        }
+                    }
+                }
+            }
+
+            // Ensure a valid option is selected after visibility changes
+            EnsureValidTdpMethodSelected();
+        }
+
+        /// <summary>
+        /// Ensures a valid (visible and enabled) TDP method is selected in the dropdown.
+        /// IMPORTANT: Never auto-select WinRing0 - user must explicitly choose it.
+        /// </summary>
+        private void EnsureValidTdpMethodSelected()
+        {
+            if (TdpMethodComboBox == null) return;
+
+            // Same race as SetLegionTabVisibility (issue #79 round-3 PawnIO regression).
+            // This path runs from UpdateWinRing0Visibility / UpdatePawnIOInstalledUI,
+            // which fire during BatchSync DOWN. If the TdpMethodProperty's own
+            // NotifyPropertyChanged dispatcher entry hasn't run yet, SelectedIndex
+            // is still -1 and we'd auto-pick WMI here — fires SelectionChanged
+            // and pushes 0 UP, clobbering helper's PawnIO=1. Skip auto-pick when
+            // helper owns the value; its NPC dispatcher will land the right index.
+            if (tdpMethod != null && tdpMethod.HasReceivedHelperSync)
+            {
+                Logger.Debug("EnsureValidTdpMethodSelected: helper has synced — skipping auto-pick, helper's value will land via NotifyPropertyChanged");
+                return;
+            }
+
+            var selectedItem = TdpMethodComboBox.SelectedItem as ComboBoxItem;
+            var selectedIndex = TdpMethodComboBox.SelectedIndex;
+
+            // If current selection is valid (visible and enabled), do nothing
+            if (selectedItem != null && selectedItem.Visibility == Visibility.Visible && selectedItem.IsEnabled)
+            {
+                return;
+            }
+
+            // If ManufacturerWMI is selected but collapsed, wait for Legion detection
+            // Don't auto-select PawnIO - Legion detection will make WMI visible if it's a Legion device
+            if (selectedItem != null && selectedItem == TdpMethodWmiItem && selectedItem.Visibility == Visibility.Collapsed)
+            {
+                Logger.Debug("EnsureValidTdpMethodSelected: ManufacturerWMI selected but collapsed, waiting for Legion detection");
+                return;
+            }
+
+            // If selectedIndex is 0 (ManufacturerWMI position) but selectedItem isn't matching,
+            // it means WMI was intended but may be collapsed - wait for Legion detection
+            if (selectedIndex == 0 && TdpMethodWmiItem?.Visibility == Visibility.Collapsed)
+            {
+                Logger.Debug("EnsureValidTdpMethodSelected: SelectedIndex=0 (WMI) but WMI collapsed, waiting for Legion detection");
+                return;
+            }
+
+            // If nothing is selected yet and WMI is collapsed, wait for Legion detection
+            // This handles the case where the ComboBox rejected the initial Collapsed selection
+            if (selectedItem == null && TdpMethodWmiItem?.Visibility == Visibility.Collapsed)
+            {
+                Logger.Debug("EnsureValidTdpMethodSelected: No selection and WMI collapsed, waiting for Legion detection");
+                return;
+            }
+
+            // Find the first visible and enabled option and select it
+            // Priority: ManufacturerWMI > PawnIO (if installed)
+            // NEVER auto-select WinRing0 - it's a legacy option that may trigger anti-cheat
+            if (TdpMethodWmiItem?.Visibility == Visibility.Visible && TdpMethodWmiItem.IsEnabled)
+            {
+                TdpMethodComboBox.SelectedItem = TdpMethodWmiItem;
+                Logger.Info("TDP Method auto-selected: ManufacturerWMI");
+            }
+            else if (TdpMethodPawnIOItem?.Visibility == Visibility.Visible && TdpMethodPawnIOItem.IsEnabled)
+            {
+                TdpMethodComboBox.SelectedItem = TdpMethodPawnIOItem;
+                Logger.Info("TDP Method auto-selected: PawnIO");
+            }
+            else
+            {
+                // Don't auto-select WinRing0 - user must explicitly choose it
+                Logger.Warn("No safe TDP method available - user must select WinRing0 manually if desired");
+            }
+        }
+
+        /// <summary>
+        /// Updates the PawnIO install button state and dropdown option based on driver installation status.
+        /// PawnIO option is always visible but disabled if not installed.
+        /// </summary>
+        private void UpdatePawnIOInstalledUI(bool installed)
+        {
+            UpdateOnboardingPawnIO(installed);
+            MaybeFinishOnbSetup(); // real status push → stop the onboarding spinner if a run is active
+
+            // PawnIO option is always visible, but enable/disable based on installation status
+            // This prevents WinRing0 from being auto-selected when PawnIO detection is delayed
+            if (TdpMethodPawnIOItem != null)
+            {
+                // Keep PawnIO visible always - just update text to show status
+                TdpMethodPawnIOItem.Visibility = Visibility.Visible;
+                TdpMethodPawnIOItem.IsEnabled = installed;
+                TdpMethodPawnIOItem.Content = installed ? global::XboxGamingBar.OnexStrings.Get("PawnIO") : global::XboxGamingBar.OnexStrings.Get("PawnIO (Not Installed)");
+                Logger.Info($"PawnIO TDP option enabled: {installed}");
+
+                // If PawnIO was selected but is no longer installed, switch to WMI only
+                // NEVER auto-switch to WinRing0 - user must explicitly choose it
+                if (!installed && TdpMethodComboBox != null)
+                {
+                    var selectedItem = TdpMethodComboBox.SelectedItem as ComboBoxItem;
+                    if (selectedItem?.Tag is string tag && tag == "PawnIO")
+                    {
+                        // Try to select ManufacturerWMI, don't fall back to WinRing0
+                        if (TdpMethodWmiItem?.Visibility == Visibility.Visible)
+                        {
+                            TdpMethodComboBox.SelectedItem = TdpMethodWmiItem;
+                        }
+                        // If WMI not available, leave selection as-is or clear it
+                        // User will need to reinstall PawnIO or manually select WinRing0
+                    }
+                }
+            }
+
+            if (InstallPawnIOButton != null)
+            {
+                InstallPawnIOButton.Content = installed ? global::XboxGamingBar.OnexStrings.Get("Installed") : global::XboxGamingBar.OnexStrings.Get("Install");
+                InstallPawnIOButton.IsEnabled = !installed;
+                Logger.Info($"PawnIO install button updated: installed={installed}");
+
+                // Update XY navigation to skip disabled button
+                // TDPSettingsExpandButton is now in the Performance tab (TDP Mode card), not Sys tab
+                if (TdpMethodComboBox != null && TDPSettingsExpandButton != null)
+                {
+                    if (installed)
+                    {
+                        // Skip disabled Install button: ComboBox -> next slider
+                        TdpMethodComboBox.XYFocusDown = TDPLimitsMinSlider;
+                        if (TDPLimitsMinSlider != null)
+                        {
+                            TDPLimitsMinSlider.XYFocusUp = TdpMethodComboBox;
+                        }
+                    }
+                    else
+                    {
+                        TdpMethodComboBox.XYFocusDown = InstallPawnIOButton;
+                        if (TDPLimitsMinSlider != null && InstallPawnIOButton != null)
+                        {
+                            TDPLimitsMinSlider.XYFocusUp = InstallPawnIOButton;
+                        }
+                    }
+                    // TDPSettingsExpandButton is now in the Performance tab (TDP Mode card) - navigate up to OSDCustomizeExpandButton
+                    TDPSettingsExpandButton.XYFocusUp = OSDCustomizeExpandButton;
+                }
+            }
+
+            if (PawnIOStatusText != null)
+            {
+                if (installed)
+                {
+                    PawnIOStatusText.Text = global::XboxGamingBar.OnexStrings.Get("PawnIO driver is installed. Signed kernel driver for anti-cheat safe hardware access.");
+                }
+                else
+                {
+                    PawnIOStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Signed kernel driver for hardware access. Replaces WinRing0.");
+                }
+            }
+
+            // Ensure a valid option is selected after visibility changes
+            EnsureValidTdpMethodSelected();
+        }
+
+        /// <summary>
+        /// Handles the PawnIO install button click.
+        /// After installation, the helper restarts to reinitialize with PawnIO support.
+        /// </summary>
+        private async void InstallPawnIOButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Logger.Info("InstallPawnIOButton clicked - triggering PawnIO installation");
+
+                // Update button to show installing state
+                if (InstallPawnIOButton != null)
+                {
+                    InstallPawnIOButton.Content = global::XboxGamingBar.OnexStrings.Get("Installing...");
+                    InstallPawnIOButton.IsEnabled = false;
+                }
+
+                // Trigger the installation via the property
+                installPawnIO?.TriggerInstall();
+
+                // Wait for helper to complete installation and exit
+                // The helper exits after successful PawnIO installation
+                Logger.Info("Waiting for PawnIO installation to complete...");
+                await Task.Delay(5000);
+
+                // Check if helper is still connected, if not, relaunch it
+                // The helper will have exited after successful installation
+                Logger.Info("Relaunching helper after PawnIO installation...");
+                await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync();
+
+                // Wait for helper to start and reinitialize
+                await Task.Delay(2000);
+                Logger.Info("Helper relaunched after PawnIO installation");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error during PawnIO installation: {ex.Message}");
+                // Reset button state on error
+                if (InstallPawnIOButton != null)
+                {
+                    InstallPawnIOButton.Content = global::XboxGamingBar.OnexStrings.Get("Install");
+                    InstallPawnIOButton.IsEnabled = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the ViGEmBus install button state based on driver installation status.
+        /// </summary>
+        private void UpdateViGEmBusInstalledUI(bool installed)
+        {
+            _gateVigemInstalled = installed; // cache for the dependency gate (property Value is unreliable here)
+            if (ViGEmBusStatusText != null)
+            {
+                ViGEmBusStatusText.Text = installed ? global::XboxGamingBar.OnexStrings.Get("Status: Installed") : global::XboxGamingBar.OnexStrings.Get("Status: Not Installed");
+                ViGEmBusStatusText.Foreground = installed
+                    ? new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.LimeGreen)
+                    : new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 136, 136, 136));
+            }
+
+            if (ViGEmBusInstallButton != null)
+            {
+                ViGEmBusInstallButton.Content = installed ? global::XboxGamingBar.OnexStrings.Get("Installed") : global::XboxGamingBar.OnexStrings.Get("Install ViGEmBus");
+                ViGEmBusInstallButton.IsEnabled = !installed;
+            }
+
+            if (ControllerEmulationViGEmBusStatusText != null)
+            {
+                ControllerEmulationViGEmBusStatusText.Text = installed ? global::XboxGamingBar.OnexStrings.Get("ViGEmBus: Installed") : global::XboxGamingBar.OnexStrings.Get("ViGEmBus: Not Installed");
+                ControllerEmulationViGEmBusStatusText.Foreground = installed
+                    ? new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.LimeGreen)
+                    : new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 136, 136, 136));
+            }
+
+            if (ControllerEmulationViGEmBusInstallButton != null)
+            {
+                ControllerEmulationViGEmBusInstallButton.Content = installed ? global::XboxGamingBar.OnexStrings.Get("Installed") : global::XboxGamingBar.OnexStrings.Get("Install ViGEmBus");
+                ControllerEmulationViGEmBusInstallButton.IsEnabled = !installed;
+            }
+
+            if (ControllerEmulationViGEmBusUninstallButton != null)
+            {
+                ControllerEmulationViGEmBusUninstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Uninstall");
+                ControllerEmulationViGEmBusUninstallButton.IsEnabled = installed;
+            }
+
+            UpdateOnboardingViGEm(installed);
+            MaybeFinishOnbSetup(); // real status push → stop the onboarding spinner if a run is active
+
+            Logger.Info($"ViGEmBus install UI updated: installed={installed}");
+        }
+
+        /// <summary>
+        /// Handles the ViGEmBus install button click.
+        /// </summary>
+        private async void ViGEmBusInstallButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Logger.Info("ViGEmBusInstallButton clicked - triggering ViGEmBus installation");
+
+                // Update button to show installing state
+                if (ViGEmBusInstallButton != null)
+                {
+                    ViGEmBusInstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Installing...");
+                    ViGEmBusInstallButton.IsEnabled = false;
+                }
+
+                if (ControllerEmulationViGEmBusInstallButton != null)
+                {
+                    ControllerEmulationViGEmBusInstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Installing...");
+                    ControllerEmulationViGEmBusInstallButton.IsEnabled = false;
+                }
+
+                if (ViGEmBusStatusText != null)
+                {
+                    ViGEmBusStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Status: Installing...");
+                }
+
+                if (ControllerEmulationViGEmBusStatusText != null)
+                {
+                    ControllerEmulationViGEmBusStatusText.Text = global::XboxGamingBar.OnexStrings.Get("ViGEmBus: Installing...");
+                }
+
+                // Trigger the installation via the property
+                installViGEmBus?.TriggerInstall();
+
+                // The helper will send an updated status after installation completes
+                Logger.Info("ViGEmBus installation triggered, waiting for helper response...");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error during ViGEmBus installation: {ex.Message}");
+                // Reset button state on error
+                if (ViGEmBusInstallButton != null)
+                {
+                    ViGEmBusInstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Install ViGEmBus");
+                    ViGEmBusInstallButton.IsEnabled = true;
+                }
+                if (ControllerEmulationViGEmBusInstallButton != null)
+                {
+                    ControllerEmulationViGEmBusInstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Install ViGEmBus");
+                    ControllerEmulationViGEmBusInstallButton.IsEnabled = true;
+                }
+                if (ViGEmBusStatusText != null)
+                {
+                    ViGEmBusStatusText.Text = global::XboxGamingBar.OnexStrings.Get("Status: Error");
+                }
+                if (ControllerEmulationViGEmBusStatusText != null)
+                {
+                    ControllerEmulationViGEmBusStatusText.Text = global::XboxGamingBar.OnexStrings.Get("ViGEmBus: Error");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the HidHide install button state based on installation status.
+        /// </summary>
+        private void UpdateHidHideInstalledUI(bool installed)
+        {
+            _gateHidHideInstalled = installed; // cache for the dependency gate (property Value is unreliable here)
+            if (ControllerEmulationHidHideStatusText != null)
+            {
+                ControllerEmulationHidHideStatusText.Text = installed ? global::XboxGamingBar.OnexStrings.Get("HidHide: Installed") : global::XboxGamingBar.OnexStrings.Get("HidHide: Not Installed");
+                ControllerEmulationHidHideStatusText.Foreground = installed
+                    ? new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.LimeGreen)
+                    : new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 136, 136, 136));
+            }
+
+            if (ControllerEmulationHidHideInstallButton != null)
+            {
+                ControllerEmulationHidHideInstallButton.Content = installed ? global::XboxGamingBar.OnexStrings.Get("Installed") : global::XboxGamingBar.OnexStrings.Get("Install HidHide");
+                ControllerEmulationHidHideInstallButton.IsEnabled = !installed;
+            }
+
+            if (ControllerEmulationHidHideUninstallButton != null)
+            {
+                ControllerEmulationHidHideUninstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Uninstall");
+                ControllerEmulationHidHideUninstallButton.IsEnabled = installed;
+            }
+
+            UpdateOnboardingHidHide(installed);
+            MaybeFinishOnbSetup(); // real status push → stop the onboarding spinner if a run is active
+
+            Logger.Info($"HidHide install UI updated: installed={installed}");
+        }
+
+        /// <summary>
+        /// Handles the HidHide install button click.
+        /// </summary>
+        private void HidHideInstallButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Logger.Info("HidHideInstallButton clicked - triggering HidHide installation");
+
+                if (ControllerEmulationHidHideInstallButton != null)
+                {
+                    ControllerEmulationHidHideInstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Installing...");
+                    ControllerEmulationHidHideInstallButton.IsEnabled = false;
+                }
+
+                if (ControllerEmulationHidHideStatusText != null)
+                {
+                    ControllerEmulationHidHideStatusText.Text = global::XboxGamingBar.OnexStrings.Get("HidHide: Installing...");
+                }
+
+                installHidHide?.TriggerInstall();
+                Logger.Info("HidHide installation triggered, waiting for helper response...");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error during HidHide installation: {ex.Message}");
+                if (ControllerEmulationHidHideInstallButton != null)
+                {
+                    ControllerEmulationHidHideInstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Install HidHide");
+                    ControllerEmulationHidHideInstallButton.IsEnabled = true;
+                }
+
+                if (ControllerEmulationHidHideStatusText != null)
+                {
+                    ControllerEmulationHidHideStatusText.Text = global::XboxGamingBar.OnexStrings.Get("HidHide: Error");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ViGEmBus uninstall button click.
+        /// </summary>
+        private void ViGEmBusUninstallButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Logger.Info("ViGEmBusUninstallButton clicked - triggering ViGEmBus uninstall");
+                if (ControllerEmulationViGEmBusUninstallButton != null)
+                {
+                    ControllerEmulationViGEmBusUninstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Uninstalling...");
+                    ControllerEmulationViGEmBusUninstallButton.IsEnabled = false;
+                }
+                if (ControllerEmulationViGEmBusStatusText != null)
+                {
+                    ControllerEmulationViGEmBusStatusText.Text = global::XboxGamingBar.OnexStrings.Get("ViGEmBus: Uninstalling...");
+                }
+                uninstallViGEm?.Trigger("uninstall");
+                Logger.Info("ViGEmBus uninstall triggered, waiting for helper response...");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error during ViGEmBus uninstall: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles the HidHide uninstall button click.
+        /// </summary>
+        private void HidHideUninstallButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Logger.Info("HidHideUninstallButton clicked - triggering HidHide uninstall");
+                if (ControllerEmulationHidHideUninstallButton != null)
+                {
+                    ControllerEmulationHidHideUninstallButton.Content = global::XboxGamingBar.OnexStrings.Get("Uninstalling...");
+                    ControllerEmulationHidHideUninstallButton.IsEnabled = false;
+                }
+                if (ControllerEmulationHidHideStatusText != null)
+                {
+                    ControllerEmulationHidHideStatusText.Text = global::XboxGamingBar.OnexStrings.Get("HidHide: Uninstalling... (reboot may be required)");
+                }
+                uninstallHidHide?.Trigger("uninstall");
+                Logger.Info("HidHide uninstall triggered, waiting for helper response...");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error during HidHide uninstall: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Shows or hides the Custom TDP card based on performance mode
+        /// </summary>
+        private void SetCustomTDPVisibility(bool visible)
+        {
+            if (LegionCustomTDPCard != null)
+            {
+                LegionCustomTDPCard.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+                Logger.Info($"Custom TDP card visibility set to: {visible}");
+            }
+
+            // Update XY focus navigation for controller navigation
+            // When Custom TDP card is hidden, focus should skip directly to fan controls
+            if (LegionPerformanceModeComboBox != null)
+            {
+                if (visible && LegionCustomTDPSlowSlider != null)
+                {
+                    LegionPerformanceModeComboBox.XYFocusDown = LegionCustomTDPSlowSlider;
+                }
+                else if (LegionFanFullSpeedToggle != null)
+                {
+                    LegionPerformanceModeComboBox.XYFocusDown = LegionFanFullSpeedToggle;
+                }
+            }
+
+            // Also update XYFocusUp on fan controls for navigation back up
+            if (LegionFanFullSpeedToggle != null)
+            {
+                if (visible && LegionCustomTDPPeakSlider != null)
+                {
+                    // When Custom TDP visible, navigate up to the last slider (Peak/Sustained)
+                    LegionFanFullSpeedToggle.XYFocusUp = LegionCustomTDPPeakSlider;
+                }
+                else if (LegionPerformanceModeComboBox != null)
+                {
+                    // When Custom TDP hidden, navigate up directly to performance mode dropdown
+                    LegionFanFullSpeedToggle.XYFocusUp = LegionPerformanceModeComboBox;
+                }
+            }
+
+            // Fan curve card stays fully interactive in every power mode now. Per-mode
+            // storage means each mode has its own saved curve + EC-override unlock state,
+            // and the user can edit any mode's slot from the dropdown without changing
+            // the running power mode. The old Custom-only gate predated per-mode storage
+            // and would mislead users into thinking fan control is only available in
+            // Custom — keep it always enabled.
+            if (LegionFanCurveCard != null)
+            {
+                LegionFanCurveCard.IsHitTestVisible = true;
+                LegionFanCurveCard.Opacity = 1.0;
+            }
+            if (FanCurvePresetComboBox != null)
+            {
+                FanCurvePresetComboBox.IsEnabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Toggles the ColorPicker visibility
+        /// </summary>
+        private void LegionColorExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (LegionColorPicker != null)
+                {
+                    bool isExpanded = LegionColorPicker.Visibility == Visibility.Visible;
+                    LegionColorPicker.Visibility = isExpanded ? Visibility.Collapsed : Visibility.Visible;
+
+                    // Update button icon (chevron down/up)
+                    if (LegionColorExpandButton != null)
+                    {
+                        LegionColorExpandButton.Content = isExpanded ? "\uE70D" : "\uE70E";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in LegionColorExpandButton_Click: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles ColorPicker color changes and updates the preview
+        /// </summary>
+        private void LegionColorPicker_ColorChanged(Microsoft.UI.Xaml.Controls.ColorPicker sender, Microsoft.UI.Xaml.Controls.ColorChangedEventArgs args)
+        {
+            try
+            {
+                // Update color preview
+                if (LegionColorPreview != null)
+                {
+                    LegionColorPreview.Background = new SolidColorBrush(args.NewColor);
+                }
+
+                legionLightColor?.OnColorChanged(args.NewColor);
+
+                // Save to controller profile (handler is detached during profile loading)
+                ControllerSettingChanged(sender, null);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in LegionColorPicker_ColorChanged: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles brightness slider changes
+        /// </summary>
+        private void LegionBrightnessSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            try
+            {
+                if (LegionBrightnessSlider != null && LegionBrightnessValue != null)
+                {
+                    int brightness = (int)LegionBrightnessSlider.Value;
+                    LegionBrightnessValue.Text = $"{brightness}%";
+                }
+                // Save to controller profile
+                ControllerSettingChanged(sender, null);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in LegionBrightnessSlider_ValueChanged: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles speed slider changes
+        /// </summary>
+        private void LegionSpeedSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            try
+            {
+                if (LegionSpeedSlider != null && LegionSpeedValue != null)
+                {
+                    int speed = (int)LegionSpeedSlider.Value;
+                    LegionSpeedValue.Text = $"{speed}%";
+                }
+
+                // Save to controller profile (ControllerSettingChanged checks for loading state)
+                ControllerSettingChanged(sender, null);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in LegionSpeedSlider_ValueChanged: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles light mode ComboBox selection - shows/hides appropriate controls
+        /// Mode options visibility:
+        /// - Off (0): hide all
+        /// - Solid (1): Color + Brightness
+        /// - Pulse (2): Color + Speed
+        /// - Dynamic (3): Brightness + Speed
+        /// - Spiral (4): Brightness + Speed
+        /// </summary>
+        private void LegionLightModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                UpdateLegionLightControlsVisibility();
+
+                // Save to controller profile (handler is detached during profile loading)
+                ControllerSettingChanged(sender, null);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in LegionLightModeComboBox_SelectionChanged: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Updates the visibility of Legion light controls based on the selected mode
+        /// </summary>
+        private void UpdateLegionLightControlsVisibility()
+        {
+            if (LegionLightModeComboBox == null || LegionColorCard == null ||
+                LegionBrightnessCard == null || LegionSpeedCard == null)
+                return;
+
+            int mode = LegionLightModeComboBox.SelectedIndex;
+
+            // Off (0): hide all
+            // Solid (1): Color + Brightness
+            // Pulse (2): Color + Brightness + Speed
+            // Dynamic (3): Brightness + Speed
+            // Spiral (4): Brightness + Speed
+
+            bool showColor = mode == 1 || mode == 2; // Solid, Pulse
+            bool showBrightness = mode >= 1; // All modes except Off have brightness
+            bool showSpeed = mode == 2 || mode == 3 || mode == 4; // Pulse, Dynamic, Spiral
+
+            LegionColorCard.Visibility = showColor ? Visibility.Visible : Visibility.Collapsed;
+            LegionBrightnessCard.Visibility = showBrightness ? Visibility.Visible : Visibility.Collapsed;
+            LegionSpeedCard.Visibility = showSpeed ? Visibility.Visible : Visibility.Collapsed;
+
+            Logger.Info($"Legion light mode {mode}: Color={showColor}, Brightness={showBrightness}, Speed={showSpeed}");
+        }
+
+        /// <summary>
+        /// Handles performance mode ComboBox selection in Legion tab
+        /// </summary>
+        private void LegionPerformanceModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // MSI Claw is not a Legion device — LegionPerformanceMode=255 (software TDP) would
+            // incorrectly reset TDPModeComboBox to index 3 (Battery) on every pipe update,
+            // breaking the TDP tile cycle (Max/Standard/Balanced become unreachable).
+            if (legionGoDetected?.Value != true) return;
+
+            // Check if this change came from a pipe/property sync (not user interaction).
+            // When true, TDPModeComboBox_SelectionChanged must skip profile saves to prevent
+            // corrupting game profiles with global values during game exit transitions.
+            bool fromHelperSync = legionPerformanceMode?.IsUpdatingUI == true;
+            Logger.Info($"Legion Performance mode selection changed (fromHelperSync={fromHelperSync})");
+
+            // Sync TDP Mode dropdown in Performance tab
+            // Skip during initial sync - ApplyProfileTDPToHelper will set the correct value
+            if (TDPModeComboBox != null && LegionPerformanceModeComboBox != null && !isInitialSync)
+            {
+                int targetIndex = Math.Max(0, Math.Min(LegionPerformanceModeComboBox.SelectedIndex, TDPModeComboBox.Items.Count - 1));
+                if (TDPModeComboBox.SelectedIndex != targetIndex)
+                {
+                    // Set isApplyingHelperUpdate during sync so TDPModeComboBox_SelectionChanged
+                    // returns early (skips profile save and value sends).
+                    if (fromHelperSync)
+                        isApplyingHelperUpdate = true;
+                    try
+                    {
+                        TDPModeComboBox.SelectedIndex = targetIndex;
+                    }
+                    finally
+                    {
+                        if (fromHelperSync)
+                            isApplyingHelperUpdate = false;
+                    }
+                }
+            }
+
+            // Update TDP slider enabled state based on mode
+            UpdateTDPSliderEnabledState();
+
+            // Keep the fan-curve power-mode dropdown in sync with whatever power mode
+            // is now active. Fires for both user-driven and helper-pushed mode changes,
+            // so the fan curve dropdown follows the Lenovo button, TDP card, etc.
+            try { SyncFanCurvePresetComboToActiveMode(); }
+            catch (Exception ex) { Logger.Debug($"SyncFanCurvePresetComboToActiveMode failed: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// Handles TDP Mode ComboBox selection in Performance tab (Legion devices only)
+        /// </summary>
+        private int lastTDPModeIndex = 5; // Track last index to avoid redundant updates (init to XAML default: Slider/Custom 255).
+                                          // MUST match the ComboBox's XAML SelectedIndex so the equality guard
+                                          // suppresses the init SelectionChanged — otherwise a preset (e.g. index 1 =
+                                          // Standard 25W) would apply on every fresh load and overwrite the user's
+                                          // slider TDP in the global profile.
+        private double savedCustomTDP = 15; // Saved custom TDP value when switching away from Custom mode
+        private void TDPModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TDPModeComboBox == null) return;
+
+            int selectedIndex = TDPModeComboBox.SelectedIndex;
+            if (selectedIndex < 0) return;
+
+            Logger.Debug($"TDPModeComboBox_SelectionChanged: selectedIndex={selectedIndex}, lastTDPModeIndex={lastTDPModeIndex}, isApplyingHelperUpdate={isApplyingHelperUpdate}, isLoadingProfile={isLoadingProfile}");
+
+            // Block only during active pipe operations (sync/message handling) or profile loading.
+            // Use isApplyingHelperUpdate instead of isInitialSync so user clicks work during the
+            // init window (20-50s). Programmatic changes from pipe sync are blocked by isApplyingHelperUpdate,
+            // and post-sync ComboBox updates are blocked by the equality check (lastTDPModeIndex set first).
+            if (isApplyingHelperUpdate || isLoadingProfile)
+            {
+                // isApplyingHelperUpdate: helper pipe echoes back a potentially different index after
+                // SetValue — do NOT update lastTDPModeIndex or the cycle position gets corrupted.
+                // isLoadingProfile: profile load drives the combo, so we must track the new index.
+                if (!isApplyingHelperUpdate)
+                    lastTDPModeIndex = selectedIndex;
+                Logger.Info($"[TDPCombo] early-return: isApplyingHelperUpdate={isApplyingHelperUpdate}, isLoadingProfile={isLoadingProfile} → lastTDPModeIndex={lastTDPModeIndex} (selectedIndex={selectedIndex})");
+                return;
+            }
+
+            // Skip if this is the same index as last time (avoid redundant processing)
+            if (selectedIndex == lastTDPModeIndex)
+            {
+                Logger.Info($"[TDPCombo] early-return: selectedIndex={selectedIndex} == lastTDPModeIndex (cycle intentional skip)");
+                return;
+            }
+
+            // Check if switching away from Custom mode (to save slider value)
+            // Use lastTDPModeIndex to check the PREVIOUS selection, not the new one
+            bool wasCustomMode = lastTDPModeIndex >= 0 && IsCustomTdpModeIndex(lastTDPModeIndex);
+            if (wasCustomMode && TDPSlider != null)
+            {
+                savedCustomTDP = TDPSlider.Value;
+                Logger.Info($"Saved custom TDP value: {savedCustomTDP}W before switching to preset mode");
+            }
+
+            lastTDPModeIndex = selectedIndex;
+
+            // Use the new preset system to get TDP and Legion mode values
+            bool isCustomMode = IsCustomTdpModeSelected();
+            int presetTdpValue = GetCurrentPresetTdpValue();
+            int legionModeValue = GetCurrentPresetLegionMode();
+            bool? presetTdpBoost = GetCurrentPresetTdpBoost();
+
+            Logger.Info($"TDP Mode selection changed to index {selectedIndex}: isCustom={isCustomMode}, presetTDP={presetTdpValue}W, legionMode={legionModeValue}, boost={presetTdpBoost}");
+
+            bool isLegion = legionGoDetected?.Value == true;
+
+            if (isLegion)
+            {
+                // Legion device: use hardware presets via WMI
+                // For built-in presets with LegionModeValue (1/2/3), use hardware mode
+                // For custom presets (LegionModeValue == 255), use Custom mode + software TDP
+
+                // Sync with Legion Performance Mode ComboBox if using default mode (not custom presets)
+                if (!useCustomTDPPresets && LegionPerformanceModeComboBox != null && LegionPerformanceModeComboBox.SelectedIndex != selectedIndex)
+                {
+                    LegionPerformanceModeComboBox.SelectedIndex = selectedIndex;
+                }
+
+                // Send Legion mode to helper - force send even if cached value matches
+                if (legionPerformanceMode != null)
+                {
+                    if (legionPerformanceMode.Value == legionModeValue)
+                    {
+                        legionPerformanceMode.ForceSetValue(legionModeValue);
+                    }
+                    else
+                    {
+                        legionPerformanceMode.SetValue(legionModeValue);
+                    }
+                }
+
+                // For custom presets without hardware mode (255), also apply TDP via software
+                if (legionModeValue == 255 && !isCustomMode && presetTdpValue > 0)
+                {
+                    // Custom preset on Legion: apply TDP value via software
+                    if (TDPSlider != null)
+                    {
+                        TDPSlider.Value = presetTdpValue;
+                    }
+                    if (tdp != null)
+                    {
+                        tdp.SetValue(presetTdpValue);
+                        Logger.Info($"Legion device: Applied custom preset TDP {presetTdpValue}W via software");
+                    }
+                }
+                // For actual Custom mode on Legion, restore saved custom TDP value
+                else if (isCustomMode)
+                {
+                    if (TDPSlider != null)
+                    {
+                        TDPSlider.Value = savedCustomTDP;
+                        Logger.Info($"Legion device: Restored custom TDP value to slider: {savedCustomTDP}W");
+                    }
+                }
+            }
+            else
+            {
+                // Generic device: apply TDP value directly based on preset
+                if (isCustomMode)
+                {
+                    // Custom mode: restore saved custom TDP value to slider
+                    if (TDPSlider != null)
+                    {
+                        TDPSlider.Value = savedCustomTDP;
+                        Logger.Info($"Restored custom TDP value to slider: {savedCustomTDP}W");
+                    }
+                }
+                else
+                {
+                    // Preset mode: set TDP directly and update slider to show the value
+                    int targetTDP = presetTdpValue > 0 ? presetTdpValue : 15; // Default to 15W if something goes wrong
+                    if (TDPSlider != null)
+                    {
+                        TDPSlider.Value = targetTDP;
+                    }
+                    if (tdp != null)
+                    {
+                        tdp.SetValue(targetTDP);
+                        Logger.Info($"Generic device: Applied TDP preset {targetTDP}W (mode index {selectedIndex})");
+                    }
+                }
+            }
+
+            // Update TDP slider enabled state based on mode
+            UpdateTDPSliderEnabledState();
+
+            // Apply TDP Boost setting from preset (only for custom presets with TdpBoostEnabled set)
+            // This should use software TDP control, so only apply when not using Lenovo hardware modes
+            if (presetTdpBoost.HasValue && !isCustomMode)
+            {
+                bool shouldEnableTdpBoost = presetTdpBoost.Value;
+                // Only apply if we're using software TDP control (not Lenovo hardware modes)
+                // For Legion devices using hardware modes (legionModeValue != 255), TDP Boost is controlled by hardware
+                if (legionModeValue == 255 || !(legionGoDetected?.Value == true))
+                {
+                    if (TDPBoostToggle != null)
+                    {
+                        TDPBoostToggle.IsOn = shouldEnableTdpBoost;
+                    }
+                    if (tdpBoostEnabled != null && tdpBoostEnabled.Value != shouldEnableTdpBoost)
+                    {
+                        tdpBoostEnabled.SetValue(shouldEnableTdpBoost);
+                        Logger.Info($"Applied preset TDP Boost: {shouldEnableTdpBoost}");
+                    }
+                }
+            }
+
+            // Save profile when TDP Mode changes (if not during initialization or helper update)
+            // Allow save if user-initiated from Quick Tab tile (bypasses isApplyingHelperUpdate)
+            // Don't save when Default Game Profile is active (to avoid contaminating user's profile)
+            if (!isInitialSync && !isLoadingProfile && SaveTDP && (!isApplyingHelperUpdate || isUserInitiatedTDPModeChange))
+            {
+                // Don't save to game profile if per-game profile is disabled.
+                // During game close, helper sends global mode via pipe → ComboBox changes → handler fires.
+                // At this point, perGameProfile.Value is already false (pipe message processed) but
+                // currentProfileName still points to the game profile (SwitchProfile hasn't run yet).
+                // Without this check, the global mode gets saved to the game profile, corrupting it.
+                bool isGameProfile = currentProfileName?.StartsWith("Game_") == true;
+                if (isGameProfile && perGameProfile?.Value != true)
+                {
+                    Logger.Warn($"TDP Mode save skipped: per-game profile is disabled but currentProfileName is still '{currentProfileName}' (game closing)");
+                }
+                else
+                {
+                    Logger.Info($"Saving TDP Mode change to profile: {currentProfileName}");
+                    SaveWidgetUiStateToProfile(currentProfileName);
+                }
+            }
+            else
+            {
+                Logger.Warn($"TDP Mode save skipped: isInitialSync={isInitialSync}, isApplyingHelperUpdate={isApplyingHelperUpdate}, isLoadingProfile={isLoadingProfile}, SaveTDP={SaveTDP}, isUserInitiatedTDPModeChange={isUserInitiatedTDPModeChange}");
+            }
+        }
+
+        /// <summary>
+        /// Updates TDP slider enabled state based on TDP Mode
+        /// For all devices: slider disabled in preset modes (Quiet/Balanced/Performance), enabled in Custom mode
+        /// Also updates XY focus bindings to skip disabled TDP slider
+        /// </summary>
+        private void UpdateTDPSliderEnabledState()
+        {
+            if (TDPSlider == null) return;
+            if(OnexFrontend.UsesOwnBackend)
+            {
+                // The ONEXPLAYER helper owns availability and PL2 selection. MSI/Lenovo
+                // preset state must never replace its acknowledged value or toggle state.
+                UpdateTDPDisplayText();
+                if(TDPSliderModeHint!=null)TDPSliderModeHint.Visibility=Visibility.Collapsed;
+                return;
+            }
+
+            // NOTE: MSI Center M running no longer disables/short-circuits TDP. The helper mirrors PL1/PL2
+            // into MSI Center M's own model (HKLM\...\User Scenario\ManualPL*), which MSI applies to the EC
+            // itself — so TDP is settable and MSI-conform even with MSI Center M active. Fall through to the
+            // normal state logic so the real TDP value is shown and the slider behaves as usual.
+
+            // Check if in Custom mode (uses preset system for proper detection)
+            bool isCustomMode = IsCustomTdpModeSelected();
+            bool isLegion = legionGoDetected?.Value == true;
+
+            // Check if the mode change came from helper pipe sync (not user interaction).
+            // When true, widget's profile may have stale values - use helper's property values instead.
+            bool isHelperModeSync = legionPerformanceMode?.IsUpdatingUI == true;
+
+            // TDP slider and TDP Boost should only be enabled in Custom mode
+            // Note: TDP slider also requires tdp property to be ready (IsEnabled is set elsewhere too)
+            if (!isCustomMode)
+            {
+                TDPSlider.IsEnabled = true;
+
+                // Update display to show preset name and TDP value
+                int modeIndex = TDPModeComboBox?.SelectedIndex ?? 1;
+                string modeName = "Balanced";
+                int presetTdp = GetCurrentPresetTdpValue();
+
+                if (useCustomTDPPresets && tdpPresets != null && modeIndex >= 0 && modeIndex < tdpPresets.Count)
+                {
+                    modeName = tdpPresets[modeIndex].Name;
+                }
+                else
+                {
+                    // MSI Claw 5-preset defaults (index 0-4 = Max/Standard/Balanced/Battery/Super Battery)
+                    string[] defaultModeNames = { "Max", "Standard", "Balanced", "Battery", "Super Battery" };
+                    modeName = (modeIndex >= 0 && modeIndex < defaultModeNames.Length) ? defaultModeNames[modeIndex] : "Standard";
+                }
+
+                if (TDPValueText != null)
+                {
+                    // Always show watt value when known, regardless of preset mode
+                    TDPValueText.Text = presetTdp > 0 ? global::XboxGamingBar.OnexStrings.Format("{0}W",presetTdp) : global::XboxGamingBar.OnexStrings.Format("{0} mode",modeName);
+                }
+                if (CurrentTDPValueText != null)
+                {
+                    CurrentTDPValueText.Text = presetTdp > 0 ? global::XboxGamingBar.OnexStrings.Format("{0} ({1}W)",modeName,presetTdp) : global::XboxGamingBar.OnexStrings.Format("{0} mode",modeName);
+                }
+
+                // Set flag to prevent toggle handlers from saving forced-off state to LocalSettings
+                isUpdatingTDPMode = true;
+                try
+                {
+                    // Also disable TDP Boost in preset modes
+                    if (TDPBoostToggle != null)
+                    {
+                        TDPBoostToggle.IsEnabled = true;
+                        TDPBoostToggle.IsOn = false; // Turn off when switching to preset mode (binding handles slider visibility)
+                    }
+                }
+                finally
+                {
+                    isUpdatingTDPMode = false;
+                }
+
+                // Update XY focus to skip disabled controls
+                // TDPModeComboBox -> OSPowerModeComboBox (skip all TDP controls)
+                if (TDPModeComboBox != null && OSPowerModeComboBox != null)
+                {
+                    TDPModeComboBox.XYFocusDown = OSPowerModeComboBox;
+                    OSPowerModeComboBox.XYFocusUp = TDPModeComboBox;
+                }
+
+                // Show hint: TDP slider is inactive, user must switch to Slider mode
+                if (TDPSliderModeHint != null)
+                    TDPSliderModeHint.Visibility = Visibility.Visible;
+
+                Logger.Debug($"TDP slider disabled - using {modeName} mode");
+            }
+            else
+            {
+                // In Slider mode, enable if tdp property is ready
+                TDPSlider.IsEnabled = true;
+
+                // Hide the hint: slider is now active
+                if (TDPSliderModeHint != null)
+                    TDPSliderModeHint.Visibility = Visibility.Collapsed;
+
+                // Reset the "Limits" line — when switching into Custom mode the non-Custom
+                // branch above (or the widget's initial default-to-Balanced state) leaves
+                // a stale "Balanced mode" string here. CurrentTDPProperty pushes the real
+                // hardware values from the helper, but only on the next CurrentTDP update,
+                // which can be deferred until the user applies a setting. Pre-fill from the
+                // helper's last-known value if BatchGet already populated it; otherwise
+                // show a neutral placeholder so the user doesn't think the helper is in
+                // Balanced when it isn't.
+                if (CurrentTDPValueText != null)
+                {
+                    CurrentTDPValueText.Text = !string.IsNullOrEmpty(currentTdp?.Value) ? currentTdp.Value : global::XboxGamingBar.OnexStrings.Get("-- W");
+                }
+
+                // Re-enable TDP Boost in Custom mode
+                if (TDPBoostToggle != null) TDPBoostToggle.IsEnabled = true;
+
+                // Restore the toggle state when switching back to Custom mode.
+                // When SaveTDP is enabled, use the CURRENT PROFILE's value (source of truth) instead
+                // of LocalSettings, which stores a global value that can be stale.
+                isUpdatingTDPMode = true;
+                try
+                {
+                    var settings = ApplicationData.Current.LocalSettings;
+
+                    // Skip sending to helper when:
+                    // - isLoadingProfile: profile is being loaded, helper manages state
+                    // - isHelperModeSync: mode change came from helper pipe sync, widget's profile
+                    //   may hold stale values
+                    bool canSendToHelper = !isLoadingProfile && !isHelperModeSync;
+
+                    if (TDPBoostToggle != null)
+                    {
+                        if (SaveTDP)
+                        {
+                            // The profile's Overboost state comes from the HELPER's store (plan §5.4).
+                            // It used to be read from the widget copy, which nothing has written since
+                            // §5.4 step 1 — so this pushed a frozen value back to the helper on every
+                            // switch to Custom mode. Falls back to the helper's live property when the
+                            // snapshot has no profile for the current name (or has not arrived).
+                            var snapProfile = profileSnapshot?.GetByName(
+                                currentProfileName != null && currentProfileName.StartsWith("Game_")
+                                    ? currentProfileName.Substring("Game_".Length)
+                                    : Shared.Data.GameProfile.GLOBAL_PROFILE_NAME);
+                            bool tdpBoostState = (isHelperModeSync || snapProfile == null) && this.tdpBoostEnabled != null
+                                ? this.tdpBoostEnabled.Value
+                                : (snapProfile?.TDPBoostEnabled ?? false);
+                            TDPBoostToggle.IsOn = tdpBoostState;
+                            if (canSendToHelper)
+                                this.tdpBoostEnabled?.SetValue(tdpBoostState);
+                            Logger.Debug($"Restored TDP Boost from {(isHelperModeSync ? "helper" : "profile")} '{currentProfileName}': {tdpBoostState}");
+                        }
+                        else if (settings.Values.TryGetValue("TDPBoostEnabled", out object tdpBoostVal) && tdpBoostVal is bool tdpBoostEnabledVal)
+                        {
+                            TDPBoostToggle.IsOn = tdpBoostEnabledVal;
+                            if (canSendToHelper)
+                                this.tdpBoostEnabled?.SetValue(tdpBoostEnabledVal);
+                            Logger.Debug($"Restored TDP Boost from LocalSettings: {tdpBoostEnabledVal}");
+                        }
+                    }
+
+                }
+                finally
+                {
+                    isUpdatingTDPMode = false;
+                }
+
+                Logger.Debug($"TDP slider and TDP Boost enabled in Custom mode: {TDPSlider.IsEnabled}");
+
+                // Update display to show wattage in Custom mode
+                UpdateTDPDisplayText();
+
+                // CRITICAL FIX: Sync TDPProperty.Value with the slider's current visual value
+                // When TDP sync is skipped (preset modes), TDPProperty.Value stays at initial value (4).
+                // Profile loads set TDPSlider.Value but not TDPProperty.Value.
+                // Without this sync, Slider_ValueChanged comparison (newValue != Value) fails
+                // because the property's Value doesn't match what the user sees on screen.
+                if (tdp != null)
+                {
+                    int currentSliderValue = (int)TDPSlider.Value;
+                    tdp.StopDebounceTimer(); // Cancel any pending debounce
+                    tdp.SetValueSilent(currentSliderValue); // Update internal Value without sending
+
+                    // The ForceSetValue that used to follow is gone: the helper owns TDP and this ran on
+                    // every UpdateTDPSliderEnabledState() call, including the ones inside a profile LOAD.
+                    // Measured on a user's Claw 8 EX (2026-07-28 18:51): a Game Bar background→foreground
+                    // bounce triggered a profile reload, this pushed the slider's stale 30W at a helper
+                    // holding the user's 35W, and — 10.7s after connect, past the helper's 4s connect
+                    // guard — it was accepted, persisted and written to hardware. Keeping SetValueSilent
+                    // is deliberate: it only aligns the property's internal value with what the user sees
+                    // so Slider_ValueChanged's (newValue != Value) comparison still fires correctly.
+                    Logger.Debug($"Custom mode enabled - aligned TDP property to slider value: {currentSliderValue}W (display only)");
+                }
+
+                // Restore normal XY focus chain in Slider mode
+                // TDPModeComboBox -> TDPSlider -> TDPBoostToggle (Overboost card) -> OSPowerModeComboBox
+                if (TDPModeComboBox != null && OSPowerModeComboBox != null)
+                {
+                    TDPModeComboBox.XYFocusDown = TDPSlider;
+                    // Only when that ComboBox is actually on screen - it is Collapsed on the Claw.
+                    if (TDPModeComboBox.Visibility == Visibility.Visible)
+                        TDPSlider.XYFocusUp = TDPModeComboBox;
+                    else if (FPSStateCycleButton != null)
+                        TDPSlider.XYFocusUp = FPSStateCycleButton;
+                    TDPSlider.XYFocusDown = TDPBoostToggle;
+                    TDPBoostToggle.XYFocusUp = TDPSlider;
+                    TDPBoostToggle.XYFocusDown = OSPowerModeComboBox;
+                    OSPowerModeComboBox.XYFocusUp = TDPBoostToggle;
+                    Logger.Debug("XY focus restored for Slider mode: TDPSlider -> TDPBoostToggle -> OSPowerModeComboBox");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles Custom TDP slider changes and updates the value labels
+        /// Note: The actual value sync is handled by WidgetSliderProperty's built-in debounce
+        /// </summary>
+        private void LegionCustomTDPSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            try
+            {
+                // Update value labels immediately for visual feedback
+                if (LegionCustomTDPSlowSlider != null && LegionCustomTDPSlowValue != null)
+                {
+                    LegionCustomTDPSlowValue.Text = global::XboxGamingBar.OnexStrings.Format("{0}W",(int)LegionCustomTDPSlowSlider.Value);
+                }
+                if (LegionCustomTDPFastSlider != null && LegionCustomTDPFastValue != null)
+                {
+                    LegionCustomTDPFastValue.Text = global::XboxGamingBar.OnexStrings.Format("{0}W",(int)LegionCustomTDPFastSlider.Value);
+                }
+                if (LegionCustomTDPPeakSlider != null && LegionCustomTDPPeakValue != null)
+                {
+                    LegionCustomTDPPeakValue.Text = global::XboxGamingBar.OnexStrings.Format("{0}W",(int)LegionCustomTDPPeakSlider.Value);
+                }
+                // The WidgetSliderProperty handles debouncing and sending to helper
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in LegionCustomTDPSlider_ValueChanged: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Updates the TDP display text when slider value changes (Custom mode only)
+        /// </summary>
+        private void TDPSlider_ValueChanged_UpdateDisplay(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            // Keep the watt scale's highlight tracking the thumb.
+            if(OnexFrontend.UsesOwnBackend)RefreshOnexWattScale(TDPScaleLabels,TDPSlider);else BuildWattScaleLabels(TDPScaleLabels, TDPSlider);
+            if(OnexFrontend.UsesOwnBackend){PreviewOnexPerformancePl2Range();UpdateTDPDisplayText();return;}
+
+            // Only update display if in Custom mode and slider is enabled
+            // The slider is disabled in preset modes, so this prevents overwriting mode names
+            if (IsCustomTdpModeSelected() && TDPSlider?.IsEnabled == true)
+            {
+                UpdateTDPDisplayText();
+            }
+        }
+
+        /// <summary>
+        /// Updates TDP display text to show current wattage (for Custom mode)
+        /// </summary>
+        private void UpdateTDPDisplayText()
+        {
+            if (TDPSlider == null) return;
+
+            int tdpValue = (int)TDPSlider.Value;
+            if (TDPValueText != null)
+            {
+                TDPValueText.Text = global::XboxGamingBar.OnexStrings.Format("{0}W",tdpValue);
+            }
+            // Note: CurrentTDPValueText is updated by the helper with actual hardware limits
+            // via CurrentTDPProperty. Don't set it here - slider values would overwrite
+            // the detailed hardware readout (e.g., "S:21W F:21W L:21W").
+        }
+
+        /// <summary>
+        /// What each gyro control does, shown in the card's shared hint line while the control has focus.
+        ///
+        /// Written for someone holding the device, not for someone reading the source: each line says what
+        /// changes and what it costs, because every one of these is a trade rather than a "more is better"
+        /// slider. Kept to two lines so the reserved height in the XAML always fits.
+        /// </summary>
+        private static string GyroHintFor(string controlName)
+        {
+            switch (controlName)
+            {
+                case "LegionGyroSensitivityXSlider":
+                    return "How far a horizontal turn of the device moves the stick.";
+                case "LegionGyroSensitivityYSlider":
+                    return "How far tilting the device up or down moves the stick.";
+                case "LegionGyroDeadzoneSlider":
+                    return "Discards motion slower than this so resting sensor noise cannot nudge the "
+                         + "stick. Raise it only if the stick drifts at rest — it costs slow aiming.";
+                case "LegionGyroAntiDeadzoneSlider":
+                    return "Lifts every movement that passes the gate to at least this much stick travel, "
+                         + "so the game's own dead zone cannot swallow the first small turn.";
+                case "LegionGyroSmoothingSlider":
+                    return "Filters out hand tremor. Higher is steadier but adds a little lag.";
+                case "LegionGyroBoostButtonComboBox":
+                    return "Button that switches the gyro to the boost factor while you hold it.";
+                case "LegionGyroBoostFactorSlider":
+                    return "Sensitivity while the boost button is held — below 100% for precise aiming, "
+                         + "above for fast turns. 100% means the button does nothing.";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Shows the hint while a slider is ENGAGED — the state you enter by pressing A on it, and leave
+        /// with B.
+        ///
+        /// Two earlier attempts hung off GotFocus and neither worked. ModernSliderStyle sets
+        /// IsFocusEngagementEnabled, which makes "has focus" and "is being adjusted" two different states:
+        /// merely landing on a slider while travelling through the column is not the moment anyone wants
+        /// to read anything, and the focus events around engagement do not describe it. Engagement is the
+        /// user saying "this one" — no timer needed, and nothing appears while passing by.
+        /// </summary>
+        private void GyroHint_Engaged(object sender, FocusEngagedEventArgs e)
+        {
+            if (LegionGyroFocusHint == null) return;
+            LegionGyroFocusHint.Text = GyroHintFor((sender as FrameworkElement)?.Name ?? string.Empty);
+        }
+
+        private void GyroHint_Disengaged(object sender, FocusDisengagedEventArgs e)
+        {
+            if (LegionGyroFocusHint != null) LegionGyroFocusHint.Text = string.Empty;
+        }
+
+        // The boost-button picker is a ComboBox, which has no engagement state — A opens its list instead.
+        // Opening it is the same intent, so it drives the same line.
+        private void GyroHint_ComboOpened(object sender, object e)
+        {
+            if (LegionGyroFocusHint == null) return;
+            LegionGyroFocusHint.Text = GyroHintFor((sender as FrameworkElement)?.Name ?? string.Empty);
+        }
+
+        private void GyroHint_ComboClosed(object sender, object e)
+        {
+            if (LegionGyroFocusHint != null) LegionGyroFocusHint.Text = string.Empty;
+        }
+
+    }
+}

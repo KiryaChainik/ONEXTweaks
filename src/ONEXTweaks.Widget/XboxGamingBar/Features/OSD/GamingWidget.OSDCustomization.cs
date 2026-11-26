@@ -1,0 +1,2671 @@
+using Microsoft.Gaming.XboxGameBar;
+using Microsoft.Gaming.XboxGameBar.Input;
+using Microsoft.UI.Xaml.Controls;
+using NLog;
+using Shared.Data;
+using Shared.Utilities;
+using System;
+using ONEXTweaks.Power;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.Data.Json;
+using Windows.Foundation;
+using Windows.Foundation.Metadata;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Navigation;
+using Windows.System.Power;
+using Windows.Storage;
+using Windows.System;
+using Windows.UI.Xaml.Input;
+using System.Runtime.InteropServices;
+using Windows.UI;
+using XboxGamingBar.Data;
+using XboxGamingBar.Event;
+using XboxGamingBar.IPC;
+using XboxGamingBar.QuickSettings;
+using Shared.Enums;
+
+namespace XboxGamingBar
+{
+    public sealed partial class GamingWidget
+    {
+        // OSD configuration per level - stores which items are enabled
+        // Level 1 (Basic):             FPS, Battery, Time              — 3 cols, horizontal
+        // Level 2 (Horizontal):        FPS, Battery, CPU, Time         — 4 cols, horizontal (screenshot 2 style)
+        // Level 3 (Horizontal Custom): AppName+FPS+CPU+GPU+BAT+MEM+Time— 7 cols (IntelGameBar style)
+        // Level 4 (Vertical Custom):   All options                     — 1 col, vertical
+        private Dictionary<int, Dictionary<string, bool>> osdLevelConfig = new Dictionary<int, Dictionary<string, bool>>
+        {
+            // Levels 1-2 are fixed presets (not user-editable). Levels 3 and 4 are the two custom presets
+            // "Items to Display" configures — the preset picker there switches between them. Level 4
+            // defaults to EVERYTHING on; level 3 defaults to the 11 items that fill its 7-column layout.
+            // ControllerBattery is Legion-only and intentionally not offered on the Claw.
+            { 1, new Dictionary<string, bool> { { "AppName", false }, { "Time", true },  { "FPS", true },  { "Battery", true },  { "Memory", false }, { "VRAM", false }, { "CPU", false }, { "CPUClock", false }, { "CPUCores", false }, { "GPU", false }, { "GPUClock", false }, { "TDPLimits", false }, { "Fan", false }, { "FrametimeGraph", false }, { "FpsStats", false }, { "Blank1", false }, { "Blank2", false }, { "Blank3", false }, { "Blank4", false }, { "Blank5", false } } },
+            { 2, new Dictionary<string, bool> { { "AppName", false }, { "Time", true },  { "FPS", true },  { "Battery", true },  { "Memory", false }, { "VRAM", false }, { "CPU", true },  { "CPUClock", false }, { "CPUCores", false }, { "GPU", false }, { "GPUClock", false }, { "TDPLimits", false }, { "Fan", false }, { "FrametimeGraph", false }, { "FpsStats", false }, { "Blank1", false }, { "Blank2", false }, { "Blank3", false }, { "Blank4", false }, { "Blank5", false } } },
+            { 3, new Dictionary<string, bool> { { "AppName", true },  { "Time", true },  { "FPS", true },  { "Battery", true },  { "Memory", true },  { "VRAM", false }, { "CPU", true },  { "CPUClock", true },  { "CPUCores", false }, { "GPU", true },  { "GPUClock", true },  { "TDPLimits", true },  { "Fan", true },  { "FrametimeGraph", false }, { "FpsStats", false }, { "Blank1", true },  { "Blank2", false }, { "Blank3", false }, { "Blank4", false }, { "Blank5", false } } },
+            { 4, new Dictionary<string, bool> { { "AppName", true },  { "FPS", true },  { "FrametimeGraph", true },  { "FpsStats", true },  { "Blank1", true },  { "GPU", true },  { "Blank5", true },  { "CPU", true },  { "CPUClock", true },  { "CPUCores", true },  { "Blank2", true },  { "Memory", true },  { "Blank3", true },  { "VRAM", true },  { "TDPLimits", true },  { "Battery", true },  { "GPUClock", true },  { "Fan", true },  { "Blank4", true },  { "Time", true } } }
+        };
+
+        private Dictionary<int, string> osdCustomTags = new Dictionary<int, string>
+        {
+            { 1, "" },
+            { 2, "" },
+            { 3, "" },
+            { 4, "" }
+        };
+
+        // Per-level column settings. Only "1" still means anything to the helper: one item per row, i.e.
+        // the vertical layout itself. Horizontal layouts no longer wrap on their own — a column count is
+        // a bad proxy for width ("60 FPS" vs "TDP 17W (PL1:17W PL2:18W)") and produced breaks the user
+        // never placed and could not see here. Wrapping is done with the "↵ Row Break" items instead.
+        // These values are still sent so the helper keeps recognising the single-column case.
+        private Dictionary<int, int> osdLevelColumns = new Dictionary<int, int>
+        {
+            { 1, 3 },  // Basic:             no auto-wrap
+            { 2, 4 },  // Horizontal:        no auto-wrap
+            { 3, 7 },  // Horizontal Custom: no auto-wrap — Blank1 is enabled in the default order
+            { 4, 1 }   // Vertical Custom:   1 column = one item per row
+        };
+
+        // Which preset the "Items to Display" list edits: 3 (Horizontal Custom) or 4 (Vertical Custom),
+        // driven by OSDCustomizeLevelComboBox. Levels 1-2 are fixed presets and never appear there.
+        // Starts on 4 — same entry point the editor had before it gained the picker.
+        private int osdCustomizeLevel = 4;
+
+        // Per-level item order (list of item IDs in display order)
+        private Dictionary<int, List<string>> osdLevelOrder = new Dictionary<int, List<string>>
+        {
+            { 1, new List<string> { "AppName", "Time", "FPS", "Battery", "Memory", "VRAM", "CPU", "CPUClock", "CPUCores", "GPU", "GPUClock", "TDPLimits", "Fan", "FrametimeGraph", "FpsStats", "Blank1", "Blank2", "Blank3", "Blank4", "Blank5" } },
+            { 2, new List<string> { "FPS", "Battery", "CPU", "Time", "AppName", "Memory", "VRAM", "CPUClock", "CPUCores", "GPU", "GPUClock", "TDPLimits", "Fan", "FrametimeGraph", "FpsStats", "Blank1", "Blank2", "Blank3", "Blank4", "Blank5" } },
+            // Blank1 sits after Battery ON PURPOSE: that is exactly where the removed 7-column auto-wrap
+            // used to break this preset's default set, so the out-of-the-box look is unchanged — the
+            // break is simply visible in the list and movable now.
+            { 3, new List<string> { "AppName", "FPS", "CPU", "CPUClock", "CPUCores", "GPU", "GPUClock", "Battery", "Blank1", "Memory", "Time", "VRAM", "TDPLimits", "Fan", "FrametimeGraph", "FpsStats", "Blank2", "Blank3", "Blank4", "Blank5" } },
+            { 4, new List<string> { "AppName", "FPS", "FrametimeGraph", "FpsStats", "Blank1", "GPU", "Blank5", "CPU", "CPUClock", "CPUCores", "Blank2", "TDPLimits", "Blank3", "Memory", "VRAM", "Battery", "GPUClock", "Fan", "Blank4", "Time" } }
+        };
+
+        // Per-level item label colors (DEFAULT = use global text color)
+        private Dictionary<int, Dictionary<string, string>> osdItemLabelColors = new Dictionary<int, Dictionary<string, string>>
+        {
+            { 1, new Dictionary<string, string>() },
+            { 2, new Dictionary<string, string>() },
+            { 3, new Dictionary<string, string>() },
+            { 4, new Dictionary<string, string>() }
+        };
+
+        // Item display names for UI
+        private static readonly Dictionary<string, string> osdItemDisplayNames = new Dictionary<string, string>
+        {
+            { "AppName", "App Name (D3D11, Vulkan, etc.)" },
+            { "Time", "Time" },
+            { "FPS", "FPS & Frametime" },
+            { "Battery", "Battery" },
+            { "Memory", "Memory (RAM)" },
+            { "VRAM", "VRAM (GPU Memory)" },
+            { "CPU", "CPU (Usage, Temp)" },
+            { "CPUClock", "CPU Clock Speed" },
+            { "CPUCores", "CPU Per-Core Clocks (P/E)" },
+            { "GPU", "GPU (Usage, Wattage, Temp)" },
+            { "GPUClock", "GPU Clock Speed" },
+            { "TDPLimits", "TDP (Watts, PL1/PL2)" },
+            { "Fan", "Fan Speed (%)" },
+            { "FrametimeGraph", "Frametime Graph" },
+            { "FpsStats", "FPS Stats (recent 1024 frames: min, avg, max, 1% low)" },
+            { "Blank1", "---------------- Blank 1 --------------" },
+            { "Blank2", "---------------- Blank 2 --------------" },
+            { "Blank3", "---------------- Blank 3 --------------" },
+            { "Blank4", "---------------- Blank 4 --------------" },
+            { "Blank5", "---------------- Blank 5 --------------" }
+        };
+
+        // Observable collection for OSD items UI
+        private ObservableCollection<OSDItemViewModel> osdItemViewModels = new ObservableCollection<OSDItemViewModel>();
+
+        // Global OSD layout settings
+        private int osdTextSize = 150;    // Percentage: 50=Small, 100=Medium, 125=Medium-Large, 150=Default, 175=Large, 200=X-Large, 250=XX-Large, 300=XXX-Large
+        // RTSS overlay font (applied helper-side to the RTSS Global profile). Default = Bahnschrift
+        // (ships with Win 10/11; helper falls back to RTSS's Unispace if it isn't installed). The
+        // Bahnschrift variants bake the weight into the face name, so weight stays 400 for all of them.
+        private string osdFont = "Bahnschrift";
+        private int osdFontWeight = 400;  // Bahnschrift named instances all use 400 (weight is in the face name)
+        private string osdTextColor = "DYNAMIC";  // DYNAMIC = value-based colors, or hex color code
+        private string osdLabelColor = "DEFAULT";  // DEFAULT = use item-specific colors, or hex color code
+        private int osdProvider = 0;  // 0=RTSS, 1=AMD
+        private int amdOverlayLevel = 0;  // Track AMD overlay level: 0=Off, 1-4=Level 1-4 (can't query from AMD)
+        private bool isOSDCustomizeExpanded = false;
+        private bool isProTipsExpanded = false;
+        private bool isProfileDetectionExpanded = false;
+        private bool isProfileSettingsExpanded = false;
+        private bool isTDPSettingsExpanded = false;
+        private bool isColorSettingsExpanded = false;
+        private bool isButtonRemappingExpanded = false;
+        private bool isGyroSettingsExpanded = false;
+        private bool isSavedProfilesExpanded = false;
+        private bool isSpecialRemappingExpanded = false;
+        private bool isStickDeadzonesExpanded = false;
+        private bool isTouchpadVibrationExpanded = false;
+        private bool isLightingExpanded = false;
+        private bool isFanCurveExpanded = false;
+        private bool isControllerEmulationExpanded = false;
+        private bool isControllerEmulationInputNotesExpanded = false;
+        private bool fanCurveGraphInitialized = false;
+
+        // Display and OSD settings
+        private bool adaptiveBrightnessEnabled = false;
+        private bool osdPositionShiftEnabled = false;
+        private bool frametimeGraphPinned = false;
+        private int osdOpacity = 100; // percentage 10-100
+        private bool osdBackgroundEnabled = false; // RTSS native OSD fill ([OSD] EnableFill)
+        private int osdBackgroundOpacity = 60; // percentage 10-100 ([OSD] FillColor alpha)
+        private bool isLoadingOLEDSettings = false;
+        private bool isLoadingPerformanceOverlaySetting = false;
+        private readonly Windows.UI.Xaml.Shapes.Ellipse[] fanCurvePoints = new Windows.UI.Xaml.Shapes.Ellipse[10];
+        private int[] currentFanCurveValues = new int[10];
+        private int draggedPointIndex = -1;
+        private bool isDraggingPoint = false;
+
+        // Legion Go fan curve temperature thresholds (°C) - FIXED by EC at 10°C increments
+        private static readonly int[] FanCurveTemperatures = { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+        // Minimum fan speeds - set to 0 since EC enforces its own thermal protection floor
+        // EC override floor: 0-44°C=0%, 45°C=27%, 50°C=40%, 55°C=55%, 60°C=65%, 70°C=85%, 80+°C=100%
+        private static readonly int[] FanCurveMinSpeeds = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        // EC Override Floor points: (temperature, minimum fan %) - what the EC enforces regardless of user curve
+        private static readonly (int temp, int floor)[] ECFloorPoints = new[]
+        {
+            (10, 0), (20, 0), (30, 0), (44, 0),
+            (45, 27), (50, 40), (55, 55), (60, 65), (70, 85),
+            (80, 100), (90, 100), (100, 100)
+        };
+        // Fan curve preset definitions (values are fan % for temps 10,20,30,40,50,60,70,80,90,100°C)
+        private static readonly Dictionary<string, int[]> FanCurvePresets = new Dictionary<string, int[]>
+        {
+            { "Silent", new int[] { 0, 0, 0, 27, 30, 40, 55, 65, 80, 100 } },       // Silent (Safe)
+            { "Balanced", new int[] { 0, 0, 25, 30, 35, 45, 55, 70, 85, 100 } },    // Balanced
+            { "Performance", new int[] { 30, 35, 40, 45, 50, 60, 70, 80, 90, 100 } }, // Performance
+            { "MaxCooling", new int[] { 40, 45, 50, 55, 60, 70, 80, 90, 100, 100 } }  // Max Cooling
+        };
+        private string currentFanCurvePreset = "Custom";
+        private bool isFanCurvePresetLoading = false;
+        private bool isTDPExtrasExpanded = false;
+        private bool isCPUExtrasExpanded = false;
+        private bool isDebugExpanded = false;
+        private bool isLoadingTDPLimits = false;
+        private bool isLoadingPowerPlans = false;
+        private List<PowerPlanItem> availablePowerPlans = new List<PowerPlanItem>();
+        private Guid acPowerPlanGuid = Guid.Empty;
+        private Guid dcPowerPlanGuid = Guid.Empty;
+        private bool powerPlanAutoSwitch = false; // Default to OFF - will be loaded from settings
+        private int deviceTDPMin = 4;
+        private int deviceTDPMax = 35;
+        private DispatcherTimer tdpLimitsDebounceTimer;
+        private const int TDP_LIMITS_DEBOUNCE_MS = 300;
+        private DispatcherTimer osdBackgroundDebounceTimer;
+        private const int OSD_BACKGROUND_DEBOUNCE_MS = 300;
+
+        // TDP Custom Presets
+        private bool useCustomTDPPresets = false;
+        private bool useLenovoModes = true; // Default to using Lenovo hardware modes for built-in presets
+        private List<Shared.Data.TdpPreset> tdpPresets = new List<Shared.Data.TdpPreset>();
+        private Shared.Data.TdpPreset editingPreset = null;
+        private int editingPresetIndex = -1;
+
+        private bool _isLoadingOSDConfig;
+
+        private bool isLoadingOSDConfig
+        {
+            get => _isLoadingOSDConfig || System.Threading.Volatile.Read(ref _onexOverlayConfigurationFlushes) != 0;
+            set => _isLoadingOSDConfig = value;
+        }
+
+        private void OSDCustomizeLevelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Don't process during initialization - LoadOSDConfigFromStorage will handle it
+            if (isLoadingOSDConfig) return;
+
+            if (OSDCustomizeLevelComboBox?.SelectedItem is ComboBoxItem selected && selected.Tag is string tagStr)
+            {
+                if (int.TryParse(tagStr, out int level))
+                {
+                    LoadOSDOptionsForLevel(level);
+                    UpdateOsdCustomizeLevelHint();
+                    UpdateOnexOverlayPresetUi();
+                    // Note: This is only for RTSS customization - AMD overlay doesn't have configurable levels
+                }
+            }
+        }
+
+        /// <summary>
+        /// Points the "Items to Display" editor at the overlay preset that is ACTIVE right now. Without
+        /// this the editor opens on whatever it was left on, and since the two custom presets hold the
+        /// same item list they are easy to confuse — editing the wrong one looks like the overlay simply
+        /// ignoring the change. Levels 0-2 (Off / the two fixed presets) cannot be edited; the picker
+        /// then keeps its current target and the hint underneath says so instead of silently lying.
+        /// </summary>
+        private void SyncOsdCustomizeLevelToActiveOverlay()
+        {
+            if (OSDCustomizeLevelComboBox == null) return;
+
+            int active = PerformanceOverlayComboBox?.SelectedIndex ?? -1;
+            if (active == 3 || active == 4 || OnexFrontend.UsesOwnBackend && (active == 1 || active == 2))
+            {
+                foreach (var obj in OSDCustomizeLevelComboBox.Items)
+                {
+                    if (obj is ComboBoxItem item && item.Tag is string tag &&
+                        int.TryParse(tag, out int lvl) && lvl == active)
+                    {
+                        // Fires SelectionChanged -> LoadOSDOptionsForLevel (+ hint) when it really changes.
+                        if (!ReferenceEquals(OSDCustomizeLevelComboBox.SelectedItem, item))
+                            OSDCustomizeLevelComboBox.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
+
+            UpdateOsdCustomizeLevelHint();
+        }
+
+        /// <summary>States whether the preset being edited is the one currently on screen.</summary>
+        private void UpdateOsdCustomizeLevelHint()
+        {
+            if (OSDCustomizeLevelHint == null) return;
+            if(OnexFrontend.UsesOwnBackend)
+            {
+                int current=PerformanceOverlayComboBox?.SelectedIndex??0;
+                OSDCustomizeLevelHint.Text=osdCustomizeLevel<3
+                    ?global::XboxGamingBar.OnexStrings.Get("Готовый набор показателей. Для своего порядка и состава выберите «Свои строки» или «Своя колонка».")
+                    :(current==osdCustomizeLevel?global::XboxGamingBar.OnexStrings.Get("Этот макет сейчас включён в игре."):global::XboxGamingBar.OnexStrings.Format("Редактируется «{0}». В игре сейчас «{1}».",OnexOverlayFriendlyNames[osdCustomizeLevel],OnexOverlayFriendlyNames[Math.Max(0,Math.Min(4,current))]));
+                return;
+            }
+
+            string[] labels = { "Off", "Basic", "Horizontal", "Horizontal Custom", "Vertical Custom" };
+            int active = PerformanceOverlayComboBox?.SelectedIndex ?? -1;
+            string editing = osdCustomizeLevel == 3 ? "Horizontal Custom" : "Vertical Custom";
+
+            if (active == osdCustomizeLevel)
+                OSDCustomizeLevelHint.Text = global::XboxGamingBar.OnexStrings.Get("Editing the overlay that is active right now.");
+            else if (active >= 0 && active < labels.Length)
+                OSDCustomizeLevelHint.Text = global::XboxGamingBar.OnexStrings.Format("The active overlay is \"{0}\" — these changes apply to \"{1}\".",labels[active],editing);
+            else
+                OSDCustomizeLevelHint.Text = global::XboxGamingBar.OnexStrings.Format("Editing \"{0}\".",editing);
+        }
+
+        private void OSDProviderComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+
+            if (OSDProviderComboBox?.SelectedItem is ComboBoxItem selected && selected.Tag is string tagStr)
+            {
+                if (int.TryParse(tagStr, out int provider))
+                {
+                    int previousProvider = osdProvider;
+                    osdProvider = provider;
+
+                    // Save to storage
+                    try
+                    {
+                        ApplicationData.Current.LocalSettings.Values["OSD_Provider"] = osdProvider;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error($"Error saving OSD provider: {ex.Message}");
+                    }
+
+                    // Update UI visibility
+                    UpdateOSDProviderUI();
+
+                    // When switching providers, disable the other one
+                    if (provider == 0) // RTSS
+                    {
+                        // Disable AMD overlay if it was enabled (send Ctrl+Shift+O to toggle off)
+                        if (previousProvider == 1 && amdOverlayLevel > 0)
+                        {
+                            SendAMDOverlayToggle();
+                            amdOverlayLevel = 0;
+                            SaveAMDOverlayLevel();
+                        }
+                        // Enable RTSS OSD by sending config
+                        SendOSDConfigToHelper();
+                    }
+                    else if (provider == 1) // AMD
+                    {
+                        // Disable RTSS OSD by setting level to 0
+                        if (osd != null)
+                        {
+                            osd.SetValue(0);
+                        }
+                        // Don't auto-toggle AMD overlay - we can't know its actual state
+                        // User should manually enable via Quick Settings tile if needed
+                    }
+
+                    // Update Quick Settings tiles
+                    UpdateQuickSettingsTileStates();
+
+                    Logger.Info($"OSD Provider changed to: {(provider == 0 ? "RTSS" : "AMD")}");
+                }
+            }
+        }
+
+        private void UpdateOSDProviderUI()
+        {
+            if (RTSSOptionsPanel != null)
+            {
+                RTSSOptionsPanel.Visibility = osdProvider == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            if (AMDOptionsPanel != null)
+            {
+                AMDOptionsPanel.Visibility = osdProvider == 1 ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        private async void SendAMDOverlayToggle()
+        {
+            // Send Ctrl+Shift+O to toggle AMD Adrenaline's metrics overlay on/off
+            // Use helper's InputInjector since UWP widget can't use SendInput directly
+            try
+            {
+                if (App.IsConnected)
+                {
+                    var request = new Windows.Foundation.Collections.ValueSet();
+                    request.Add("SendKeyboardShortcut", "Ctrl+Shift+O");
+                    await App.SendMessageAsync(request);
+                    Logger.Info("Sent AMD overlay toggle hotkey (Ctrl+Shift+O) via helper");
+                }
+                else
+                {
+                    Logger.Warn("Cannot send AMD overlay toggle - not connected to helper");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error sending AMD overlay toggle: {ex.Message}");
+            }
+        }
+
+        private async void CycleAMDOverlayLevel()
+        {
+            // Send Ctrl+Shift+X to cycle AMD Adrenaline's metrics overlay levels
+            // Use helper's InputInjector since UWP widget can't use SendInput directly
+            try
+            {
+                if (App.IsConnected)
+                {
+                    var request = new Windows.Foundation.Collections.ValueSet();
+                    request.Add("SendKeyboardShortcut", "Ctrl+Shift+X");
+                    await App.SendMessageAsync(request);
+                    Logger.Info("Sent AMD overlay cycle hotkey (Ctrl+Shift+X) via helper");
+                }
+                else
+                {
+                    Logger.Warn("Cannot cycle AMD overlay level - not connected to helper");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error cycling AMD overlay level: {ex.Message}");
+            }
+        }
+
+        private void LoadOSDOptionsForLevel(int level)
+        {
+            if (!osdLevelConfig.ContainsKey(level)) return;
+            bool priorLoading=_isLoadingOSDConfig;
+            isLoadingOSDConfig = true;
+            try
+            {
+                // Update the current level
+                osdCustomizeLevel = level;
+
+                // Refresh the OSD items control with current level's order and states
+                RefreshOSDItemsControl();
+
+                if (OSDCustomTagsTextBox != null) OSDCustomTagsTextBox.Text = osdCustomTags.GetValueOrDefault(level, "");
+
+                // Load columns for this level
+                int columns = osdLevelColumns.GetValueOrDefault(level, 3);
+                if (OSDColumnsComboBox != null)
+                {
+                    foreach (ComboBoxItem item in OSDColumnsComboBox.Items)
+                    {
+                        if (item.Tag is string tag && int.TryParse(tag, out int val) && val == columns)
+                        {
+                            OSDColumnsComboBox.SelectedItem = item;
+                            break;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                isLoadingOSDConfig = priorLoading;
+            }
+        }
+
+        private void OSDOption_Changed(object sender, RoutedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+
+            SaveCurrentOSDConfig();
+        }
+
+        /// <summary>
+        /// Refreshes the OSD items control with the current level's order and enabled states
+        /// </summary>
+        private long _onexOverlayRowsCreated, _onexOverlayRowsReused;
+        private void RefreshOSDItemsControl()
+        {
+            if (OSDItemsControl == null) return;
+
+            int currentLevel = osdCustomizeLevel;
+            if (!osdLevelOrder.ContainsKey(currentLevel)) return;
+
+            var order = osdLevelOrder[currentLevel];
+            if (!osdLevelConfig.ContainsKey(currentLevel))
+            {
+                osdLevelConfig[currentLevel] = new Dictionary<string, bool>();
+            }
+            var config = osdLevelConfig[currentLevel];
+
+            // Keep realised rows when the metric order has not changed. A page
+            // read is not a reason to discard every checkbox/button container.
+            bool reuse = OnexFrontend.UsesOwnBackend && osdItemViewModels.Count == order.Count;
+            if (reuse) for (int i = 0; i < order.Count; i++)
+                if (osdItemViewModels[i].Id != order[i]) { reuse = false; break; }
+            if (!reuse) osdItemViewModels.Clear();
+            var labelColors = osdItemLabelColors.ContainsKey(currentLevel) ? osdItemLabelColors[currentLevel] : new Dictionary<string, string>();
+            for (int i = 0; i < order.Count; i++)
+            {
+                var id = order[i];
+                var row = reuse ? osdItemViewModels[i] : new OSDItemViewModel { Id = id };
+                string name = OsdItemDisplayName(id, currentLevel);
+                bool enabled = config.ContainsKey(id) && config[id];
+                string color = labelColors.ContainsKey(id) ? labelColors[id] : "DEFAULT";
+                if (row.DisplayName != name) row.DisplayName = name;
+                if (row.IsEnabled != enabled) row.IsEnabled = enabled;
+                if (row.CanMoveUp != (i > 0)) row.CanMoveUp = i > 0;
+                if (row.CanMoveDown != (i < order.Count - 1)) row.CanMoveDown = i < order.Count - 1;
+                if (row.LabelColor != color) row.LabelColor = color;
+                if (!reuse) { osdItemViewModels.Add(row); _onexOverlayRowsCreated++; }
+            }
+            if (reuse) _onexOverlayRowsReused += order.Count;
+            if (!ReferenceEquals(OSDItemsControl.ItemsSource, osdItemViewModels))
+                OSDItemsControl.ItemsSource = osdItemViewModels;
+        }
+
+        /// <summary>
+        /// Label for one item in the editor. The Blank items do different jobs per preset — an empty
+        /// spacer row in the single-column Vertical Custom, an explicit row break in the horizontal
+        /// layouts — so they are named after what they actually do in the preset being edited.
+        /// </summary>
+        private static string OsdItemDisplayName(string id, int level)
+        {
+            if(OnexFrontend.UsesOwnBackend)return OnexOverlayMetricName(id,level);
+            if (level != 4 && id.StartsWith("Blank"))
+                return $"↵ Row Break {id.Substring("Blank".Length)}";
+
+            // Horizontal layouts render FPS without the inline frametime (that's the separate
+            // Frametime Graph item there), so don't promise a frametime in the label either.
+            if (level != 4 && id == "FPS")
+                return "FPS";
+
+            return osdItemDisplayNames.ContainsKey(id) ? osdItemDisplayNames[id] : id;
+        }
+
+        private void OSDItemCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+
+            if (sender is CheckBox cb && cb.Tag is string itemId)
+            {
+                int currentLevel = osdCustomizeLevel;
+                if (!osdLevelConfig.ContainsKey(currentLevel))
+                {
+                    osdLevelConfig[currentLevel] = new Dictionary<string, bool>();
+                }
+                osdLevelConfig[currentLevel][itemId] = cb.IsChecked == true;
+
+                SaveOSDConfigToStorage();
+                SendOSDConfigToHelper();
+            }
+        }
+
+        private void OSDItemMoveUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string itemId)
+                MoveOsdItem(itemId, -1);
+        }
+
+        private void OSDItemMoveDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string itemId)
+                MoveOsdItem(itemId, +1);
+        }
+
+        /// <summary>
+        /// Moves one item up (dir = -1) or down (dir = +1) and KEEPS FOCUS ON THE MOVED ITEM's button,
+        /// so an item can be walked from one end of the list to the other with repeated presses.
+        ///
+        /// THE CONTAINERS MUST NOT BE TOUCHED — that is the whole point of this method's shape.
+        /// Neither rebuilding the collection (the original code) nor ObservableCollection.Move (the
+        /// first attempt at a fix) works: UWP's ItemsControl turns a Move notification into a
+        /// remove + re-insert, so the container holding the focused button is destroyed either way.
+        /// A mouse click survives that (nothing visibly owns focus), a gamepad A press does not —
+        /// with the focused element gone the framework re-homes focus to the next thing in the tree,
+        /// which is the panel BELOW the list. That is the "jumps down, but only on A" report, and no
+        /// amount of re-focusing afterwards fixes it reliably because the container we want to focus
+        /// may not be realised yet at that moment.
+        ///
+        /// So instead of moving the view models, the two neighbours SWAP their payload in place. Every
+        /// container stays exactly where it is, focus is never destroyed, and the button to focus is in
+        /// an already-realised container one row away. See also RestoreFocusDeferred in
+        /// GamingWidget.GamepadButtonRemapping.cs, where the same class of bug was likewise fixed by
+        /// removing the teardown rather than by re-focusing harder.
+        /// </summary>
+        private void MoveOsdItem(string itemId, int dir)
+        {
+            int currentLevel = osdCustomizeLevel;
+            if (!osdLevelOrder.ContainsKey(currentLevel)) return;
+
+            var order = osdLevelOrder[currentLevel];
+            int index = order.IndexOf(itemId);
+            int target = index + dir;
+            if (index < 0 || target < 0 || target >= order.Count) return;
+
+            order.RemoveAt(index);
+            order.Insert(target, itemId);
+
+            int vmIndex = -1;
+            for (int i = 0; i < osdItemViewModels.Count; i++)
+            {
+                if (osdItemViewModels[i].Id == itemId) { vmIndex = i; break; }
+            }
+            int vmTarget = vmIndex + dir;
+            if (vmIndex < 0 || vmTarget < 0 || vmTarget >= osdItemViewModels.Count)
+            {
+                RefreshOSDItemsControl();   // fallback: collection out of sync with the order list
+                SaveOSDConfigToStorage();
+                SendOSDConfigToHelper();
+                return;
+            }
+
+            // Swapping IsEnabled drives the two-way IsChecked binding, which raises Checked/Unchecked.
+            // Suppress that: the checkbox handler would otherwise write an enabled state against
+            // whichever Id happened to have propagated first.
+            bool wasLoading = _isLoadingOSDConfig;
+            isLoadingOSDConfig = true;
+            try
+            {
+                SwapOsdItemPayload(osdItemViewModels[vmIndex], osdItemViewModels[vmTarget]);
+                for (int i = 0; i < osdItemViewModels.Count; i++)
+                {
+                    osdItemViewModels[i].CanMoveUp = i > 0;
+                    osdItemViewModels[i].CanMoveDown = i < osdItemViewModels.Count - 1;
+                }
+            }
+            finally
+            {
+                isLoadingOSDConfig = wasLoading;
+            }
+
+            FocusOsdItemMoveButton(vmTarget, dir < 0);
+
+            SaveOSDConfigToStorage();
+            SendOSDConfigToHelper();
+        }
+
+        /// <summary>Exchanges everything that identifies an item between two view models (see MoveOsdItem).</summary>
+        private static void SwapOsdItemPayload(OSDItemViewModel a, OSDItemViewModel b)
+        {
+            string id = a.Id;            a.Id = b.Id;                   b.Id = id;
+            string name = a.DisplayName; a.DisplayName = b.DisplayName; b.DisplayName = name;
+            bool enabled = a.IsEnabled;  a.IsEnabled = b.IsEnabled;     b.IsEnabled = enabled;
+            string color = a.LabelColor; a.LabelColor = b.LabelColor;   b.LabelColor = color;
+        }
+
+        /// <summary>
+        /// Puts focus on the up/down button of the row the item just landed on. Falls back to the
+        /// opposite button when the preferred one just became disabled (the item hit the top or bottom).
+        /// Runs once synchronously and once more deferred: the synchronous pass is what keeps a rapid
+        /// sequence of presses responsive, the deferred one re-asserts in case the framework still had
+        /// focus work queued behind the key event.
+        /// </summary>
+        private void FocusOsdItemMoveButton(int index, bool preferUp)
+        {
+            if (OSDItemsControl == null) return;
+
+            FocusOsdItemMoveButtonNow(index, preferUp);
+            var ignore = Dispatcher.RunAsync(CoreDispatcherPriority.Low,
+                () => FocusOsdItemMoveButtonNow(index, preferUp));
+        }
+
+        private void FocusOsdItemMoveButtonNow(int index, bool preferUp)
+        {
+            try
+            {
+                if (OSDItemsControl == null || index < 0 || index >= osdItemViewModels.Count) return;
+
+                var container = OSDItemsControl.ContainerFromIndex(index);
+                if (container == null) return;
+
+                var up = FindDescendantByName(container, "OsdItemMoveUpButton") as Button;
+                var down = FindDescendantByName(container, "OsdItemMoveDownButton") as Button;
+                var preferred = preferUp ? up : down;
+                var fallback = preferUp ? down : up;
+
+                var focusTarget = (preferred != null && preferred.IsEnabled) ? preferred : fallback;
+                focusTarget?.Focus(FocusState.Programmatic);
+            }
+            catch { /* focus is cosmetic — never break reordering over it */ }
+        }
+
+        private void OSDItemLabelColor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+
+            if (sender is ComboBox cb && cb.Tag is string itemId && cb.SelectedItem is ComboBoxItem selected && selected.Tag is string colorTag)
+            {
+                int currentLevel = osdCustomizeLevel;
+                if (!osdItemLabelColors.ContainsKey(currentLevel))
+                {
+                    osdItemLabelColors[currentLevel] = new Dictionary<string, string>();
+                }
+                osdItemLabelColors[currentLevel][itemId] = colorTag;
+
+                // Update the view model to refresh the preview
+                var vm = osdItemViewModels.FirstOrDefault(v => v.Id == itemId);
+                if (vm != null) vm.LabelColor = colorTag;
+
+                SaveOSDConfigToStorage();
+                SendOSDConfigToHelper();
+            }
+        }
+
+        private void OSDCustomTagsTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+
+            SaveCurrentOSDConfig();
+        }
+
+        private void SaveCurrentOSDConfig()
+        {
+            int level = osdCustomizeLevel;
+
+            // Item enabled states are already in osdLevelConfig (updated by OSDItemCheckBox_Changed)
+            // Just save custom tags and columns here
+
+            osdCustomTags[level] = OSDCustomTagsTextBox?.Text ?? "";
+
+            // Save columns for this level
+            if (OSDColumnsComboBox?.SelectedItem is ComboBoxItem colItem && colItem.Tag is string colTag)
+            {
+                if (int.TryParse(colTag, out int cols))
+                {
+                    osdLevelColumns[level] = cols;
+                }
+            }
+
+            SaveOSDConfigToStorage();
+            SendOSDConfigToHelper();
+        }
+
+        private void SaveOSDConfigToStorage()
+        {
+            try
+            {
+                var settings = ApplicationData.Current.LocalSettings;
+
+                foreach (var level in osdLevelConfig.Keys)
+                {
+                    var config = osdLevelConfig[level];
+                    foreach (var item in config)
+                    {
+                        settings.Values[$"OSD_L{level}_{item.Key}"] = item.Value;
+                    }
+                    settings.Values[$"OSD_L{level}_CustomTags"] = osdCustomTags.GetValueOrDefault(level, "");
+                    settings.Values[$"OSD_L{level}_Columns"] = osdLevelColumns.GetValueOrDefault(level, 3);
+
+                    // Save item order
+                    if (osdLevelOrder.ContainsKey(level))
+                    {
+                        settings.Values[$"OSD_L{level}_Order"] = string.Join(",", osdLevelOrder[level]);
+                    }
+
+                    // Save item label colors
+                    if (osdItemLabelColors.ContainsKey(level))
+                    {
+                        foreach (var colorItem in osdItemLabelColors[level])
+                        {
+                            settings.Values[$"OSD_L{level}_{colorItem.Key}_Color"] = colorItem.Value;
+                        }
+                    }
+                }
+
+                // Save global layout settings (text size is per-resolution)
+                string currentRes = resolution?.Value ?? "default";
+                settings.Values[$"OSD_TextSize_{currentRes}"] = osdTextSize;
+                settings.Values["OSD_Font"] = osdFont;
+                settings.Values["OSD_FontWeight"] = osdFontWeight;
+                settings.Values["OSD_TextColor"] = osdTextColor;
+                settings.Values["OSD_LabelColor"] = osdLabelColor;
+                settings.Values["OSD_Opacity"] = osdOpacity;
+                settings.Values["OSD_BackgroundEnabled"] = osdBackgroundEnabled;
+                settings.Values["OSD_BackgroundOpacity"] = osdBackgroundOpacity;
+                settings.Values["OSD_FrametimeGraphPinned"] = frametimeGraphPinned;
+
+                Logger.Info($"OSD configuration saved to storage (resolution: {currentRes}, text size: {osdTextSize}, opacity: {osdOpacity})");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error saving OSD config: {ex.Message}");
+            }
+        }
+
+        private void LoadOSDConfigFromStorage()
+        {
+            try
+            {
+                var settings = ApplicationData.Current.LocalSettings;
+
+                // One-time reset: bump this whenever we ship a new default OSD layout so existing users
+                // get the new defaults instead of their stale saved config. All OSD_* keys are wiped;
+                // the rest of this method then finds nothing stored and keeps the new in-memory defaults.
+                const int CurrentOsdConfigVersion = 6; // v6: added Fan (RPM) — default ON in H.Detailed + Full
+                int storedOsdVersion = (settings.Values.TryGetValue("OSD_ConfigVersion", out var osdVerObj) && osdVerObj is int osdVer) ? osdVer : 0;
+                if (storedOsdVersion < CurrentOsdConfigVersion)
+                {
+                    foreach (var staleKey in settings.Values.Keys.Where(k => k.StartsWith("OSD_") && k != "OSD_ConfigVersion").ToList())
+                        settings.Values.Remove(staleKey);
+                    settings.Values["OSD_ConfigVersion"] = CurrentOsdConfigVersion;
+                    Logger.Info($"OSD config reset to v{CurrentOsdConfigVersion} defaults (was v{storedOsdVersion}) — stale OSD settings wiped");
+                }
+
+                var itemKeys = new[] { "AppName", "Time", "FPS", "Battery", "Memory", "VRAM", "CPU", "CPUClock", "CPUCores", "GPU", "GPUClock", "TDPLimits", "Fan", "FrametimeGraph", "FpsStats", "Blank1", "Blank2", "Blank3", "Blank4", "Blank5" };
+
+                foreach (var level in new[] { 1, 2, 3, 4 })
+                {
+                    if (!osdLevelConfig.ContainsKey(level))
+                    {
+                        osdLevelConfig[level] = new Dictionary<string, bool>();
+                    }
+
+                    foreach (var key in itemKeys)
+                    {
+                        string settingKey = $"OSD_L{level}_{key}";
+                        if (settings.Values.TryGetValue(settingKey, out object val) && val is bool enabled)
+                        {
+                            osdLevelConfig[level][key] = enabled;
+                        }
+                    }
+
+                    string customTagsKey = $"OSD_L{level}_CustomTags";
+                    if (settings.Values.TryGetValue(customTagsKey, out object tagsVal) && tagsVal is string tags)
+                    {
+                        osdCustomTags[level] = tags;
+                    }
+
+                    // Load per-level columns
+                    string columnsKey = $"OSD_L{level}_Columns";
+                    if (settings.Values.TryGetValue(columnsKey, out object colsVal) && colsVal is int levelCols)
+                    {
+                        osdLevelColumns[level] = levelCols;
+                    }
+
+                    // Load per-level order
+                    string orderKey = $"OSD_L{level}_Order";
+                    if (settings.Values.TryGetValue(orderKey, out object orderVal) && orderVal is string orderStr)
+                    {
+                        var saved = orderStr.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+                        // Keep the user's saved order but drop unknown keys and append any newly added
+                        // items (e.g. CPUCores) so the order survives item additions instead of being
+                        // discarded outright.
+                        var merged = saved.Where(k => itemKeys.Contains(k)).ToList();
+                        foreach (var k in itemKeys)
+                            if (!merged.Contains(k)) merged.Add(k);
+                        osdLevelOrder[level] = merged;
+                    }
+
+                    // Load per-level item label colors
+                    if (!osdItemLabelColors.ContainsKey(level))
+                    {
+                        osdItemLabelColors[level] = new Dictionary<string, string>();
+                    }
+                    foreach (var key in itemKeys)
+                    {
+                        string colorKey = $"OSD_L{level}_{key}_Color";
+                        if (settings.Values.TryGetValue(colorKey, out object colorVal) && colorVal is string color)
+                        {
+                            osdItemLabelColors[level][key] = color;
+                        }
+                    }
+                }
+
+                // One-time migration: the old "Default" overlay size was 125%. Bahnschrift
+                // renders noticeably smaller, so the default is now 150% (the former "Large").
+                // Bump any saved 125% ("old default") to 150% exactly once — guarded by a flag so
+                // a later deliberate "Medium-Large" (125%) pick is never re-bumped.
+                try
+                {
+                    const string migFlag = "OSD_TextSize_DefaultBumpedTo150";
+                    if (!(settings.Values.TryGetValue(migFlag, out object migDone) && migDone is bool mb && mb))
+                    {
+                        foreach (var key in settings.Values.Keys
+                                     .Where(k => k.StartsWith("OSD_TextSize_", StringComparison.Ordinal)).ToList())
+                        {
+                            if (settings.Values[key] is int v && v == 125)
+                            {
+                                settings.Values[key] = 150;
+                                Logger.Info($"OSD size migration: bumped {key} 125 -> 150");
+                            }
+                        }
+                        settings.Values[migFlag] = true;
+                    }
+                }
+                catch (Exception ex) { Logger.Warn($"OSD size migration failed: {ex.Message}"); }
+
+                // Load global layout settings (text size is per-resolution)
+                string currentRes = resolution?.Value ?? "default";
+                string textSizeKey = $"OSD_TextSize_{currentRes}";
+                if (settings.Values.TryGetValue(textSizeKey, out object sizeVal) && sizeVal is int size)
+                {
+                    osdTextSize = size;
+                    Logger.Info($"Loaded OSD text size {osdTextSize} for resolution {currentRes}");
+                }
+                else
+                {
+                    // Default to 150 ("Default", = former "Large") if no per-resolution setting exists.
+                    // Bahnschrift renders small, so 150% is the baseline.
+                    osdTextSize = 150;
+                    Logger.Info($"No OSD text size saved for resolution {currentRes}, using default 150");
+                }
+                if (settings.Values.TryGetValue("OSD_Font", out object fontVal) && fontVal is string fontFace && !string.IsNullOrWhiteSpace(fontFace))
+                {
+                    osdFont = fontFace;
+                }
+                if (settings.Values.TryGetValue("OSD_FontWeight", out object fontWeightVal) && fontWeightVal is int fontWeight && fontWeight > 0)
+                {
+                    osdFontWeight = fontWeight;
+                }
+                // Cascadia Mono was fully replaced by Bahnschrift — migrate any saved Cascadia selection
+                // (and its non-400 weight) so existing users move over without keeping the old overlay font.
+                if (osdFont != null && osdFont.StartsWith("Cascadia", StringComparison.OrdinalIgnoreCase))
+                {
+                    osdFont = "Bahnschrift";
+                    osdFontWeight = 400;
+                }
+                if (settings.Values.TryGetValue("OSD_TextColor", out object textColorVal) && textColorVal is string textColor)
+                {
+                    osdTextColor = textColor;
+                }
+                if (settings.Values.TryGetValue("OSD_LabelColor", out object labelColorVal) && labelColorVal is string labelColor)
+                {
+                    osdLabelColor = labelColor;
+                }
+                if (settings.Values.TryGetValue("OSD_Opacity", out object opacityVal) && opacityVal is int opacity)
+                {
+                    osdOpacity = opacity;
+                }
+                if (settings.Values.TryGetValue("OSD_BackgroundEnabled", out object bgEnabledVal) && bgEnabledVal is bool bgEnabled)
+                {
+                    osdBackgroundEnabled = bgEnabled;
+                }
+                if (settings.Values.TryGetValue("OSD_BackgroundOpacity", out object bgOpacityVal) && bgOpacityVal is int bgOpacity)
+                {
+                    osdBackgroundOpacity = bgOpacity;
+                }
+                if (settings.Values.TryGetValue("OSD_FrametimeGraphPinned", out object pinnedVal) && pinnedVal is bool pinned)
+                {
+                    frametimeGraphPinned = pinned;
+                    if (FrametimeGraphPinnedToggle != null)
+                        FrametimeGraphPinnedToggle.IsOn = frametimeGraphPinned;
+                }
+                if (settings.Values.TryGetValue("OSD_Provider", out object providerVal) && providerVal is int provider)
+                {
+                    osdProvider = provider;
+                }
+                if (settings.Values.TryGetValue("AMD_OverlayLevel", out object amdLevelVal) && amdLevelVal is int amdLevel)
+                {
+                    amdOverlayLevel = amdLevel;
+                }
+
+                // Update layout UI
+                UpdateOSDLayoutUI();
+
+                Logger.Info("OSD configuration loaded from storage");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error loading OSD config: {ex.Message}");
+            }
+        }
+
+        private string BuildOSDConfigString(bool preview=false)
+        {
+                // Build config string to send to helper
+                var configParts = new List<string>();
+
+                // Add global layout settings
+                configParts.Add($"TextSize:{osdTextSize}");
+                configParts.Add($"Font:{osdFont}|{osdFontWeight}");
+                configParts.Add($"TextColor:{osdTextColor}");
+                configParts.Add($"LabelColor:{osdLabelColor}");
+                configParts.Add($"Opacity:{(preview?(int)Math.Round(OSDOpacitySlider.Value):osdOpacity)}");
+                configParts.Add($"Background:{(osdBackgroundEnabled ? 1 : 0)}|{(preview?(int)Math.Round(OSDBackgroundOpacitySlider.Value):osdBackgroundOpacity)}");
+                configParts.Add($"FrametimeGraphPinned:{(frametimeGraphPinned ? "1" : "0")}");
+
+                // Add per-level item configuration
+                foreach (var level in osdLevelConfig.Keys)
+                {
+                    var config = osdLevelConfig[level];
+                    var enabledItems = new List<string>();
+                    foreach (var item in config)
+                    {
+                        if (item.Value)
+                        {
+                            enabledItems.Add(item.Key);
+                        }
+                    }
+                    configParts.Add($"L{level}:{string.Join(",", enabledItems)}");
+
+                    if (!string.IsNullOrWhiteSpace(osdCustomTags.GetValueOrDefault(level, "")))
+                    {
+                        configParts.Add($"L{level}_Custom:{osdCustomTags[level]}");
+                    }
+
+                    // Add per-level columns
+                    configParts.Add($"L{level}_Columns:{osdLevelColumns.GetValueOrDefault(level, 3)}");
+
+                    // Add per-level order
+                    if (osdLevelOrder.ContainsKey(level))
+                    {
+                        configParts.Add($"L{level}_Order:{string.Join(",", osdLevelOrder[level])}");
+                    }
+
+                    // Add per-level item label colors
+                    if (osdItemLabelColors.ContainsKey(level))
+                    {
+                        var colors = osdItemLabelColors[level];
+                        foreach (var colorItem in colors)
+                        {
+                            if (!string.IsNullOrEmpty(colorItem.Value) && colorItem.Value != "DEFAULT")
+                            {
+                                configParts.Add($"L{level}_{colorItem.Key}_Color:{colorItem.Value}");
+                            }
+                        }
+                    }
+                }
+
+                if(OnexFrontend.UsesOwnBackend)foreach(var pair in _onexOverlayExtraConfig)configParts.Add(pair.Key+":"+pair.Value);
+                return string.Join(";", configParts);
+        }
+
+        private int _onexOverlayConfigWrites;
+        private async void SendOSDConfigToHelper()
+        {
+            bool queued=false;
+            try
+            {
+                if (!App.IsConnected) return;
+
+                if(OnexFrontend.UsesOwnBackend&&!_onexOverlayConfigReady)return;
+                QueueOnexOverlayPreview();
+                var configString=BuildOSDConfigString();
+                var request = new Windows.Foundation.Collections.ValueSet
+                {
+                    { "Command", (int)Shared.Enums.Command.Set },
+                    { "Function", (int)Shared.Enums.Function.OSDConfig },
+                    { "Content", configString },
+                    { "OnexUserInput", true },
+                    { "UpdatedTime", DateTimeOffset.Now.Ticks }
+                };
+                _onexOverlayConfigWrites++;queued=true;
+                var onexReply=await App.SendMessageAsync(request);
+                if(OnexFrontend.UsesOwnBackend&&onexReply!=null&&onexReply.TryGetValue("Error",out object onexError))throw new InvalidOperationException(onexError.ToString());
+
+                Logger.Info($"OSD config sent to helper: {configString}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error sending OSD config to helper: {ex.Message}");
+                if(OnexFrontend.UsesOwnBackend&&_onexOverlayCaption!=null)_onexOverlayCaption.Text=global::XboxGamingBar.OnexStrings.Format("RTSS: {0}",ex.Message);
+            }
+            finally{if(queued)_onexOverlayConfigWrites--;}
+        }
+
+        private void OSDCustomizeExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            isOSDCustomizeExpanded = !isOSDCustomizeExpanded;
+
+            if (OSDCustomizeContent != null)
+            {
+                OSDCustomizeContent.Visibility = isOSDCustomizeExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (OSDCustomizeExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                OSDCustomizeExpandIcon.Glyph = isOSDCustomizeExpanded ? "\uE70E" : "\uE70D";
+            }
+
+            // Opening the editor always lands on the preset that is on screen right now.
+            if (isOSDCustomizeExpanded) SyncOsdCustomizeLevelToActiveOverlay();
+            QueueOnexOverlayPreview();
+        }
+
+        // \u2500\u2500 Controller navigation for the expanded Overlay (OSD customization) panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        // ComboBoxes / ToggleSwitches swallow D-pad keys, so we move focus explicitly through an ordered
+        // list (same approach as the CPU combos). The opacity slider is handled separately via XYFocus
+        // (sliders swallow arrows; the global PreviewKeyDown redirects them through XYFocusUp/Down).
+        private Windows.UI.Xaml.Controls.Control[] OsdPanelNavOrder()
+        {
+            if(OnexFrontend.UsesOwnBackend)return new Windows.UI.Xaml.Controls.Control[]{OSDCustomizeLevelComboBox,OSDTextSizeComboBox,OSDFontComboBox,OSDTextColorDynamicCheckBox,OSDLabelColorDefaultCheckBox,OSDOpacitySlider,OSDBackgroundToggle,OSDBackgroundOpacitySlider};
+            return new Windows.UI.Xaml.Controls.Control[]
+            {
+                // Renderer and position first: they sit above the Layout section on screen, and a
+                // control that is not in this list cannot be reached with the D-pad at all - the panel
+                // navigates by this array, not by XY focus. The position box is skipped on its own
+                // while disabled (the loop below tests IsEnabled), which is what happens under RTSS.
+                OsdRendererComboBox, OsdPositionComboBox,
+                OSDColumnsComboBox, OSDTextSizeComboBox, OSDFontComboBox,
+                OSDTextColorDynamicCheckBox, OSDLabelColorDefaultCheckBox,
+                OSDOpacitySlider, OSDBackgroundToggle, OSDBackgroundOpacitySlider,
+                OSDPositionShiftToggle, FrametimeGraphPinnedToggle,
+                OSDCustomizeLevelComboBox   // last: sits above the item list in the Items section
+            };
+        }
+
+        private bool MoveOsdPanelFocus(Windows.UI.Xaml.Controls.Control current, int dir)
+        {
+            var order = OsdPanelNavOrder();
+            int idx = Array.IndexOf(order, current);
+            if (idx < 0) return false;
+            for (int next = idx + dir; next >= 0 && next < order.Length; next += dir)
+            {
+                var t = order[next];
+                if (t != null && t.IsEnabled && t.Visibility == Visibility.Visible && (!OnexFrontend.UsesOwnBackend || OnexOverlayControlVisible(t)))
+                    return t.Focus(Windows.UI.Xaml.FocusState.Keyboard);
+            }
+            return false;
+        }
+
+        // Shared KeyDown for the OSD panel combos/checkboxes/toggles (NOT the slider \u2014 it uses XYFocus).
+        private void OsdPanelNav_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (sender is Windows.UI.Xaml.Controls.ComboBox cb && cb.IsDropDownOpen) return; // open dropdown owns keys
+            var current = sender as Windows.UI.Xaml.Controls.Control;
+            if (current == null) return;
+
+            // Renderer and position are the only two controls in this panel that sit SIDE BY SIDE, so
+            // right and left have to move between them - going down from the renderer to reach the box
+            // next to it reads as a bug. Everywhere else in the panel the controls are stacked and
+            // horizontal keys keep their normal (no-op) behaviour.
+            bool sideBySide = ReferenceEquals(current, OsdRendererComboBox)
+                           || ReferenceEquals(current, OsdPositionComboBox);
+            if (sideBySide)
+            {
+                if (e.Key == Windows.System.VirtualKey.Right || e.Key == Windows.System.VirtualKey.GamepadDPadRight)
+                {
+                    if (MoveOsdPanelFocus(current, +1)) e.Handled = true;
+                    return;
+                }
+                if (e.Key == Windows.System.VirtualKey.Left || e.Key == Windows.System.VirtualKey.GamepadDPadLeft)
+                {
+                    if (MoveOsdPanelFocus(current, -1)) e.Handled = true;
+                    return;
+                }
+            }
+
+            if (e.Key == Windows.System.VirtualKey.Down || e.Key == Windows.System.VirtualKey.GamepadDPadDown)
+            {
+                // Move to the next control; at the last one leave it UNHANDLED so the global
+                // jump-suppressor keeps focus put (no wrap to the top).
+                if (MoveOsdPanelFocus(current, +1)) e.Handled = true;
+                // The preset picker is the last entry, and the item list starts right below it —
+                // the list lives in a DataTemplate, so it can't be part of the static nav order.
+                else if ((OnexFrontend.UsesOwnBackend || ReferenceEquals(current, OSDCustomizeLevelComboBox)) && FocusFirstOsdItemCheckBox())
+                    e.Handled = true;
+            }
+            else if (e.Key == Windows.System.VirtualKey.Up || e.Key == Windows.System.VirtualKey.GamepadDPadUp)
+            {
+                if (!MoveOsdPanelFocus(current, -1))
+                    OSDCustomizeExpandButton?.Focus(Windows.UI.Xaml.FocusState.Keyboard); // top \u2192 back to the expand toggle
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>Focuses the checkbox of the first item row (the entry point from the preset picker).</summary>
+        private bool FocusFirstOsdItemCheckBox()
+        {
+            try
+            {
+                if (OSDItemsControl == null || osdItemViewModels.Count == 0) return false;
+                OSDItemsControl.UpdateLayout();
+                var container = OSDItemsControl.ContainerFromIndex(0);
+                if (container == null) return false;
+                var cb = FindDescendantByName(container, "OsdItemCheckBox") as CheckBox;
+                return cb != null && cb.Focus(Windows.UI.Xaml.FocusState.Keyboard);
+            }
+            catch { return false; }
+        }
+
+        // Up from the FIRST item row goes back to the preset picker. Every other row is left to the
+        // framework's XY navigation, which walks the identical rows correctly on its own.
+        private void OsdItemCheckBox_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if(OnexFrontend.UsesOwnBackend && e.Key==Windows.System.VirtualKey.GamepadX && sender is FrameworkElement helpSource && helpSource.DataContext is OSDItemViewModel helpItem)
+            {_=ShowOnexOverlayItemHelpAsync(helpItem);e.Handled=true;return;}
+            if (e.Key != Windows.System.VirtualKey.Up && e.Key != Windows.System.VirtualKey.GamepadDPadUp) return;
+            if (!(sender is CheckBox cb) || !(cb.Tag is string id)) return;
+            if (osdItemViewModels.Count == 0 || osdItemViewModels[0].Id != id) return;
+
+            if(OnexFrontend.UsesOwnBackend)OsdPanelNavOrder().LastOrDefault(control=>control.IsEnabled&&OnexOverlayControlVisible(control))?.Focus(Windows.UI.Xaml.FocusState.Keyboard);
+            else OSDCustomizeLevelComboBox?.Focus(Windows.UI.Xaml.FocusState.Keyboard);
+            e.Handled = true;
+        }
+
+        // Overlay expand toggle: Down enters the panel (when expanded) or continues to the CPU card.
+        private void OSDCustomizeExpandButton_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key != Windows.System.VirtualKey.Down && e.Key != Windows.System.VirtualKey.GamepadDPadDown) return;
+            // Columns is hidden now, so enter the panel at the first visible control (Overlay Size).
+            if(OnexFrontend.UsesOwnBackend&&isOSDCustomizeExpanded)OSDCustomizeLevelComboBox?.Focus(Windows.UI.Xaml.FocusState.Keyboard);
+            else if (isOSDCustomizeExpanded && OSDTextSizeComboBox != null)
+                OSDTextSizeComboBox.Focus(Windows.UI.Xaml.FocusState.Keyboard);
+            else
+                CPUBoostToggle?.Focus(Windows.UI.Xaml.FocusState.Keyboard);
+            e.Handled = true;
+        }
+
+        private void OSDOpacitySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+            if(OnexInputGuard.IsPreviewing(OSDOpacitySlider)){if(OSDOpacityValue!=null)OSDOpacityValue.Text=((int)Math.Round(e.NewValue))+"%";QueueOnexOverlayPreview();return;}
+            osdOpacity = (int)Math.Round(e.NewValue);
+            if (OSDOpacityValue != null)
+                OSDOpacityValue.Text = $"{osdOpacity}%";
+            SaveOSDConfigToStorage();
+            SendOSDConfigToHelper();
+        }
+
+        private void OSDBackgroundToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+            osdBackgroundEnabled = OSDBackgroundToggle.IsOn;
+            if (OSDBackgroundOpacityPanel != null)
+                OSDBackgroundOpacityPanel.Visibility = osdBackgroundEnabled ? Visibility.Visible : Visibility.Collapsed;
+            SaveOSDConfigToStorage();
+            SendOSDConfigToHelper();
+        }
+
+        private void OSDBackgroundOpacitySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+            if(OnexInputGuard.IsPreviewing(OSDBackgroundOpacitySlider)){if(OSDBackgroundOpacityValue!=null)OSDBackgroundOpacityValue.Text=((int)Math.Round(e.NewValue))+"%";QueueOnexOverlayPreview();return;}
+            osdBackgroundOpacity = (int)Math.Round(e.NewValue);
+            if (OSDBackgroundOpacityValue != null)
+                OSDBackgroundOpacityValue.Text = $"{osdBackgroundOpacity}%";
+            // Debounced: the helper writes + live-reloads RTSS's Global profile file for every call,
+            // so firing on every drag tick races concurrent file writes and can leave RTSS with a
+            // stale value until it happens to restart (e.g. next reboot). Only send the settled value.
+            StartOsdBackgroundDebounce();
+        }
+
+        private void StartOsdBackgroundDebounce()
+        {
+            if (osdBackgroundDebounceTimer == null)
+            {
+                osdBackgroundDebounceTimer = new DispatcherTimer();
+                osdBackgroundDebounceTimer.Interval = TimeSpan.FromMilliseconds(OSD_BACKGROUND_DEBOUNCE_MS);
+                osdBackgroundDebounceTimer.Tick += OsdBackgroundDebounceTimer_Tick;
+            }
+
+            osdBackgroundDebounceTimer.Stop();
+            osdBackgroundDebounceTimer.Start();
+        }
+
+        private void OsdBackgroundDebounceTimer_Tick(object sender, object e)
+        {
+            osdBackgroundDebounceTimer?.Stop();
+            SaveOSDConfigToStorage();
+            SendOSDConfigToHelper();
+        }
+        private void ProfileSettingsExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isProfileSettingsExpanded = !isProfileSettingsExpanded;
+
+            if (ProfileSettingsContent != null)
+            {
+                ProfileSettingsContent.Visibility = isProfileSettingsExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (ProfileSettingsExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                ProfileSettingsExpandIcon.Glyph = isProfileSettingsExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+
+        private void ProfileDetectionExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isProfileDetectionExpanded = !isProfileDetectionExpanded;
+
+            if (ProfileDetectionContent != null)
+            {
+                ProfileDetectionContent.Visibility = isProfileDetectionExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (ProfileDetectionExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                ProfileDetectionExpandIcon.Glyph = isProfileDetectionExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+
+        /* DISABLED: Custom games, blacklist, and current apps features - caused user confusion
+        private async void CustomGameAddButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var picker = new Windows.Storage.Pickers.FileOpenPicker();
+                picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.ComputerFolder;
+                picker.FileTypeFilter.Add(".exe");
+                picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.List;
+
+                var file = await picker.PickSingleFileAsync();
+                if (file != null)
+                {
+                    profileCustomGamePath?.AddPath(file.Path);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error adding custom game: {ex.Message}");
+            }
+        }
+
+        private void CustomGameRemoveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string path)
+            {
+                profileCustomGamePath?.RemovePath(path);
+            }
+        }
+
+        private void BlacklistRemoveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string path)
+            {
+                profileBlacklistPaths?.RemovePath(path);
+            }
+        }
+
+        private async void ForegroundAppAddCustom_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var path = button?.Tag as string;
+            if (!string.IsNullOrEmpty(path))
+            {
+                profileBlacklistPaths?.RemovePath(path);
+                profileCustomGamePath?.AddPath(path);
+                await System.Threading.Tasks.Task.Delay(200);
+                await foregroundApp?.Sync();
+            }
+        }
+
+        private async void ForegroundAppAddBlacklist_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var path = button?.Tag as string;
+            if (!string.IsNullOrEmpty(path))
+            {
+                profileCustomGamePath?.RemovePath(path);
+                profileBlacklistPaths?.AddPath(path);
+                await System.Threading.Tasks.Task.Delay(200);
+                await foregroundApp?.Sync();
+            }
+        }
+
+        private void UpdateForegroundAppsList(List<string> paths)
+        {
+            // ... method body removed for brevity ...
+        }
+
+        private Border CreateForegroundAppRow(string path)
+        {
+            // ... method body removed for brevity ...
+            return null;
+        }
+        END DISABLED */
+
+        private void ButtonRemappingExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isButtonRemappingExpanded = !isButtonRemappingExpanded;
+
+            if (ButtonRemappingContent != null)
+            {
+                ButtonRemappingContent.Visibility = isButtonRemappingExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (ButtonRemappingExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                ButtonRemappingExpandIcon.Glyph = isButtonRemappingExpanded ? "\uE70E" : "\uE70D";
+            }
+
+            if (isButtonRemappingExpanded)
+            {
+                RefreshLegionEnhancedRemapUi();
+            }
+        }
+
+        /// <summary>
+        /// Button Remapping card header. Down → M1's mode dropdown (the first live control once
+        /// expanded — Y1-Y3 above it are Visibility=Collapsed on MSI Claw, which is why the default
+        /// UWP XYFocus move overshot past M1 to whatever the next focusable element further down
+        /// happened to be) when expanded, else the next collapsible card header below.
+        /// </summary>
+        private void ButtonRemappingExpandToggle_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key != VirtualKey.GamepadDPadDown && e.Key != VirtualKey.Down) return;
+
+            // When expanded, Down enters the remap content (M1's mode dropdown — Y1-Y3 above it are
+            // Collapsed on the MSI Claw). Otherwise (or if that control isn't focusable) fall through
+            // to the next REACHABLE section header, skipping any card that is disabled/collapsed in
+            // Hardware Controller mode (Gyro, Vibration & Deadzone). Only swallow the key when focus
+            // actually moved, so D-Pad navigation can never get stuck on a dead/disabled target.
+            if (isButtonRemappingExpanded && TryFocusControl(LegionButtonM1TypeComboBox))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            if (TryFocusControl(NextReachableControllerSection(ButtonRemappingExpandToggle)))
+            {
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Focuses <paramref name="c"/> only if it is actually focusable (non-null, visible, enabled);
+        /// returns whether focus moved. Guards against Control.Focus() silently failing on a disabled
+        /// or collapsed target — which, combined with e.Handled, is what made D-Pad nav get stuck.
+        /// </summary>
+        private static bool TryFocusControl(Control c)
+        {
+            if (c == null || c.Visibility != Visibility.Visible || !c.IsEnabled) return false;
+            try { return c.Focus(FocusState.Keyboard); } catch { return false; }
+        }
+
+        /// <summary>
+        /// First controller-tab section header below <paramref name="current"/> that is reachable
+        /// (visible + enabled + tab stop), skipping sections disabled/collapsed in Hardware Controller
+        /// mode. Null if none below. The non-KeyDown headers rely on default XYFocus (which already
+        /// skips disabled controls), so only this Button-Remapping handler needs the explicit walk.
+        /// </summary>
+        private Control NextReachableControllerSection(Control current)
+        {
+            var order = new Control[]
+            {
+                ButtonRemappingExpandToggle,
+                GyroSettingsExpandToggle,
+                ControllerFeedbackExpandToggle,   // "Vibration & Deadzone"
+                SavedProfilesExpandToggle,
+                ControllerStateDetailsToggle,     // "Controller Status"
+            };
+            int idx = -1;
+            for (int i = 0; i < order.Length; i++) { if (ReferenceEquals(order[i], current)) { idx = i; break; } }
+            if (idx < 0) return null;
+            for (int i = idx + 1; i < order.Length; i++)
+            {
+                var c = order[i];
+                if (c != null && c.Visibility == Visibility.Visible && c.IsEnabled && c.IsTabStop)
+                    return c;
+            }
+            return null;
+        }
+
+        private bool isLegionControllerProfileScopeExpanded = false;
+
+        private void LegionControllerProfileScopeExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isLegionControllerProfileScopeExpanded = !isLegionControllerProfileScopeExpanded;
+
+            if (LegionControllerProfileScopeContent != null)
+            {
+                LegionControllerProfileScopeContent.Visibility = isLegionControllerProfileScopeExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (LegionControllerProfileScopeExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                LegionControllerProfileScopeExpandIcon.Glyph = isLegionControllerProfileScopeExpanded ? "" : "";
+            }
+        }
+
+        private void GyroSettingsExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isGyroSettingsExpanded = !isGyroSettingsExpanded;
+
+            if (GyroSettingsContent != null)
+            {
+                GyroSettingsContent.Visibility = isGyroSettingsExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (GyroSettingsExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                GyroSettingsExpandIcon.Glyph = isGyroSettingsExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+
+        /// <summary>
+        /// Keeps the gyro section usable in every profile mode. The section used to be locked to
+        /// per-game profiles (toggle hidden + "per-game only" hint outside of games); it is now
+        /// always editable, like the "Vibration &amp; Deadzone" card. The parameter is kept so the
+        /// existing call sites stay untouched and the mode is still visible in the log.
+        /// </summary>
+        internal void UpdateGyroSectionForProfileMode(bool perGameActive)
+        {
+            if (GyroSettingsExpandToggle != null)
+                GyroSettingsExpandToggle.Visibility = Visibility.Visible;
+
+            Logger.Info($"[GyroUI] Profile mode = {(perGameActive ? "per-game" : "global")} (gyro editable in both)");
+        }
+
+        private void StickDeadzonesExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isStickDeadzonesExpanded = !isStickDeadzonesExpanded;
+
+            if (StickDeadzonesContent != null)
+            {
+                StickDeadzonesContent.Visibility = isStickDeadzonesExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (StickDeadzonesExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                StickDeadzonesExpandIcon.Glyph = isStickDeadzonesExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+
+        private void TouchpadVibrationExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isTouchpadVibrationExpanded = !isTouchpadVibrationExpanded;
+
+            if (TouchpadVibrationContent != null)
+            {
+                TouchpadVibrationContent.Visibility = isTouchpadVibrationExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (TouchpadVibrationExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                TouchpadVibrationExpandIcon.Glyph = isTouchpadVibrationExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+        private void LightingExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isLightingExpanded = !isLightingExpanded;
+
+            if (LightingContent != null)
+            {
+                LightingContent.Visibility = isLightingExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (LightingExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                LightingExpandIcon.Glyph = isLightingExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+
+        private void FanCurveExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isFanCurveExpanded = !isFanCurveExpanded;
+
+            if (FanCurveContent != null)
+            {
+                FanCurveContent.Visibility = isFanCurveExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (FanCurveExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                FanCurveExpandIcon.Glyph = isFanCurveExpanded ? "\uE70E" : "\uE70D";
+            }
+
+            // Initialize graph on first expand
+            if (isFanCurveExpanded && !fanCurveGraphInitialized)
+            {
+                InitializeFanCurveGraph();
+            }
+
+            // Tell helper whether to push CPU temp/RPM updates
+            legionFanCurveVisible?.SetVisible(isFanCurveExpanded);
+        }
+        private void TDPExtrasExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isTDPExtrasExpanded = !isTDPExtrasExpanded;
+
+            if (TDPExtrasContent != null)
+            {
+                TDPExtrasContent.Visibility = isTDPExtrasExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (TDPExtrasExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                TDPExtrasExpandIcon.Glyph = isTDPExtrasExpanded ? "\uE70E" : "\uE70D";
+            }
+
+            // Update XY focus chain based on expanded state
+            if (TDPExtrasExpandToggle != null && OSPowerModeComboBox != null)
+            {
+                TDPExtrasExpandToggle.XYFocusDown = isTDPExtrasExpanded ? (DependencyObject)TDPBoostToggle : OSPowerModeComboBox;
+                OSPowerModeComboBox.XYFocusUp = isTDPExtrasExpanded ? (DependencyObject)TDPBoostToggle : TDPExtrasExpandToggle;
+            }
+        }
+        private void CPUExtrasExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isCPUExtrasExpanded = !isCPUExtrasExpanded;
+
+            if (CPUExtrasContent != null)
+            {
+                CPUExtrasContent.Visibility = isCPUExtrasExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (CPUExtrasExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                CPUExtrasExpandIcon.Glyph = isCPUExtrasExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+
+        private void ControllerEmulationExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            isControllerEmulationExpanded = !isControllerEmulationExpanded;
+            LastCardExpandedBeforeHide = isControllerEmulationExpanded;
+
+            // The card body (gyro / remaps / mouse mode) is backend-independent on the Claw, so it
+            // shows on expand for BOTH ViGEm and VIIPER. The VIIPER body is never shown (its only live
+            // control, the device picker, was moved to the Controller Status card).
+            if (ControllerEmulationContent != null)
+            {
+                ControllerEmulationContent.Visibility = isControllerEmulationExpanded
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
+
+            if (ViiperEmulationContent != null)
+            {
+                ViiperEmulationContent.Visibility = Visibility.Collapsed;
+            }
+
+            if (ControllerEmulationExpandIcon != null)
+            {
+                ControllerEmulationExpandIcon.Glyph = isControllerEmulationExpanded ? "\uE70E" : "\uE70D";
+            }
+
+            // First time the user opens the card, the discovery hint has done its job \u2014
+            // remember it so the pulsing glow never nags again, and stop it now.
+            if (isControllerEmulationExpanded)
+            {
+                EmuExpandHintSeen = true;
+            }
+            UpdateControllerEmulationExpandHint();
+
+            UpdateControllerEmulationMouseSettingsVisibility();
+            UpdateSystemControllerEmulationNavigation();
+        }
+
+        // \u2500\u2500 Pulsing glow hint on the Controller Emulation expand chevron \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        // Many users overlook that the "Virtual Controller & Mouse" card hides the
+        // important controller / gyro / mouse settings behind the expand chevron. A soft
+        // pulsing glow draws the eye to it. It runs only while the card is visible \u2014 and
+        // UpdateControllerEmulationCardVisibility() already hides the whole card during a
+        // game, so the hint is implicitly off in-game (the expand is blocked then). It
+        // also stops permanently once the user has expanded the card at least once
+        // (persisted in LocalSettings), so it never nags after discovery.
+        private const string ControllerEmulationExpandHintSeenKey = "ControllerEmulationExpandHintSeen";
+        private Storyboard _emuExpandGlowStoryboard;
+        private bool? _emuExpandHintSeenCache;
+
+        private bool EmuExpandHintSeen
+        {
+            get
+            {
+                if (_emuExpandHintSeenCache == null)
+                {
+                    try
+                    {
+                        var v = ApplicationData.Current.LocalSettings.Values[ControllerEmulationExpandHintSeenKey];
+                        _emuExpandHintSeenCache = v is bool b && b;
+                    }
+                    catch { _emuExpandHintSeenCache = false; }
+                }
+                return _emuExpandHintSeenCache.Value;
+            }
+            set
+            {
+                _emuExpandHintSeenCache = value;
+                try { ApplicationData.Current.LocalSettings.Values[ControllerEmulationExpandHintSeenKey] = value; }
+                catch { }
+            }
+        }
+
+        /// <summary>
+        /// No-op: the expand-chevron discovery glow was removed when the Front Buttons card adopted
+        /// the same plain chevron as the other controller cards (visual consistency). Kept as an
+        /// empty method so existing callers stay valid.
+        /// </summary>
+        internal void UpdateControllerEmulationExpandHint()
+        {
+        }
+
+        private void StartControllerEmulationExpandHint()
+        {
+        }
+
+        private void StopControllerEmulationExpandHint()
+        {
+        }
+
+        // ControllerEmulationInputNotesExpandButton_Click removed \u2014 UI element was removed
+
+        private void TDPSettingsExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            isTDPSettingsExpanded = !isTDPSettingsExpanded;
+
+            if (TDPSettingsContent != null)
+            {
+                TDPSettingsContent.Visibility = isTDPSettingsExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (TDPSettingsExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                TDPSettingsExpandIcon.Glyph = isTDPSettingsExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+
+        private void SpecialRemappingExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            isSpecialRemappingExpanded = !isSpecialRemappingExpanded;
+
+            if (SpecialRemappingContent != null)
+            {
+                SpecialRemappingContent.Visibility = isSpecialRemappingExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (SpecialRemappingExpandIcon != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                SpecialRemappingExpandIcon.Glyph = isSpecialRemappingExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+
+        private void AutoHibernateTimeoutSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (AutoHibernateTimeoutValue != null)
+            {
+                AutoHibernateTimeoutValue.Text = global::XboxGamingBar.OnexStrings.Format("{0} min",(int)e.NewValue);
+            }
+        }
+
+        private void ControllerEmulationMouseSensitivitySlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (ControllerEmulationMouseSensitivityValue != null)
+            {
+                ControllerEmulationMouseSensitivityValue.Text = ((int)e.NewValue).ToString();
+            }
+        }
+
+        private void ControllerEmulationMouseThresholdSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (ControllerEmulationMouseThresholdValue != null)
+            {
+                ControllerEmulationMouseThresholdValue.Text = ((int)e.NewValue).ToString();
+            }
+        }
+
+        private void ControllerEmulationMouseAccelerationSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (ControllerEmulationMouseAccelerationValue != null)
+            {
+                ControllerEmulationMouseAccelerationValue.Text = ((int)e.NewValue).ToString();
+            }
+        }
+
+        private void ControllerEmulationMouseNudgeStepSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (ControllerEmulationMouseNudgeStepValue != null)
+            {
+                ControllerEmulationMouseNudgeStepValue.Text = global::XboxGamingBar.OnexStrings.Format("{0} px",(int)e.NewValue);
+            }
+        }
+
+        // Extra mouse-mode action slots (button + shortcut/nudge pairs) — shared handler for all
+        // 4 slots' button and action-type combo boxes. Not property-bound to a single control
+        // (see ControllerEmulationMouseActionSlotsProperty), so pushing/applying is manual here.
+        private (ComboBox btn, ComboBox type)[] MouseActionSlotCombos => new (ComboBox, ComboBox)[]
+        {
+            (ControllerEmulationMouseAction1ButtonComboBox, ControllerEmulationMouseAction1TypeComboBox),
+            (ControllerEmulationMouseAction2ButtonComboBox, ControllerEmulationMouseAction2TypeComboBox),
+            (ControllerEmulationMouseAction3ButtonComboBox, ControllerEmulationMouseAction3TypeComboBox),
+            (ControllerEmulationMouseAction4ButtonComboBox, ControllerEmulationMouseAction4TypeComboBox),
+        };
+
+        private void ControllerEmulationMouseActionSlot_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (isApplyingMouseActionSlotsUI) return;
+
+            var parts = MouseActionSlotCombos.Select(slot =>
+                $"{Math.Max(0, slot.btn?.SelectedIndex ?? 0)}:{Math.Max(0, slot.type?.SelectedIndex ?? 0)}");
+            controllerEmulationMouseActionSlots?.SetValue(string.Join(",", parts), DateTime.Now.Ticks);
+        }
+
+        private void ApplyMouseActionSlotsToUI(string csv)
+        {
+            isApplyingMouseActionSlotsUI = true;
+            try
+            {
+                var slots = (csv ?? "0:0,0:0,0:0,0:0").Split(',');
+                var combos = MouseActionSlotCombos;
+                for (int i = 0; i < combos.Length; i++)
+                {
+                    int b = 0, t = 0;
+                    if (i < slots.Length)
+                    {
+                        var pair = slots[i].Split(':');
+                        if (pair.Length == 2) { int.TryParse(pair[0], out b); int.TryParse(pair[1], out t); }
+                    }
+                    if (combos[i].btn != null && b >= 0 && b < combos[i].btn.Items.Count) combos[i].btn.SelectedIndex = b;
+                    if (combos[i].type != null && t >= 0 && t < combos[i].type.Items.Count) combos[i].type.SelectedIndex = t;
+                }
+            }
+            finally { isApplyingMouseActionSlotsUI = false; }
+        }
+
+        // D-Pad remap — shared handler for the 4 direction combo boxes.
+        private ComboBox[] MouseDPadActionCombos => new[]
+        {
+            ControllerEmulationMouseDPadUpComboBox, ControllerEmulationMouseDPadDownComboBox,
+            ControllerEmulationMouseDPadLeftComboBox, ControllerEmulationMouseDPadRightComboBox,
+        };
+
+        private void ControllerEmulationMouseDPadAction_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (isApplyingMouseDPadActionsUI) return;
+
+            var parts = MouseDPadActionCombos.Select(c => Math.Max(0, c?.SelectedIndex ?? 0).ToString());
+            controllerEmulationMouseDPadActions?.SetValue(string.Join(",", parts), DateTime.Now.Ticks);
+        }
+
+        private void ApplyMouseDPadActionsToUI(string csv)
+        {
+            isApplyingMouseDPadActionsUI = true;
+            try
+            {
+                var parts = (csv ?? "0,0,0,0").Split(',');
+                var combos = MouseDPadActionCombos;
+                for (int i = 0; i < combos.Length; i++)
+                {
+                    int t = 0;
+                    if (i < parts.Length) int.TryParse(parts[i], out t);
+                    if (combos[i] != null && t >= 0 && t < combos[i].Items.Count) combos[i].SelectedIndex = t;
+                }
+            }
+            finally { isApplyingMouseDPadActionsUI = false; }
+        }
+
+        private void ControllerEmulationMouseGainXSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (ControllerEmulationMouseGainXValue != null)
+            {
+                ControllerEmulationMouseGainXValue.Text = ((int)e.NewValue).ToString();
+            }
+        }
+
+        private void ControllerEmulationMouseGainYSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (ControllerEmulationMouseGainYValue != null)
+            {
+                ControllerEmulationMouseGainYValue.Text = ((int)e.NewValue).ToString();
+            }
+        }
+
+        private void GyroActivationExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isGyroActivationExpanded = !isGyroActivationExpanded;
+            if (GyroActivationContent != null)
+                GyroActivationContent.Visibility = isGyroActivationExpanded ? Visibility.Visible : Visibility.Collapsed;
+            if (GyroActivationExpandIcon != null)
+                GyroActivationExpandIcon.Glyph = isGyroActivationExpanded ? "\uE70E" : "\uE70D";
+        }
+
+        private void FeaturesExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isFeaturesExpanded = !isFeaturesExpanded;
+            if (FeaturesContent != null)
+                FeaturesContent.Visibility = isFeaturesExpanded ? Visibility.Visible : Visibility.Collapsed;
+            if (FeaturesExpandIcon != null)
+                FeaturesExpandIcon.Glyph = isFeaturesExpanded ? "\uE70E" : "\uE70D";
+        }
+
+        private void ProTipsExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(OnexFrontend.UsesOwnBackend){SetOnexNavigationGuideExpanded(ProTipsExpandButton.IsChecked==true);return;}
+            isProTipsExpanded = !isProTipsExpanded;
+            if (ProTipsContent != null)
+                ProTipsContent.Visibility = isProTipsExpanded ? Visibility.Visible : Visibility.Collapsed;
+            if (ProTipsExpandIcon != null)
+                ProTipsExpandIcon.Glyph = isProTipsExpanded ? "" : "";
+        }
+
+        private void JoystickOutputExpandToggle_Click(object sender, RoutedEventArgs e)
+        {
+            isJoystickOutputExpanded = !isJoystickOutputExpanded;
+            if (JoystickOutputContent != null)
+                JoystickOutputContent.Visibility = isJoystickOutputExpanded ? Visibility.Visible : Visibility.Collapsed;
+            if (JoystickOutputExpandIcon != null)
+                JoystickOutputExpandIcon.Glyph = isJoystickOutputExpanded ? "\uE70E" : "\uE70D";
+        }
+
+        private void StickSensitivityV2Slider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (StickSensitivityV2ValueText != null)
+                StickSensitivityV2ValueText.Text = global::XboxGamingBar.OnexStrings.Format("{0:0.00}x",(e.NewValue / 100.0));
+        }
+
+        private void StickMinGyroSpeedSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (StickMinGyroSpeedValueText != null)
+                StickMinGyroSpeedValueText.Text = global::XboxGamingBar.OnexStrings.Format("{0}°/s",(int)e.NewValue);
+        }
+
+        private void StickMaxGyroSpeedSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (StickMaxGyroSpeedValueText != null)
+                StickMaxGyroSpeedValueText.Text = global::XboxGamingBar.OnexStrings.Format("{0}°/s",(int)e.NewValue);
+        }
+
+        private void StickMinOutputSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (StickMinOutputValueText != null)
+                StickMinOutputValueText.Text = $"{(int)e.NewValue}%";
+        }
+
+        private void StickMaxOutputSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (StickMaxOutputValueText != null)
+                StickMaxOutputValueText.Text = $"{(int)e.NewValue}%";
+        }
+
+        private void StickPowerCurveSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (StickPowerCurveValueText != null)
+                StickPowerCurveValueText.Text = $"{(e.NewValue / 100.0):0.0}";
+        }
+
+        private void StickDeadzoneSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (StickDeadzoneValueText != null)
+                StickDeadzoneValueText.Text = global::XboxGamingBar.OnexStrings.Format("{0}°/s",(int)e.NewValue);
+        }
+
+        private void StickPrecisionSpeedSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (StickPrecisionSpeedValueText != null)
+            {
+                int val = (int)e.NewValue;
+                StickPrecisionSpeedValueText.Text = val == 0 ? global::XboxGamingBar.OnexStrings.Get("Off") : global::XboxGamingBar.OnexStrings.Format("{0}°/s",val);
+            }
+        }
+
+        private void StickOutputMixSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (StickOutputMixValueText != null)
+            {
+                int val = (int)e.NewValue;
+                if (val > 0)
+                    StickOutputMixValueText.Text = global::XboxGamingBar.OnexStrings.Format("H+{0}",val);
+                else if (val < 0)
+                    StickOutputMixValueText.Text = global::XboxGamingBar.OnexStrings.Format("V+{0}",-val);
+                else
+                    StickOutputMixValueText.Text = global::XboxGamingBar.OnexStrings.Get("Balanced");
+            }
+        }
+
+        private async void AutoHibernateModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (AutoHibernateModeComboBox?.SelectedItem == null) return;
+            var selected = AutoHibernateModeComboBox.SelectedItem as ComboBoxItem;
+            if (selected?.Tag == null) return;
+
+            int mode = int.Parse(selected.Tag.ToString());
+            try
+            {
+                if (App.IsConnected)
+                {
+                    var request = new Windows.Foundation.Collections.ValueSet
+                    {
+                        { "Command", (int)Shared.Enums.Command.Set },
+                        { "Function", (int)Shared.Enums.Function.AutoHibernateMode },
+                        { "Content", mode }
+                    };
+                    await App.SendMessageAsync(request);
+                    Logger.Info($"Auto Hibernate mode set to: {selected.Content}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error sending Auto Hibernate mode: {ex.Message}");
+            }
+        }
+
+        private void ColorSettingsExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            isColorSettingsExpanded = !isColorSettingsExpanded;
+
+            if (ColorSettingsContent != null)
+            {
+                ColorSettingsContent.Visibility = isColorSettingsExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (ColorSettingsExpandButton != null)
+            {
+                // E70D = ChevronDown, E70E = ChevronUp
+                ColorSettingsExpandButton.Content = isColorSettingsExpanded ? "\uE70E" : "\uE70D";
+            }
+        }
+
+        private void TDPLimitsMinSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (isLoadingTDPLimits) return;
+            if (TDPLimitsMinSlider == null || TDPLimitsMaxSlider == null) return;
+
+            int minValue = (int)Math.Round(e.NewValue);
+
+            // Ensure min doesn't exceed max
+            if (minValue > TDPLimitsMaxSlider.Value)
+            {
+                TDPLimitsMinSlider.Value = TDPLimitsMaxSlider.Value;
+                return;
+            }
+
+            deviceTDPMin = minValue;
+
+            if (TDPLimitsMinValue != null)
+            {
+                TDPLimitsMinValue.Text = global::XboxGamingBar.OnexStrings.Format("{0}W",minValue);
+            }
+
+            // Update TDP slider bounds immediately (for UI responsiveness)
+            UpdateTDPSliderBounds();
+
+            // Debounce save and send to helper
+            StartTDPLimitsDebounce();
+        }
+
+        private void TDPLimitsMaxSlider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if (isLoadingTDPLimits) return;
+            if (TDPLimitsMinSlider == null || TDPLimitsMaxSlider == null) return;
+
+            int maxValue = (int)Math.Round(e.NewValue);
+
+            // Ensure max doesn't go below min
+            if (maxValue < TDPLimitsMinSlider.Value)
+            {
+                TDPLimitsMaxSlider.Value = TDPLimitsMinSlider.Value;
+                return;
+            }
+
+            deviceTDPMax = maxValue;
+
+            if (TDPLimitsMaxValue != null)
+            {
+                TDPLimitsMaxValue.Text = global::XboxGamingBar.OnexStrings.Format("{0}W",maxValue);
+            }
+
+            // Update TDP slider bounds immediately (for UI responsiveness)
+            UpdateTDPSliderBounds();
+
+            // Debounce save and send to helper
+            StartTDPLimitsDebounce();
+        }
+
+        private void StartTDPLimitsDebounce()
+        {
+            // Initialize debounce timer if needed
+            if (tdpLimitsDebounceTimer == null)
+            {
+                tdpLimitsDebounceTimer = new DispatcherTimer();
+                tdpLimitsDebounceTimer.Interval = TimeSpan.FromMilliseconds(TDP_LIMITS_DEBOUNCE_MS);
+                tdpLimitsDebounceTimer.Tick += TDPLimitsDebounceTimer_Tick;
+            }
+
+            // Restart the debounce timer
+            tdpLimitsDebounceTimer.Stop();
+            tdpLimitsDebounceTimer.Start();
+        }
+
+        private void TDPLimitsDebounceTimer_Tick(object sender, object e)
+        {
+            tdpLimitsDebounceTimer?.Stop();
+
+            // Save and send to helper after debounce
+            SaveTDPLimitsToStorage();
+            SendTDPLimitsToHelper();
+        }
+
+        private void UpdateTDPSliderBounds()
+        {
+            if (OnexFrontend.UsesOwnBackend)
+            {
+                deviceTDPMin = 8;
+                deviceTDPMax = deviceMaxPL1?.Value > 0 ? deviceMaxPL1.Value : 40;
+            }
+            // PL1/PL2 ceilings reported by the helper for this exact device (MSI Claw A2VM = 30/37W,
+            // Claw 8 EX = 35/45W; see MSIClawModels.cs). Both are 0 until the helper answers.
+            //
+            // A ceiling we do not know yet must clamp NOTHING. There used to be a fallback to the
+            // A2VM's 30/37 here, and on a Claw 8 EX it destroyed the user's own setting: the helper
+            // pushes TDP on pipe connect but the capabilities only arrive with the BatchGet answer
+            // ~200ms later, so a legitimate 35W was coerced to 30 by a slider maximum that was only
+            // ever a placeholder — and from there it leaked back into the TDP property and stuck.
+            // Leaving the bounds untouched keeps the slider on its XAML placeholder range, which is
+            // deliberately wider than any supported device so nothing is truncated. The slider ships
+            // disabled, so an unbounded moment is not reachable by the user.
+            int pl1Ceiling = deviceMaxPL1?.Value ?? 0;
+            int pl2Ceiling = OnexFrontend.UsesOwnBackend ? Pl2ControlPolicy.ManualCeiling(_releasePl1) : deviceMaxPL2?.Value ?? 0;
+            if (pl1Ceiling <= 0 || pl2Ceiling <= 0)
+            {
+                return;
+            }
+
+            // Update Performance tab TDP slider.
+            // UI-only guardrails: the manual TDP slider must never go below 7W or above the
+            // device's PL1 ceiling, regardless of the user-configured range (deviceTDPMin/Max).
+            // Tighter device limits still win (Math.Max/Min), this only caps the user-selectable range.
+            if (TDPSlider != null)
+            {
+                double tdpSliderMin = Math.Max(deviceTDPMin, 7);
+                double tdpSliderMax = Math.Min(deviceTDPMax, pl1Ceiling);
+                TDPSlider.Minimum = tdpSliderMin;
+                TDPSlider.Maximum = tdpSliderMax;
+
+                // Clamp current value if out of bounds
+                if (TDPSlider.Value < tdpSliderMin)
+                    TDPSlider.Value = tdpSliderMin;
+                else if (TDPSlider.Value > tdpSliderMax)
+                    TDPSlider.Value = tdpSliderMax;
+
+                BuildWattScaleLabels(TDPScaleLabels, TDPSlider);
+            }
+
+            // Settings-panel PL1 ceiling picker (the "Maximum TDP" slider users drag to raise
+            // deviceTDPMax) — its own selectable range must reach the device's real PL1 ceiling too.
+            if (TDPLimitsMaxSlider != null)
+            {
+                TDPLimitsMaxSlider.Maximum = pl1Ceiling;
+                if (TDPLimitsMaxSlider.Value > pl1Ceiling)
+                    TDPLimitsMaxSlider.Value = pl1Ceiling;
+            }
+
+            // PL2-Boost sliders (settings panel + Performance card) — cap at the device's real PL2
+            // ceiling (A2VM = 37W, Claw 8 EX = 45W); resolved together with pl1Ceiling above.
+            if (TDPBoostFPPTSlider != null)
+            {
+                TDPBoostFPPTSlider.Maximum = pl2Ceiling;
+                if (TDPBoostFPPTSlider.Value > pl2Ceiling)
+                    TDPBoostFPPTSlider.Value = pl2Ceiling;
+            }
+            if (TDPBoostFPPTSliderCard != null)
+            {
+                TDPBoostFPPTSliderCard.Maximum = pl2Ceiling;
+                if (TDPBoostFPPTSliderCard.Value > pl2Ceiling)
+                    TDPBoostFPPTSliderCard.Value = pl2Ceiling;
+
+                BuildWattScaleLabels(TDPBoostScaleLabels, TDPBoostFPPTSliderCard);
+            }
+
+            RefreshOnexPerformancePowerScale();
+        }
+
+        // ── Watt scale labels under the TDP sliders (PL1/PL2) ───────────────────────────
+        // Mirrors the FPS limiter's number row: a row of watt values under the slider, each
+        // positioned proportionally to its point on the LINEAR track (not evenly spaced), with
+        // the label nearest the current setting highlighted in the TDP accent colour. The label
+        // set is the slider's endpoints plus every 5 W in between, rebuilt whenever the bounds or
+        // the value change (highlight follows the thumb).
+        private void BuildWattScaleLabels(Windows.UI.Xaml.Controls.Canvas canvas, Windows.UI.Xaml.Controls.Slider slider)
+        {
+            if (canvas == null || slider == null) return;
+            canvas.Children.Clear();
+
+            var scale = OnexScaleFor(slider);
+            int lo = (int)System.Math.Round(scale?.Minimum ?? slider.Minimum);
+            int hi = (int)System.Math.Round(scale?.Maximum ?? slider.Maximum);
+            if (hi <= lo) return;
+
+            var values = new System.Collections.Generic.List<int> { lo };
+            for (int v = ((lo / 5) + 1) * 5; v < hi; v += 5) values.Add(v);
+            if (!values.Contains(hi)) values.Add(hi);
+
+            // Highlight the label nearest the current value.
+            int active = (int)System.Math.Round(slider.Value);
+            int activeIndex = -1;
+            if (slider.IsEnabled && active >= lo)
+            {
+                int best = 0;
+                for (int i = 1; i < values.Count; i++)
+                    if (System.Math.Abs(values[i] - active) < System.Math.Abs(values[best] - active)) best = i;
+                activeIndex = best;
+            }
+
+            var accent = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 0x5C, 0xC9, 0xF0));
+            var dim    = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 0x88, 0x88, 0x88));
+
+            for (int i = 0; i < values.Count; i++)
+            {
+                var tb = new Windows.UI.Xaml.Controls.TextBlock
+                {
+                    Text = values[i].ToString(),
+                    FontSize = 10,
+                    Tag = values[i], // carries the watt value for proportional positioning
+                    Foreground = (i == activeIndex) ? accent : dim,
+                    FontWeight = (i == activeIndex)
+                        ? Windows.UI.Text.FontWeights.SemiBold
+                        : Windows.UI.Text.FontWeights.Normal
+                };
+                canvas.Children.Add(tb);
+            }
+
+            PositionWattScaleLabels(canvas, slider);
+        }
+
+        private void TDPScaleLabels_SizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
+            => PositionWattScaleLabels(TDPScaleLabels, TDPSlider);
+
+        private void TDPBoostScaleLabels_SizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
+            => PositionWattScaleLabels(TDPBoostScaleLabels, TDPBoostFPPTSliderCard);
+
+        /// <summary>Place each watt label under the point on the LINEAR slider track where its value sits —
+        /// center = inset + (v-min)/(max-min) · usable — so labels line up with the thumb. Edge labels
+        /// are clamped inside the canvas.</summary>
+        private void PositionWattScaleLabels(Windows.UI.Xaml.Controls.Canvas canvas, Windows.UI.Xaml.Controls.Slider slider)
+        {
+            if (canvas == null || slider == null) return;
+            double w = canvas.ActualWidth;
+            if (w <= 0) return;
+
+            var scale = OnexScaleFor(slider);
+            double min = scale?.Minimum ?? slider.Minimum;
+            double span = System.Math.Max(1, (scale?.Maximum ?? slider.Maximum) - min);
+            double inset = scale?.Inset ?? 9;
+
+            foreach (var child in canvas.Children)
+            {
+                if (!(child is Windows.UI.Xaml.Controls.TextBlock tb) || !(tb.Tag is int v)) continue;
+                double frac = System.Math.Max(0, System.Math.Min(1, (v - min) / span));
+                tb.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
+                double tw = tb.DesiredSize.Width;
+                double left = inset + frac * (scale?.Travel(w) ?? System.Math.Max(1, w - 2 * inset)) - tw / 2;
+                left = System.Math.Max(0, System.Math.Min(w - tw, left));
+                Windows.UI.Xaml.Controls.Canvas.SetLeft(tb, left);
+                Windows.UI.Xaml.Controls.Canvas.SetTop(tb, 0);
+            }
+        }
+
+        private void ApplyTDPLimits()
+        {
+            // Update TDP slider bounds
+            UpdateTDPSliderBounds();
+
+            // Send the configured PL1 range to the helper
+            SendTDPLimitsToHelper();
+        }
+
+        private void SendTDPLimitsToHelper()
+        {
+            try
+            {
+                string limitsString = $"{deviceTDPMin},{deviceTDPMax}";
+                tdpLimits?.SetValue(limitsString);
+                Logger.Info($"Sent TDP limits to helper: Min={deviceTDPMin}W, Max={deviceTDPMax}W");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to send TDP limits to helper: {ex.Message}");
+            }
+        }
+
+        private void SaveTDPLimitsToStorage()
+        {
+            try
+            {
+                var settings = ApplicationData.Current.LocalSettings;
+                settings.Values["DeviceTDPMin"] = deviceTDPMin;
+                settings.Values["DeviceTDPMax"] = deviceTDPMax;
+                Logger.Info($"Saved TDP limits: Min={deviceTDPMin}W, Max={deviceTDPMax}W");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to save TDP limits: {ex.Message}");
+            }
+        }
+
+        private void LoadTDPLimitsFromStorage()
+        {
+            isLoadingTDPLimits = true;
+            try
+            {
+                var settings = ApplicationData.Current.LocalSettings;
+
+                if (settings.Values.TryGetValue("DeviceTDPMin", out object minObj) && minObj is int min)
+                {
+                    deviceTDPMin = min;
+                }
+
+                if (settings.Values.TryGetValue("DeviceTDPMax", out object maxObj) && maxObj is int max)
+                {
+                    deviceTDPMax = max;
+                }
+
+                // Update UI
+                if (TDPLimitsMinSlider != null)
+                {
+                    TDPLimitsMinSlider.Value = deviceTDPMin;
+                    if (TDPLimitsMinValue != null)
+                        TDPLimitsMinValue.Text = global::XboxGamingBar.OnexStrings.Format("{0}W",deviceTDPMin);
+                }
+
+                if (TDPLimitsMaxSlider != null)
+                {
+                    TDPLimitsMaxSlider.Value = deviceTDPMax;
+                    if (TDPLimitsMaxValue != null)
+                        TDPLimitsMaxValue.Text = global::XboxGamingBar.OnexStrings.Format("{0}W",deviceTDPMax);
+                }
+
+                // Apply to TDP slider
+                ApplyTDPLimits();
+
+                Logger.Info($"Loaded TDP limits: Min={deviceTDPMin}W, Max={deviceTDPMax}W");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to load TDP limits: {ex.Message}");
+            }
+            finally
+            {
+                isLoadingTDPLimits = false;
+            }
+        }
+        private void OSDFontComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+            if (OSDFontComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+            {
+                int bar = tag.IndexOf('|');
+                if (bar > 0)
+                {
+                    osdFont = tag.Substring(0, bar);
+                    if (int.TryParse(tag.Substring(bar + 1), out int w) && w > 0) osdFontWeight = w;
+                }
+                else
+                {
+                    osdFont = tag;
+                }
+                SaveOSDConfigToStorage();
+                SendOSDConfigToHelper();
+            }
+        }
+
+        private void OSDLayoutOption_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+
+            // Get text size (global setting)
+            if (OSDTextSizeComboBox?.SelectedItem is ComboBoxItem sizeItem && sizeItem.Tag is string sizeTag)
+            {
+                if (int.TryParse(sizeTag, out int size))
+                {
+                    osdTextSize = size;
+                }
+            }
+
+            // Columns are per-level, handled by SaveCurrentOSDConfig
+            SaveCurrentOSDConfig();
+        }
+
+        private void OSDTextColorDynamic_Changed(object sender, RoutedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+
+            bool isDynamic = OSDTextColorDynamicCheckBox?.IsChecked == true;
+            if (isDynamic)
+            {
+                osdTextColor = "DYNAMIC";
+                UpdateOSDTextColorPreview();
+            }
+            else
+            {
+                // Use current color picker color
+                if (OSDTextColorPicker != null)
+                {
+                    var color = OSDTextColorPicker.Color;
+                    osdTextColor = $"{color.R:X2}{color.G:X2}{color.B:X2}";
+                }
+                else
+                {
+                    osdTextColor = "FFFFFF";
+                }
+                UpdateOSDTextColorPreview();
+            }
+
+            SaveOSDConfigToStorage();
+            SendOSDConfigToHelper();
+        }
+
+        private void OSDTextColorExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (OSDTextColorPicker != null)
+                {
+                    bool isExpanded = OSDTextColorPicker.Visibility == Visibility.Visible;
+                    OSDTextColorPicker.Visibility = isExpanded ? Visibility.Collapsed : Visibility.Visible;
+
+                    if (OSDTextColorExpandButton != null)
+                    {
+                        OSDTextColorExpandButton.Content = isExpanded ? "\uE70D" : "\uE70E";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in OSDTextColorExpandButton_Click: {ex.Message}");
+            }
+        }
+
+        private void OSDTextColorPicker_ColorChanged(Microsoft.UI.Xaml.Controls.ColorPicker sender, Microsoft.UI.Xaml.Controls.ColorChangedEventArgs args)
+        {
+            if (isLoadingOSDConfig) return;
+
+            try
+            {
+                // Update preview
+                if (OSDTextColorPreview != null)
+                {
+                    OSDTextColorPreview.Background = new SolidColorBrush(args.NewColor);
+                }
+
+                // Only update color if not in Dynamic mode
+                if (OSDTextColorDynamicCheckBox?.IsChecked != true)
+                {
+                    osdTextColor = $"{args.NewColor.R:X2}{args.NewColor.G:X2}{args.NewColor.B:X2}";
+                    SaveOSDConfigToStorage();
+                    SendOSDConfigToHelper();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in OSDTextColorPicker_ColorChanged: {ex.Message}");
+            }
+        }
+
+        private void OSDLabelColorDefault_Changed(object sender, RoutedEventArgs e)
+        {
+            if (isLoadingOSDConfig) return;
+
+            bool isDefault = OSDLabelColorDefaultCheckBox?.IsChecked == true;
+            if (isDefault)
+            {
+                osdLabelColor = "DEFAULT";
+                UpdateOSDLabelColorPreview();
+            }
+            else
+            {
+                // Use current color picker color
+                if (OSDLabelColorPicker != null)
+                {
+                    var color = OSDLabelColorPicker.Color;
+                    osdLabelColor = $"{color.R:X2}{color.G:X2}{color.B:X2}";
+                }
+                else
+                {
+                    osdLabelColor = "00FFFF";  // Cyan default
+                }
+                UpdateOSDLabelColorPreview();
+            }
+
+            SaveOSDConfigToStorage();
+            SendOSDConfigToHelper();
+        }
+
+        private void OSDLabelColorExpandButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (OSDLabelColorPicker != null)
+                {
+                    bool isExpanded = OSDLabelColorPicker.Visibility == Visibility.Visible;
+                    OSDLabelColorPicker.Visibility = isExpanded ? Visibility.Collapsed : Visibility.Visible;
+
+                    if (OSDLabelColorExpandButton != null)
+                    {
+                        OSDLabelColorExpandButton.Content = isExpanded ? "\uE70D" : "\uE70E";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in OSDLabelColorExpandButton_Click: {ex.Message}");
+            }
+        }
+
+        private void OSDLabelColorPicker_ColorChanged(Microsoft.UI.Xaml.Controls.ColorPicker sender, Microsoft.UI.Xaml.Controls.ColorChangedEventArgs args)
+        {
+            if (isLoadingOSDConfig) return;
+
+            try
+            {
+                // Update preview
+                if (OSDLabelColorPreview != null)
+                {
+                    OSDLabelColorPreview.Background = new SolidColorBrush(args.NewColor);
+                }
+
+                // Only update color if not in Default mode
+                if (OSDLabelColorDefaultCheckBox?.IsChecked != true)
+                {
+                    osdLabelColor = $"{args.NewColor.R:X2}{args.NewColor.G:X2}{args.NewColor.B:X2}";
+                    SaveOSDConfigToStorage();
+                    SendOSDConfigToHelper();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error in OSDLabelColorPicker_ColorChanged: {ex.Message}");
+            }
+        }
+
+        private void UpdateOSDTextColorPreview()
+        {
+            if (OSDTextColorPreview == null) return;
+
+            try
+            {
+                if (osdTextColor == "DYNAMIC")
+                {
+                    if(OnexFrontend.UsesOwnBackend)
+                    {
+                        var colors=new LinearGradientBrush();colors.StartPoint=new Windows.Foundation.Point(0,0);colors.EndPoint=new Windows.Foundation.Point(1,0);
+                        colors.GradientStops.Add(new GradientStop{Color=Windows.UI.Color.FromArgb(255,89,219,255),Offset=0});
+                        colors.GradientStops.Add(new GradientStop{Color=Windows.UI.Color.FromArgb(255,173,154,255),Offset=.5});
+                        colors.GradientStops.Add(new GradientStop{Color=Windows.UI.Color.FromArgb(255,155,227,151),Offset=1});OSDTextColorPreview.Background=colors;return;
+                    }
+                    // Show gradient for dynamic color preview (blue to green to yellow to red)
+                    var gradient = new LinearGradientBrush();
+                    gradient.StartPoint = new Windows.Foundation.Point(0, 0);
+                    gradient.EndPoint = new Windows.Foundation.Point(1, 0);
+                    gradient.GradientStops.Add(new GradientStop { Color = Windows.UI.Color.FromArgb(255, 0, 128, 255), Offset = 0 });    // Blue (cold)
+                    gradient.GradientStops.Add(new GradientStop { Color = Windows.UI.Color.FromArgb(255, 0, 255, 0), Offset = 0.33 });   // Green (good)
+                    gradient.GradientStops.Add(new GradientStop { Color = Windows.UI.Color.FromArgb(255, 255, 255, 0), Offset = 0.66 }); // Yellow (warm)
+                    gradient.GradientStops.Add(new GradientStop { Color = Windows.UI.Color.FromArgb(255, 255, 0, 0), Offset = 1 });      // Red (hot)
+                    OSDTextColorPreview.Background = gradient;
+                }
+                else if (osdTextColor.Length == 6)
+                {
+                    var color = Windows.UI.Color.FromArgb(255,
+                        Convert.ToByte(osdTextColor.Substring(0, 2), 16),
+                        Convert.ToByte(osdTextColor.Substring(2, 2), 16),
+                        Convert.ToByte(osdTextColor.Substring(4, 2), 16));
+                    OSDTextColorPreview.Background = new SolidColorBrush(color);
+                }
+            }
+            catch { }
+        }
+
+        private void UpdateOSDLabelColorPreview()
+        {
+            if (OSDLabelColorPreview == null) return;
+
+            try
+            {
+                if (osdLabelColor == "DEFAULT")
+                {
+                    // Show gradient to indicate default (each item has its own color)
+                    var gradient = new LinearGradientBrush();
+                    gradient.StartPoint = new Windows.Foundation.Point(0, 0);
+                    gradient.EndPoint = new Windows.Foundation.Point(1, 0);
+                    gradient.GradientStops.Add(new GradientStop { Color = Windows.UI.Color.FromArgb(255, 0, 255, 255), Offset = 0 });    // Cyan
+                    gradient.GradientStops.Add(new GradientStop { Color = Windows.UI.Color.FromArgb(255, 255, 165, 0), Offset = 0.5 });  // Orange
+                    gradient.GradientStops.Add(new GradientStop { Color = Windows.UI.Color.FromArgb(255, 0, 255, 0), Offset = 1 });      // Green
+                    OSDLabelColorPreview.Background = gradient;
+                }
+                else if (osdLabelColor.Length == 6)
+                {
+                    var color = Windows.UI.Color.FromArgb(255,
+                        Convert.ToByte(osdLabelColor.Substring(0, 2), 16),
+                        Convert.ToByte(osdLabelColor.Substring(2, 2), 16),
+                        Convert.ToByte(osdLabelColor.Substring(4, 2), 16));
+                    OSDLabelColorPreview.Background = new SolidColorBrush(color);
+                }
+            }
+            catch { }
+        }
+
+        private void UpdateOSDLayoutUI()
+        {
+            bool priorLoading=_isLoadingOSDConfig;
+            isLoadingOSDConfig = true;
+            try
+            {
+                // Set OSD provider combobox
+                if (OSDProviderComboBox != null)
+                {
+                    foreach (ComboBoxItem item in OSDProviderComboBox.Items)
+                    {
+                        if (item.Tag is string tag && int.TryParse(tag, out int val) && val == osdProvider)
+                        {
+                            OSDProviderComboBox.SelectedItem = item;
+                            break;
+                        }
+                    }
+                }
+
+                // Update provider-specific UI visibility
+                UpdateOSDProviderUI();
+
+                // Columns are per-level, loaded in LoadOSDOptionsForLevel
+
+                // Set text size combobox
+                if (OSDTextSizeComboBox != null)
+                {
+                    foreach (ComboBoxItem item in OSDTextSizeComboBox.Items)
+                    {
+                        if (item.Tag is string tag && int.TryParse(tag, out int val) && val == osdTextSize)
+                        {
+                            OSDTextSizeComboBox.SelectedItem = item;
+                            break;
+                        }
+                    }
+                }
+
+                // Set overlay font combobox (Tag = "Face|Weight")
+                if (OSDFontComboBox != null)
+                {
+                    string fontTag = $"{osdFont}|{osdFontWeight}";
+                    foreach (ComboBoxItem item in OSDFontComboBox.Items)
+                    {
+                        if (item.Tag is string ftag && string.Equals(ftag, fontTag, StringComparison.OrdinalIgnoreCase))
+                        {
+                            OSDFontComboBox.SelectedItem = item;
+                            break;
+                        }
+                    }
+                }
+
+                // Set text color checkbox and color picker
+                if (OSDTextColorDynamicCheckBox != null)
+                {
+                    OSDTextColorDynamicCheckBox.IsChecked = (osdTextColor == "DYNAMIC");
+                }
+                if (OSDTextColorPicker != null && osdTextColor != "DYNAMIC" && osdTextColor.Length == 6)
+                {
+                    try
+                    {
+                        var color = Windows.UI.Color.FromArgb(255,
+                            Convert.ToByte(osdTextColor.Substring(0, 2), 16),
+                            Convert.ToByte(osdTextColor.Substring(2, 2), 16),
+                            Convert.ToByte(osdTextColor.Substring(4, 2), 16));
+                        OSDTextColorPicker.Color = color;
+                    }
+                    catch { }
+                }
+                UpdateOSDTextColorPreview();
+
+                // Set label color checkbox and color picker
+                if (OSDLabelColorDefaultCheckBox != null)
+                {
+                    OSDLabelColorDefaultCheckBox.IsChecked = (osdLabelColor == "DEFAULT");
+                }
+                if (OSDLabelColorPicker != null && osdLabelColor != "DEFAULT" && osdLabelColor.Length == 6)
+                {
+                    try
+                    {
+                        var color = Windows.UI.Color.FromArgb(255,
+                            Convert.ToByte(osdLabelColor.Substring(0, 2), 16),
+                            Convert.ToByte(osdLabelColor.Substring(2, 2), 16),
+                            Convert.ToByte(osdLabelColor.Substring(4, 2), 16));
+                        OSDLabelColorPicker.Color = color;
+                    }
+                    catch { }
+                }
+                UpdateOSDLabelColorPreview();
+
+            }
+            finally
+            {
+                isLoadingOSDConfig = priorLoading;
+            }
+        }
+
+    }
+}

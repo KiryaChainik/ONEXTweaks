@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/enterTheVoidCode/ClawTweaks",
+  "ref": "release/v0.3.98.0",
+  "commit": "7eaaf0573a9e783735ef7a84dad0f59d23230261",
+  "imported": "2026-10-26",
+  "license": "AGPL-3.0 + retained MIT notices",
+  "scope": "Full public frontend and shared models; private helper is not part of upstream public source"
+}
