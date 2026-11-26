@@ -20,7 +20,7 @@ ONEXTweaks runs inside **Xbox Game Bar** on Windows 11 x64. Open it with **Win +
 
 ## Take a tour
 
-The tour uses Dracula with Glass Effect off and shows example readings. To compare palettes, open the [theme gallery](#theme-gallery).
+The tour uses Dracula with Glass Effect off. To compare palettes, open the [theme gallery](#theme-gallery).
 
 ### 🏠 Home
 
@@ -36,7 +36,7 @@ The tour uses Dracula with Glass Effect off and shows example readings. To compa
 ### ⚡ Performance
 
 <p align="center">
-  <img src="docs/images/performance-tab.png" width="640" alt="Performance tab power settings with separate sliders for sustained and short-burst processor power">
+  <img src="docs/images/performance-tab.png" width="640" alt="Connected Performance tab showing the active profile, its PL1 and PL2 values, CPU controls, and frame-rate cap">
 </p>
 
 **The TDP card sets the processor's power limits in watts.** The two sliders let you set a steady limit for regular play and a higher limit for short bursts of work.
@@ -117,7 +117,7 @@ Use the sticks as a cursor and scroll wheel. Tune pointer speed and precision se
 ### 🖥️ Screen Colors
 
 <p align="center">
-  <img src="docs/images/screen-colors.gif" width="640" alt="Screen Colors sliders changing brightness, saturation, and contrast alongside an example image">
+  <img src="docs/images/screen-colors.gif" width="640" alt="Screen Colors sliders changing brightness and saturation alongside the reference image">
 </p>
 
 *The animation illustrates how color adjustments can look. Actual output depends on your display and graphics driver.*
