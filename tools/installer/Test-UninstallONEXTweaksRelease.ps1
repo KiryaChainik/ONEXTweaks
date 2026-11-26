@@ -19,7 +19,32 @@ $family = 'ONEXTweaks.Widget_3a23eh8tyg7na'
 $full = 'ONEXTweaks.Widget_0.29.100.0_x64__3a23eh8tyg7na'
 $f = @{ Running=$true; Enabled=$true; Task=$true; Package=$true; Marker=''; TaskReads=0; Stops=0; Restores=0; Unregisters=0; Author='installer';
     MaintenanceActive=$false; MaintenanceStarts=0; MaintenanceStops=0; ParentKey=$false; ReceiptKey=$false; TransientReads=0; TransientOmission=$false;
-    RuntimeDeleteBlocks=0; RuntimeDeleteAttempts=0 }
+    RuntimeDeleteBlocks=0; RuntimeDeleteAttempts=0; StopCountdown=0 }
+$comTask = [pscustomobject]@{Fixture=$f}
+Add-Member -InputObject $comTask -MemberType ScriptProperty -Name Enabled -Value { $this.Fixture.Enabled } -SecondValue {
+    $this.Fixture.Enabled = $args[0]
+}
+Add-Member -InputObject $comTask -MemberType ScriptMethod -Name GetInstances -Value {
+    param([int]$Flags)
+    Check ($Flags -eq 0) 'Unexpected task instance flags.'
+    if ($this.Fixture.StopCountdown -gt 0) {
+        $this.Fixture.StopCountdown--
+        if (!$this.Fixture.StopCountdown) { $this.Fixture.Running = $false }
+    }
+    [pscustomobject]@{Count=[int]$this.Fixture.Running}
+}
+Add-Member -InputObject $comTask -MemberType ScriptMethod -Name Stop -Value {
+    param([int]$Flags)
+    Check ($Flags -eq 0 -and !$this.Fixture.Enabled) 'Stop was requested before disabling the verified task.'
+    $this.Fixture.Stops++
+    $this.Fixture.StopCountdown = 2
+}
+function Get-ONEXTweaksTaskFolder { 'Owned test folder' }
+function Get-ONEXTweaksComOwnedTask($Plan,$Folder,$Name) {
+    Check ($Folder -ceq 'Owned test folder' -and $Name -ceq 'ONEXTweaks-WidgetBridge' -and
+        (Get-ONEXTweaksReleaseTaskDigest $Name) -ceq $Plan.Tasks[$Name].DefinitionSha256) 'Unverified COM task.'
+    if ($f.Task) { $comTask }
+}
 function Assert-ONEXTweaksProtectedItem($Path) { Check ($Path.StartsWith($temp) -and (Test-Path -LiteralPath $Path)) 'Unexpected fixture protection check.' }
 function Export-ScheduledTask($TaskPath,$TaskName) {
     Check ($TaskPath -eq '\' -and $TaskName -ceq 'ONEXTweaks-WidgetBridge') 'Unexpected task export.'
@@ -37,7 +62,7 @@ function Get-ScheduledTask($TaskPath) {
     $f.TaskReads++
     if ($f.TransientOmission) { $f.TransientOmission=$false; return }
     if ($f.Task) {
-        [pscustomobject]@{ TaskName='ONEXTweaks-WidgetBridge'; TaskPath='\'; State=$(if($f.Running){'Running'}else{'Ready'});
+        [pscustomobject]@{ TaskName='ONEXTweaks-WidgetBridge'; TaskPath='\'; State=$(if(!$f.Enabled){'Disabled'}elseif($f.Running){'Running'}else{'Ready'});
             Settings=[pscustomobject]@{ Enabled=$f.Enabled } }
     }
 }
@@ -158,10 +183,28 @@ try {
         Assert-ONEXTweaksReleasedController $recoveryPlan $lease
         Check (!(Test-Path -LiteralPath $lease)) 'Receipt-owned low-privilege recovery did not release its capture.'
     }
+    # Model an earlier uninstall stopping after Disable while the instance still runs.
+    $f.Enabled = $false
     $f.FailRestore = $true
     Reject { Invoke-ONEXTweaksMachineRemoval $plan $lease } 'Changed OEM task'
-    Check ($f.Unregisters -eq 0 -and (Test-Path -LiteralPath $owned) -and (Test-Path -LiteralPath $receiptPath)) 'OEM conflict lost recovery state.'
+    Check ($f.Stops -eq 1 -and !$f.Running -and $f.Unregisters -eq 0 -and
+        (Test-Path -LiteralPath $owned) -and (Test-Path -LiteralPath $receiptPath)) 'Disabled task kept running or an OEM conflict lost recovery state.'
     $f.FailRestore = $false
+    & {
+        $read = @{Attempts=0}
+        function Get-FileHash($LiteralPath,$Algorithm) {
+            $read.Attempts++
+            if ($read.Attempts -eq 1) { throw [IO.IOException]::new('File verification is temporarily blocked.', -2147024864) }
+            Microsoft.PowerShell.Utility\Get-FileHash -LiteralPath $LiteralPath -Algorithm $Algorithm
+        }
+        function Start-Sleep([int]$Milliseconds) {
+            Check ($Milliseconds -eq 250) 'Unexpected file verification retry interval.'
+            [IO.File]::WriteAllText($owned,'replaced during retry')
+        }
+        Reject { Remove-ONEXTweaksOwnedReleaseFile $plan $plan.Files[$owned] } 'file was replaced'
+        Check ($read.Attempts -eq 2 -and $f.RuntimeDeleteAttempts -eq 0) 'File verification was skipped during retry.'
+        [IO.File]::WriteAllText($owned,'owned')
+    }
     [IO.File]::SetAttributes($owned, [IO.FileAttributes]::ReadOnly)
     & {
         function Start-Sleep([int]$Milliseconds) { Check ($Milliseconds -eq 250) 'Unexpected retry interval.' }
@@ -177,5 +220,28 @@ try {
     Check ($f.TransientReads -eq 0 -and $f.Unregisters -eq 1) 'Transient scheduler reads prevented one verified removal.'
     Check ($f.RuntimeDeleteAttempts -eq 3) 'The temporary runtime image mapping prevented first-attempt uninstall.'
     Check (!(Test-Path -LiteralPath $receiptPath) -and (Test-Path -LiteralPath $data) -and $null -eq (Get-ONEXTweaksUninstallPlan $state $root)) 'Repeated uninstall or user data changed.'
+    $actors = @()
+    try {
+        $relative = 'WidgetBridge\ONEXTweaks.WidgetBridge.exe'
+        $bridgeImage = Join-Path $root $relative
+        $otherImage = Join-Path $local 'ONEXTweaks.WidgetBridge.exe'
+        foreach ($image in @($bridgeImage,$otherImage)) {
+            [IO.File]::Copy((Join-Path ([Environment]::SystemDirectory) 'ping.exe'),$image)
+            $actors += Start-Process -FilePath $image -ArgumentList '-t','127.0.0.1' -WindowStyle Hidden -PassThru
+        }
+        Check (!$actors[0].HasExited -and !$actors[1].HasExited) 'The runtime process fixtures did not start.'
+        $fileRows = @{}
+        $fileRows[$bridgeImage] = @{Path=$relative;Sha256=(Get-FileHash -LiteralPath $bridgeImage).Hash}
+        $actualSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+        Stop-ONEXTweaksOwnedBridgeProcesses ([pscustomobject]@{Root=$root;Files=$fileRows;Receipt=@{OwnerSid=$sid}})
+        Check (!$actors[0].HasExited) 'A runtime process was stopped for a different owner SID.'
+        Stop-ONEXTweaksOwnedBridgeProcesses ([pscustomobject]@{Root=$root;Files=$fileRows;Receipt=@{OwnerSid=$actualSid}})
+        Check ($actors[0].HasExited -and !$actors[1].HasExited) 'Process cleanup missed the detached runtime or stopped an unrelated image.'
+    } finally {
+        foreach ($actor in $actors) {
+            if (!$actor.HasExited) { $actor.Kill(); $null = $actor.WaitForExit(5000) }
+            $actor.Dispose()
+        }
+    }
     'Two-phase uninstall, capture blocking, preserved AppX data, exact task/file ownership and retry fixtures passed.'
 } finally { if ([IO.Directory]::Exists($temp)) { [IO.Directory]::Delete($temp,$true) } }

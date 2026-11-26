@@ -69,10 +69,14 @@ function Get-ONEXTweaksComTask($Folder, [string]$Name) {
     }
 }
 
-function Test-ONEXTweaksRegisteredTask([string]$Name) {
+function Get-ONEXTweaksTaskFolder {
     $scheduler = New-Object -ComObject Schedule.Service
     $scheduler.Connect()
-    $null -ne (Get-ONEXTweaksComTask ($scheduler.GetFolder('\')) $Name)
+    $scheduler.GetFolder('\')
+}
+
+function Test-ONEXTweaksRegisteredTask([string]$Name) {
+    $null -ne (Get-ONEXTweaksComTask (Get-ONEXTweaksTaskFolder) $Name)
 }
 
 function Get-ONEXTweaksComOwnedTask($Plan, $Folder, [string]$Name) {
@@ -461,11 +465,39 @@ function Remove-ONEXTweaksOwnedMachineState($Plan) {
     }
 }
 
+function Stop-ONEXTweaksOwnedBridgeProcesses($Plan) {
+    $images = @(foreach ($relative in @('CompanionLauncher.exe','WidgetBridge\ONEXTweaks.WidgetBridge.exe','WidgetBridge\ONEXTweaks.ControllerObserver.exe')) {
+        $path = Join-Path $Plan.Root $relative
+        if ($Plan.Files.ContainsKey($path) -and (Test-Path -LiteralPath $path -PathType Leaf -ErrorAction Stop)) {
+            Get-ONEXTweaksVerifiedTool $Plan $relative
+        }
+    })
+    if (!$images.Count) { return }
+    $names = @($images | ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_) })
+    $session = (Get-Process -Id $PID).SessionId
+    foreach ($process in @(Get-Process -Name $names -ErrorAction SilentlyContinue)) {
+        try {
+            if ($process.SessionId -ne $session -or $process.Path -notin $images) { continue }
+            # Keep the original process object bound to its Windows handle before
+            # validating the owner. A disappearing process is already stopped.
+            $null = $process.Handle
+            if ($process.HasExited) { continue }
+            $actor = Get-CimInstance Win32_Process -Filter "ProcessId=$($process.Id)" -ErrorAction Stop
+            if (!$actor -or $actor.SessionId -ne $session -or $actor.ExecutablePath -notin $images -or
+                (Invoke-CimMethod -InputObject $actor -MethodName GetOwnerSid -ErrorAction Stop).Sid -cne $Plan.Receipt.OwnerSid) { continue }
+            if (!$process.HasExited) { $process.Kill() }
+            if (!$process.WaitForExit(8000)) { throw "Owned Bridge process did not stop: $($process.Id)" }
+        } catch {
+            if (!$process.HasExited) { throw }
+        } finally { $process.Dispose() }
+    }
+}
+
 function Remove-ONEXTweaksOwnedReleaseFile($Plan, $Row) {
     for ($attempt = 0; ; $attempt++) {
-        $path = Get-ONEXTweaksOwnedFile $Plan.Root $Row
-        if (!(Test-Path -LiteralPath $path -PathType Leaf -ErrorAction Stop)) { return }
         try {
+            $path = Get-ONEXTweaksOwnedFile $Plan.Root $Row
+            if (!(Test-Path -LiteralPath $path -PathType Leaf -ErrorAction Stop)) { return }
             Remove-Item -LiteralPath $path -Force -ErrorAction Stop
             return
         } catch {
@@ -478,6 +510,18 @@ function Remove-ONEXTweaksOwnedReleaseFile($Plan, $Row) {
     }
 }
 
+function Stop-ONEXTweaksReleaseTask($Task, [string]$Name) {
+    if ($Task.Enabled) { $Task.Enabled = $false }
+    # A disabled task can still have running instances.
+    if (!$Task.GetInstances(0).Count) { return }
+    $Task.Stop(0)
+    for ($attempt = 0; $attempt -lt 40; $attempt++) {
+        if (!$Task.GetInstances(0).Count) { return }
+        Start-Sleep -Milliseconds 250
+    }
+    if ($Task.GetInstances(0).Count) { throw "Scheduled task did not stop: $Name" }
+}
+
 function Invoke-ONEXTweaksMachineRemoval($Plan, [string]$Lease) {
     $marker = "Registry::HKEY_USERS\$($Plan.Receipt.OwnerSid)\Software\ONEXTweaks\Installation"
     if ((Get-ItemProperty -LiteralPath $marker -Name OwnerRemovalReceipt -ErrorAction Stop).OwnerRemovalReceipt -cne $Plan.Digest) {
@@ -485,24 +529,17 @@ function Invoke-ONEXTweaksMachineRemoval($Plan, [string]$Lease) {
     }
     if (Get-ONEXTweaksOwnerPackage $Plan -TargetUser) { throw 'The owner still has this widget registered.' }
     Assert-ONEXTweaksReleasedController $Plan $Lease
-    foreach ($name in @('ONEXTweaks-Startup','ONEXTweaks-WidgetBridge','ONEXTweaks-PowerAgent')) {
+    $folder = Get-ONEXTweaksTaskFolder
+    foreach ($name in @('ONEXTweaks-Startup','ONEXTweaks-WidgetBridge','ONEXTweaks-PowerAgent','ONEXTweaks-ControllerInputRecovery')) {
         if (!$Plan.Tasks.ContainsKey($name)) { continue }
         if ($name -eq 'ONEXTweaks-PowerAgent') { Wait-ONEXTweaksHardwareRestore $Plan }
-        $task = Get-ONEXTweaksRemainingTask $Plan $name
-        if (!$task) { continue }
-        if ($task.Settings.Enabled) { Disable-ScheduledTask -InputObject $task -ErrorAction Stop | Out-Null }
-        $task = Get-ONEXTweaksRemainingTask $Plan $name
-        if ($task -and $task.State -in @('Running','Queued')) {
-            Stop-ScheduledTask -InputObject $task -ErrorAction Stop
-            for ($i=0; $i -lt 40; $i++) {
-                $task = Get-ONEXTweaksRemainingTask $Plan $name
-                if (!$task -or $task.State -notin @('Running','Queued')) { break }
-                Start-Sleep -Milliseconds 250
-            }
-            if ($task -and $task.State -in @('Running','Queued')) { throw "Scheduled task did not stop: $name" }
-        }
+        if ($name -eq 'ONEXTweaks-ControllerInputRecovery') { Assert-ONEXTweaksReleasedController $Plan $Lease $folder }
+        if (!(Get-ONEXTweaksRemainingTask $Plan $name)) { continue }
+        $task = Get-ONEXTweaksComOwnedTask $Plan $folder $name
+        if ($task) { Stop-ONEXTweaksReleaseTask $task $name }
     }
     Assert-ONEXTweaksReleasedController $Plan $Lease
+    Stop-ONEXTweaksOwnedBridgeProcesses $Plan
     $oem = Invoke-ONEXTweaksOneXConsoleHandoff -Operation Restore -StateDirectory $Plan.StateDirectory -UserSid $Plan.Receipt.OwnerSid
     foreach ($name in $Plan.Tasks.Keys) {
         $task = Get-ONEXTweaksRemainingTask $Plan $name
