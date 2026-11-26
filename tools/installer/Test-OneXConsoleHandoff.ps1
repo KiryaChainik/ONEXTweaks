@@ -9,11 +9,11 @@ $vendorHash = 'A5471B7F07DBFE737A195E7D75B1282786BFB95F9E65B3E1D94298422D907CB0'
 
 function Check($Condition, $Message) { if (!$Condition) { throw $Message } }
 function ExpectFailure([scriptblock]$Action, [string]$Message) {
-    try { & $Action | Out-Null } catch {
+    try { $result = & $Action } catch {
         if ($_.Exception.Message -like "*$Message*") { return }
         throw
     }
-    throw "Expected exception containing '$Message'."
+    throw "Expected exception containing '$Message'; received '$result'."
 }
 function Get-ScheduledTask($TaskPath) {
     Check ($TaskPath -ceq '\') 'Unexpected scheduler folder.'
@@ -86,6 +86,8 @@ try {
     Check ((Apply) -eq 'Review existing logon task') 'Modified VBS was accepted.'
     $fixture.Hash = $vendorHash
     Check (!(Test-Path -LiteralPath $receipt) -and $fixture.Disables -eq 0 -and $fixture.Enables -eq 0) 'Unowned task was changed.'
+    $recognized = Get-ONEXTweaksOemTaskSnapshot $sid
+    Check ($recognized.State -eq 'Recognized' -and $recognized.Enabled) "Expected the enabled OEM fixture; received '$($recognized.State)'."
     $fixture.FailDisable = $true
     ExpectFailure { Apply } 'Disable denied'
     $task.Settings.Enabled = $false
