@@ -10,7 +10,10 @@ param(
     [Alias('RuntimeManifest')][string]$BundleRuntimeManifest,
     [Parameter(Mandatory,ParameterSetName='Upgrade')][Parameter(Mandatory,ParameterSetName='Report')]
     [Alias('RuntimeManifestSha256')][ValidatePattern('^[a-fA-F0-9]{64}$')][string]$BundleRuntimeManifestSha256,
-    [Parameter(ParameterSetName='Upgrade')][ValidateRange(1,600)][int]$RuntimeTimeoutSeconds=210
+    [Parameter(ParameterSetName='Upgrade')][ValidateRange(1,600)][int]$RuntimeTimeoutSeconds=210,
+    # The default preserves direct calls for the archived 1110 bundle.
+    [Parameter(ParameterSetName='Upgrade')][Parameter(ParameterSetName='Report')]
+    [ValidatePattern('^[a-fA-F0-9]{64}$')][string]$WidgetSha256 = '719252E33EA6A0D4175AEFC1EBB08465AB554985C677D5ED0CDB6ACD0AF3F578'
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -19,7 +22,6 @@ $oldPackage = 'ONEXTweaks.Widget_0.29.1109.0_x64__3a23eh8tyg7na'
 $newPackage = 'ONEXTweaks.Widget_0.29.1110.0_x64__3a23eh8tyg7na'
 $family = 'ONEXTweaks.Widget_3a23eh8tyg7na'
 $oldHash = '1D67F65DBF8EF0F9ED5ACD6B56A4C82C0080333B031E846207FA5BE76A61EA81'
-$newHash = '719252E33EA6A0D4175AEFC1EBB08465AB554985C677D5ED0CDB6ACD0AF3F578'
 $names = @('ONEXTweaks-Startup','ONEXTweaks-WidgetBridge','ONEXTweaks-ControllerInputRecovery','ONEXTweaks-PowerAgent','ONEXTweaks-RTSS')
 $hardwareSettings = @('home-oem-settings.json','led-color-profile.json','boost-modes.json')
 
@@ -189,9 +191,13 @@ function Restore-ONEXTweaksUpgrade($Journal, [bool]$RestartLegacy) {
 }
 
 if ($PSCmdlet.ParameterSetName -ne 'Recover') {
-    $WidgetPackage = Assert-ONEXTweaksUpgradeFile $WidgetPackage $newHash
+    $WidgetPackage = Assert-ONEXTweaksUpgradeFile $WidgetPackage $WidgetSha256
     $RollbackPackage = Assert-ONEXTweaksUpgradeFile $RollbackPackage $oldHash
     $BundleRuntimeManifest = Assert-ONEXTweaksUpgradeFile $BundleRuntimeManifest $BundleRuntimeManifestSha256
+    $candidate = & $install -WidgetPackage $WidgetPackage -WidgetSha256 $WidgetSha256 -InspectPackage
+    if ($candidate.Widget.Version -ne [version]'0.29.1110.0' -or $candidate.Widget.Publisher -cne 'CN=ONEXTweaks Development') {
+        throw 'The target MSIX must be ONEXTweaks 1110 signed for the existing package family.'
+    }
     $hardware = (Get-ONEXTweaksHardwareCompatibility) -eq 'Supported'
     $manifest = [IO.File]::ReadAllText($BundleRuntimeManifest) | ConvertFrom-Json
     if ($manifest.PackageFullName -cne $newPackage) { throw 'Runtime does not match the target widget.' }
@@ -255,7 +261,7 @@ try {
         Test-ONEXTweaksMachineRestartPending $state $local
     }
     if ($restartPending) { throw 'Restart Windows before updating ONEXTweaks from 1109 to 1110.' }
-    $preflight = & $install -WidgetPackage $WidgetPackage -WidgetSha256 $newHash -TargetUserSid $owner
+    $preflight = & $install -WidgetPackage $WidgetPackage -WidgetSha256 $WidgetSha256 -TargetUserSid $owner
     if ($preflight.Blockers.Count -or $preflight.RestartRequired) { throw "Widget prerequisites block the upgrade: $($preflight.Blockers -join '; ')" }
     $review = @($preflight.Drivers + $preflight.Applications | Where-Object Status -notin @('Installed','Not applicable','Missing'))
     if ($review.Count) {
@@ -293,7 +299,7 @@ try {
         $desktop = [pscustomobject]@{Schema=1; InstallId=$id; OwnerSid=$owner; PackageOwned=$false;
             PackageFullName=$newPackage; PackageFamilyName=$family; GuideOwned=$false}
         Write-ONEXTweaksInstallationRecord $enrollment $desktop
-        $widget = & $install -WidgetPackage $WidgetPackage -WidgetSha256 $newHash -TargetUserSid $owner -Install -CloseActiveWidget -Confirm:$false
+        $widget = & $install -WidgetPackage $WidgetPackage -WidgetSha256 $WidgetSha256 -TargetUserSid $owner -Install -CloseActiveWidget -Confirm:$false
         if (!$widget.WidgetRegistered -or !$widget.PrerequisitesReady -or $widget.RestartRequired) { throw 'Widget setup or prerequisites did not finish.' }
         $null = & $initialize -RuntimeManifest $BundleRuntimeManifest -RuntimeManifestSha256 $BundleRuntimeManifestSha256 -LegacyUpgradeId $id -Confirm:$false
         if ($hardware -and $hadRoot) {

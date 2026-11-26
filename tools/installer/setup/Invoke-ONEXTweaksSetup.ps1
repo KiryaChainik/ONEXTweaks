@@ -107,7 +107,8 @@ try {
         if ($package.PackageFullName -ceq $legacyName) {
             Write-Output 'STEP Updating 1109 and checking your profiles...'
             $previous = Join-Path $PSScriptRoot $metadata.RollbackFile
-            $update = & $upgrade @runtimeArguments -Upgrade -WidgetPackage $packageFile -RollbackPackage $previous -Confirm:$false
+            $update = & $upgrade @runtimeArguments -Upgrade -WidgetPackage $packageFile -WidgetSha256 $metadata.WidgetSha256 `
+                -RollbackPackage $previous -Confirm:$false
             if (!$update.SetupComplete) { throw 'The 1109 update did not report a working installation.' }
             Write-SetupResult 'ONEXTweaks was updated. Your profiles were kept.'
             exit 0
