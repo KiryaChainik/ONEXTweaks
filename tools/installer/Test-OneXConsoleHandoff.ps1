@@ -1,5 +1,8 @@
 # Fixture-only. Scheduler commands are local functions, including all writes.
 $ErrorActionPreference = 'Stop'
+# Windows PowerShell 5.1 exports Get-FileHash as a function from Utility.
+# Load the module before declaring the test double in this fresh process.
+Import-Module Microsoft.PowerShell.Utility
 . (Join-Path $PSScriptRoot 'OneXConsoleSetup.ps1')
 . (Join-Path $PSScriptRoot 'OneXConsoleHandoff.ps1')
 $dir = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString('N'))
