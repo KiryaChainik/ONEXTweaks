@@ -20,10 +20,12 @@ ONEXTweaks runs inside **Xbox Game Bar** on Windows 11 x64. Open it with **Win +
 
 ## Take a tour
 
+The tour uses Dracula with Glass Effect off. To compare palettes, open the [theme gallery](#theme-gallery).
+
 ### 🏠 Home
 
 <p align="center">
-  <img src="docs/images/home-tab.png" width="650" alt="ONEXTweaks Home with live performance readings, power and volume sliders, and quick settings tiles">
+  <img src="docs/images/home-tab.png" width="640" alt="ONEXTweaks Home with live performance readings, power and volume sliders, and quick settings tiles">
 </p>
 
 - **See how your handheld is doing.** Check processor and graphics load, temperature, power draw, and battery level at a glance.
@@ -33,7 +35,9 @@ ONEXTweaks runs inside **Xbox Game Bar** on Windows 11 x64. Open it with **Win +
 
 ### ⚡ Performance
 
-<img src="docs/images/performance-tab.png" width="650" alt="Performance tab power settings with separate sliders for sustained and short-burst processor power">
+<p align="center">
+  <img src="docs/images/performance-tab.png" width="640" alt="Connected Performance tab showing the active profile, its PL1 and PL2 values, CPU controls, and frame-rate cap">
+</p>
 
 **The TDP card sets the processor's power limits in watts.** The two sliders let you set a steady limit for regular play and a higher limit for short bursts of work.
 
@@ -45,13 +49,17 @@ Create a quieter profile for battery play (**DC**) and a faster one when plugged
 <details>
 <summary>See the 25 W / 28 W example on Home</summary>
 
-<img src="docs/images/power-limits.png" width="650" alt="Home power limits set to 25 watts for sustained use and 28 watts for short bursts">
+<p align="center">
+  <img src="docs/images/power-limits.png" width="640" alt="Home power limits set to 25 watts for sustained use and 28 watts for short bursts">
+</p>
 
 </details>
 
 ### 🎮 Controller
 
-<img src="docs/images/controller-tab.png" width="620" alt="Controller tab with profiles, controller mode, remapping, stick and trigger tuning, and gyro settings">
+<p align="center">
+  <img src="docs/images/controller-tab.png" width="640" alt="Controller tab with profiles, controller mode, remapping, stick and trigger tuning, and gyro settings">
+</p>
 
 - **Choose how games see the controller.** **Hardware** uses the handheld's built-in controller directly. **Virtual Xbox 360** and **Virtual DualShock 4** use VIIPER and apply your software stick and trigger settings to games.
 - **Map buttons by clicking the diagram.** Assign a button to another controller input, a key or key combo, or a mouse action. Map two physical buttons to separate clicks on the left and right halves of the virtual DualShock 4 touchpad.
@@ -61,95 +69,122 @@ Create a quieter profile for battery play (**DC**) and a faster one when plugged
 <details>
 <summary>ONEXPLAYER, Xbox, and DualShock 4 remapping diagrams</summary>
 
-<img src="docs/images/controller-remap.png" width="620" alt="Interactive front, rear, and top views of the ONEXPLAYER 3 for button remapping">
+<p align="center">
+  <img src="docs/images/controller-remap.png" width="640" alt="Interactive front, rear, and top views of the ONEXPLAYER 3 for button remapping">
+</p>
 
-<p>
-  <img src="docs/images/xbox-controller.png" width="47%" alt="Xbox controller diagram with the A button selected">
-  <img src="docs/images/dualshock-4.png" width="47%" alt="DualShock 4 diagram with the right side of the touchpad selected">
+<p align="center">
+  <img src="docs/images/xbox-controller.png" width="640" alt="Xbox controller diagram with the A button selected">
+</p>
+
+<p align="center">
+  <img src="docs/images/dualshock-4.png" width="640" alt="DualShock 4 diagram with the right side of the touchpad selected">
 </p>
 
 </details>
 
 <details>
-<summary>Live stick and trigger tests, plus gyro motion</summary>
+<summary>Watch the stick, trigger, and gyro tests</summary>
 
-<img src="docs/images/stick-test.png" width="720" alt="Live stick and trigger test with charts and numbers for input before and after tuning">
+**Sticks & triggers.** See both stick positions, separate LT and RT travel, and the numbers for each axis before and after dead-zone and trigger tuning.
 
-<img src="docs/images/gyro-test.png" width="720" alt="Live gyro test with a 3D model of the handheld, three rotation gauges, and accelerometer readings">
+<p align="center">
+  <img src="docs/images/stick-test.gif" width="640" alt="Both stick plots and both trigger bars moving alongside their raw and tuned numeric readings">
+</p>
 
-<img src="docs/images/gyro-motion.gif" width="552" alt="The widget's 3D model tilting and turning as it replays recorded sensor data">
+**Gyro & motion.** Watch the handheld turn in 3D while the rate dials, accelerometer bars, and processed aiming values update alongside it.
 
-*Motion replay rendered with the widget's 3D model.*
+<p align="center">
+  <img src="docs/images/gyro-test.gif" width="640" alt="Full gyro test with the rotating 3D handheld, raw and calibrated rate gauges, acceleration bars, and aiming output values">
+</p>
+
+*Both tests use example input to show how the readings respond.*
 
 </details>
 
 ### ⌨️ Keyboard / Mouse
 
-<img src="docs/images/keyboard-mouse-tab.png" width="650" alt="Keyboard and Mouse tab with Mouse speed, Mouse precision, and Full Remapping tiles">
+<p align="center">
+  <img src="docs/images/keyboard-mouse-tab.png" width="640" alt="Keyboard and Mouse tab with Mouse speed, Mouse precision, and Full Remapping tiles">
+</p>
 
 Use the sticks as a cursor and scroll wheel. Tune pointer speed and precision separately. Pick keyboard keys and mouse actions visually. A button can trigger a shortcut such as **Alt + Tab**, or several inputs in a row with a delay between them. Set a second action on the **Fn layer** in the same button editor.
 
-<img src="docs/images/keyboard-layout.png" width="680" alt="Interactive keyboard with a number pad and several highlighted keys">
+<p align="center">
+  <img src="docs/images/keyboard-layout.png" width="640" alt="Interactive keyboard with a number pad and several highlighted keys">
+</p>
 
 ### 🖥️ Screen Colors
 
-<img src="docs/images/screen-colors.png" width="650" alt="Screen Colors tab with an image preview and sliders for brightness, saturation, hue, contrast, and gamma">
+<p align="center">
+  <img src="docs/images/screen-colors.gif" width="640" alt="Screen Colors sliders changing brightness and saturation alongside the reference image">
+</p>
 
-- **Give each game its own look.** Preview changes to color, brightness, and contrast, then save them as a screen profile.
+*The animation illustrates how color adjustments can look. Actual output depends on your display and graphics driver.*
+
+- **Give each game its own look.** Use the reference image to judge changes to color, brightness, and contrast, then save them as a screen profile.
 - **Tune the display to the game.** Resolution sets how many pixels the screen shows. Refresh rate sets how often the screen can update each second. Higher refresh rates can make motion look smoother. On supported setups, **VRR** lets the display match the game's frame rate, and **HDR** can show a wider range of brightness. Availability depends on the display, driver, and mode. [Windows refresh rate guide](https://support.microsoft.com/en-us/windows/hardware/display-graphics/change-the-refresh-rate-on-your-monitor-in-windows) · [Windows HDR guide](https://support.microsoft.com/en-gb/windows/hardware/display-graphics/hdr-settings-in-windows)
 - **Keep display controls close.** Lock screen rotation from the widget, adjust supported Intel graphics features, or open OptiScaler from a tile in games where it's installed.
 
 ### 📊 Overlay
 
-<img src="docs/images/overlay-tab.png" width="620" alt="Overlay tab with Basic, Horizontal, and custom game overlay presets">
+Put an RTSS overlay over the game and choose what it shows. Start with just **FPS** (frames per second), or add **frame time** (the time between frames), temperature, power use, and processor load. Frame time is useful for spotting a stutter that an average FPS number can hide. The editor updates a live preview with example readings as you change metrics, layout, font, size, colors, and background. Save a compact or detailed layout for use in games.
 
-Put an RTSS overlay over the game and choose what it shows. Start with just **FPS** (frames per second), or add **frame time** (the time between frames), temperature, power use, and processor load. Frame time is useful for spotting a stutter that an average FPS number can hide. Save a compact or detailed layout with your preferred font, size, colors, and background.
+<p align="center">
+  <img src="docs/images/overlay-preview.png" width="640" alt="RTSS custom overlay editor with an in-widget preview and controls for the font, layout, metrics, and background">
+</p>
 
 ### 🌬️ Fan
 
-<img src="docs/images/fan-curve.png" width="590" alt="Fan tab with a chart of fan speeds at different temperatures">
+<p align="center">
+  <img src="docs/images/fan-curve.gif" width="640" alt="Custom fan curve with a moving control point and changing fan duty percentage at a selected temperature">
+</p>
 
-Let the system handle cooling in **Auto**, or set a custom **fan curve** that tells the fan how fast to run at different temperatures. For example, you can keep it slower at light loads and have it ramp up sooner during a demanding game. Save a fan profile for a specific game independently of its performance profile. The widget displays actual fan speed when hardware readings are available.
+Let the system handle cooling in **Auto**, or set a custom **fan curve** that tells the fan how fast to run at different temperatures. For example, you can keep it slower at light loads and have it ramp up sooner during a demanding game. Save a fan profile for a specific game independently of its performance profile. The widget displays actual fan speed when hardware readings are available. The demo moves one temperature point to show how its fan duty setting reshapes the curve.
 
 ### 💡 Lighting
 
-<img src="docs/images/lighting-motion.gif" width="680" alt="Animated lighting diagram showing Colorful Neon on the stick rings and a fade on the top light bar">
+<p align="center">
+  <img src="docs/images/lighting-motion.gif" width="640" alt="Animated lighting diagram showing Colorful Neon on the stick rings and a fade on the top light bar">
+</p>
 
 *Animated preview of the diagram with Colorful Neon and breathing colors.*
 
 Select a zone on the diagram or adjust all zones together. Pick a solid color, control brightness, or try an effect such as a slow breathing fade or **Colorful Neon**. Zones include the stick rings, G button, top light bar, and the logo on a compatible Controller Bridge. Available effects depend on the zone.
 
 <details>
-<summary>Lighting editor screenshots</summary>
+<summary>See the lighting editor</summary>
 
-<img src="docs/images/lighting-tab.png" width="640" alt="Lighting editor with a selected stick ring, All Zones switch, brightness slider, and color picker">
-
-<img src="docs/images/lighting-zones.png" width="640" alt="Lighting diagram with all zones linked">
+<p align="center">
+  <img src="docs/images/lighting-zones.png" width="640" alt="Lighting diagram with all zones linked">
+</p>
 
 </details>
 
 ### ⚙️ Settings
 
-<img src="docs/images/settings-tab.png" width="620" alt="Settings tab with Tabs, Appearance, Navigation guide, and Drivers and components sections">
+<p align="center">
+  <img src="docs/images/settings-tab.png" width="640" alt="Settings tab with Tabs, Appearance, Navigation guide, and Drivers and components sections">
+</p>
 
 Choose your language, font, theme, and the optional glass finish. Hide or reorder tabs and pick which one opens first, or return to your last used tab. Use the navigation guide for touch and gamepad shortcuts. The **Drivers & components** section shows installed versions and links to official updates.
 
 ## Theme gallery
 
-All 20 themes are available under **Settings → Appearance**. The screenshots show the same Appearance controls in each theme.
+All 20 themes are available under **Settings → Appearance**. The screenshots show the same Appearance controls in each theme with Glass Effect off.
 
 <details>
 <summary>ONEXPLAYER, OLED, and Liquid Glass · 3 themes</summary>
 
 ONEXPLAYER · OLED · Liquid Glass
 
-<p>
-  <img src="docs/images/themes/onexplayer.png" width="47%" alt="ONEXPLAYER theme in the Appearance settings">
-  <img src="docs/images/themes/oled.png" width="47%" alt="OLED theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/onexplayer.png" width="310" alt="ONEXPLAYER theme in the Appearance settings">
+  <img src="docs/images/themes/oled.png" width="310" alt="OLED theme in the Appearance settings">
 </p>
 
-<p>
-  <img src="docs/images/themes/liquid-glass.png" width="47%" alt="Liquid Glass theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/liquid-glass.png" width="310" alt="Liquid Glass theme in the Appearance settings">
 </p>
 
 </details>
@@ -159,18 +194,18 @@ ONEXPLAYER · OLED · Liquid Glass
 
 Mocha · Macchiato · Frappé · Latte · Latte Soft (adapted)
 
-<p>
-  <img src="docs/images/themes/catppuccin-mocha.png" width="47%" alt="Mocha theme in the Appearance settings">
-  <img src="docs/images/themes/catppuccin-macchiato.png" width="47%" alt="Macchiato theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/catppuccin-mocha.png" width="310" alt="Mocha theme in the Appearance settings">
+  <img src="docs/images/themes/catppuccin-macchiato.png" width="310" alt="Macchiato theme in the Appearance settings">
 </p>
 
-<p>
-  <img src="docs/images/themes/catppuccin-frappe.png" width="47%" alt="Frappé theme in the Appearance settings">
-  <img src="docs/images/themes/catppuccin-latte.png" width="47%" alt="Latte theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/catppuccin-frappe.png" width="310" alt="Frappé theme in the Appearance settings">
+  <img src="docs/images/themes/catppuccin-latte.png" width="310" alt="Latte theme in the Appearance settings">
 </p>
 
-<p>
-  <img src="docs/images/themes/catppuccin-latte-soft-adapted.png" width="47%" alt="Latte Soft (adapted) theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/catppuccin-latte-soft-adapted.png" width="310" alt="Latte Soft (adapted) theme in the Appearance settings">
 </p>
 
 </details>
@@ -180,14 +215,14 @@ Mocha · Macchiato · Frappé · Latte · Latte Soft (adapted)
 
 Kanagawa Wave · Kanagawa Dragon · Kanagawa Lotus · Miasma
 
-<p>
-  <img src="docs/images/themes/kanagawa-wave.png" width="47%" alt="Kanagawa Wave theme in the Appearance settings">
-  <img src="docs/images/themes/kanagawa-dragon.png" width="47%" alt="Kanagawa Dragon theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/kanagawa-wave.png" width="310" alt="Kanagawa Wave theme in the Appearance settings">
+  <img src="docs/images/themes/kanagawa-dragon.png" width="310" alt="Kanagawa Dragon theme in the Appearance settings">
 </p>
 
-<p>
-  <img src="docs/images/themes/kanagawa-lotus.png" width="47%" alt="Kanagawa Lotus theme in the Appearance settings">
-  <img src="docs/images/themes/miasma.png" width="47%" alt="Miasma theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/kanagawa-lotus.png" width="310" alt="Kanagawa Lotus theme in the Appearance settings">
+  <img src="docs/images/themes/miasma.png" width="310" alt="Miasma theme in the Appearance settings">
 </p>
 
 </details>
@@ -197,13 +232,13 @@ Kanagawa Wave · Kanagawa Dragon · Kanagawa Lotus · Miasma
 
 Dracula · Cobalt2 · Shades of Purple
 
-<p>
-  <img src="docs/images/themes/dracula.png" width="47%" alt="Dracula theme in the Appearance settings">
-  <img src="docs/images/themes/cobalt2.png" width="47%" alt="Cobalt2 theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/dracula.png" width="310" alt="Dracula theme in the Appearance settings">
+  <img src="docs/images/themes/cobalt2.png" width="310" alt="Cobalt2 theme in the Appearance settings">
 </p>
 
-<p>
-  <img src="docs/images/themes/shades-of-purple.png" width="47%" alt="Shades of Purple theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/shades-of-purple.png" width="310" alt="Shades of Purple theme in the Appearance settings">
 </p>
 
 </details>
@@ -213,18 +248,18 @@ Dracula · Cobalt2 · Shades of Purple
 
 Xbox 360 · PS4 · PS5 · Windows 11 Light · Windows 11 Dark
 
-<p>
-  <img src="docs/images/themes/xbox-360.png" width="47%" alt="Xbox 360 theme in the Appearance settings">
-  <img src="docs/images/themes/ps4.png" width="47%" alt="PS4 theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/xbox-360.png" width="310" alt="Xbox 360 theme in the Appearance settings">
+  <img src="docs/images/themes/ps4.png" width="310" alt="PS4 theme in the Appearance settings">
 </p>
 
-<p>
-  <img src="docs/images/themes/ps5.png" width="47%" alt="PS5 theme in the Appearance settings">
-  <img src="docs/images/themes/windows-11-light.png" width="47%" alt="Windows 11 Light theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/ps5.png" width="310" alt="PS5 theme in the Appearance settings">
+  <img src="docs/images/themes/windows-11-light.png" width="310" alt="Windows 11 Light theme in the Appearance settings">
 </p>
 
-<p>
-  <img src="docs/images/themes/windows-11-dark.png" width="47%" alt="Windows 11 Dark theme in the Appearance settings">
+<p align="center">
+  <img src="docs/images/themes/windows-11-dark.png" width="310" alt="Windows 11 Dark theme in the Appearance settings">
 </p>
 
 </details>
@@ -294,7 +329,9 @@ The script releases the controller, backs up widget settings under `%LOCALAPPDAT
 
 If you use ONEXTweaks and would like to support its development, visit [Kirya Chainik on Patreon](https://www.patreon.com/cw/kiryachainik). The QR code opens the same page.
 
-<a href="https://www.patreon.com/cw/kiryachainik"><img src="src/ONEXTweaks.Widget/XboxGamingBar/Assets/support-author-qr.png" width="152" height="152" alt="QR code for Kirya Chainik's Patreon page"></a>
+<p align="center">
+  <a href="https://www.patreon.com/cw/kiryachainik"><img src="src/ONEXTweaks.Widget/XboxGamingBar/Assets/support-author-qr.png" width="152" height="152" alt="QR code for Kirya Chainik's Patreon page"></a>
+</p>
 
 ## Acknowledgments
 
