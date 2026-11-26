@@ -104,12 +104,15 @@ $plan.DependencyLinks | Format-List Name, RequiredFor, Setup, Url
 $bundle = Get-Content -LiteralPath .\test-bundle.json -Raw | ConvertFrom-Json
 $upgrade = @{
     WidgetPackage = $bundle.WidgetFile
+    WidgetSha256 = $bundle.WidgetSha256
     RollbackPackage = $bundle.RollbackFile
     RuntimeManifest = '.\Runtime\runtime-manifest.json'
     RuntimeManifestSha256 = $bundle.RuntimeManifestSha256
 }
 & .\Setup\Installer\Update-ONEXTweaksRelease.ps1 @upgrade -Upgrade
 ```
+
+Setup берёт SHA-256 нового MSIX из своего проверенного встроенного комплекта. При отдельном запуске сценария берите SHA-256 из доверенного комплекта конкретной сборки. Прежний вызов без `-WidgetSha256` поддерживает архивный пакет 1110.
 
 Без `-Upgrade` эта же команда проверяет исходную регистрацию и конфигурацию задач. При обновлении установщик проверяет, что может восстановить каждую существующую задачу с прежними правами, освобождает захват контроллера и сохраняет аварийную копию профилей в папке пользователя. Windows обновляет пакет на месте. Установщик подтверждает связь с новым Bridge и запуск RTSS до завершения перехода и переключения автозапуска OneXConsole. При прерывании используйте `Update-ONEXTweaksRelease.ps1 -Recover` из того же аккаунта. Защищённая копия старого аппаратного комплекта сохраняется для восстановления.
 
