@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup><ProjectReference Include="../../src/ONEXTweaks.Backend/ONEXTweaks.Backend.csproj" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/ONEXTweaks.PowerAgent/PowerRules.cs" Link="PowerRules.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../src/ONEXTweaks.PowerAgent/Pl2ControlPolicy.cs" Link="Pl2ControlPolicy.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/ONEXTweaks.WidgetBridge/GuidePressFilter.cs" Link="GuidePressFilter.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/ONEXTweaks.WidgetBridge/PowerPreferenceStore.cs" Link="PowerPreferenceStore.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../src/ONEXTweaks.WidgetBridge/GuideCloseState.cs" Link="GuideCloseState.cs" /></ItemGroup>

@@ -1,5 +1,8 @@
 # Fixture-only. Scheduler commands are local functions, including all writes.
 $ErrorActionPreference = 'Stop'
+# Windows PowerShell 5.1 exports Get-FileHash as a function from Utility.
+# Load the module before declaring the test double in this fresh process.
+Import-Module Microsoft.PowerShell.Utility
 . (Join-Path $PSScriptRoot 'OneXConsoleSetup.ps1')
 . (Join-Path $PSScriptRoot 'OneXConsoleHandoff.ps1')
 $dir = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString('N'))
@@ -9,11 +12,11 @@ $vendorHash = 'A5471B7F07DBFE737A195E7D75B1282786BFB95F9E65B3E1D94298422D907CB0'
 
 function Check($Condition, $Message) { if (!$Condition) { throw $Message } }
 function ExpectFailure([scriptblock]$Action, [string]$Message) {
-    try { & $Action | Out-Null } catch {
+    try { $result = & $Action } catch {
         if ($_.Exception.Message -like "*$Message*") { return }
         throw
     }
-    throw "Expected exception containing '$Message'."
+    throw "Expected exception containing '$Message'; received '$result'."
 }
 function Get-ScheduledTask($TaskPath) {
     Check ($TaskPath -ceq '\') 'Unexpected scheduler folder.'
@@ -86,6 +89,8 @@ try {
     Check ((Apply) -eq 'Review existing logon task') 'Modified VBS was accepted.'
     $fixture.Hash = $vendorHash
     Check (!(Test-Path -LiteralPath $receipt) -and $fixture.Disables -eq 0 -and $fixture.Enables -eq 0) 'Unowned task was changed.'
+    $recognized = Get-ONEXTweaksOemTaskSnapshot $sid
+    Check ($recognized.State -eq 'Recognized' -and $recognized.Enabled) "Expected the enabled OEM fixture; received '$($recognized.State)'."
     $fixture.FailDisable = $true
     ExpectFailure { Apply } 'Disable denied'
     $task.Settings.Enabled = $false

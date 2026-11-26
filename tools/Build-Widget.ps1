@@ -21,7 +21,8 @@ try {
     # UWP uses SDK6 below; the bridge must resolve SDK10 independently of the caller.
     Remove-Item Env:MSBuildSDKsPath -ErrorAction SilentlyContinue
 
-    $distributionArguments = if ($InstalledDistribution) { @('-p:OnexInstalledDistribution=true') } else { @() }
+    $distributionArguments = @()
+    if ($InstalledDistribution) { $distributionArguments += '-p:OnexInstalledDistribution=true' }
     foreach ($project in 'CompanionLauncher','DependencyManager','PackagedLauncher','WidgetBridge') {
         $projectName = if ($project -eq 'PackagedLauncher') { 'CompanionLauncher' } else { $project }
         & $Dotnet build "src/ONEXTweaks.$project/ONEXTweaks.$projectName.csproj" -c Release --nologo @distributionArguments
