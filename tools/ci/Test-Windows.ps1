@@ -2,6 +2,10 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
+Write-Host 'Running GitHub merge and release gate tests'
+& python -B -m unittest discover -s (Join-Path $root 'tools/ci') -p 'test_*.py' -v
+if ($LASTEXITCODE) { throw 'GitHub gate tests failed.' }
+
 $projects = @(
     'Awake.Core/Awake.Core',
     'CompanionBootstrap/CompanionBootstrap',
