@@ -1,156 +1,310 @@
 <p align="center">
-  <img src="src/ONEXTweaks.Widget/XboxGamingBar/Assets/OnexSquare44x44Logo.altform-unplated_targetsize-256.png" width="96" alt="Логотип ONEXTweaks">
+  <img src="src/ONEXTweaks.Widget/XboxGamingBar/Assets/OnexSquare44x44Logo.altform-unplated_targetsize-256.png" width="96" alt="ONEXTweaks logo">
 </p>
 
 <h1 align="center">ONEXTweaks</h1>
 
-<p align="center"><strong>Настройки ONEXPLAYER 3 поверх игры, прямо в Xbox Game Bar.</strong><br>
-Мощность, охлаждение, управление и экран в одном виджете.</p>
+<p align="center"><strong>Quick settings built for the ONEXPLAYER 3.</strong><br>
+Tune power, cooling, controls, and display settings without leaving your game.</p>
 
 <p align="center">
-  <a href="#возможности">Возможности</a> ·
-  <a href="#установка">Установка</a> ·
-  <a href="#зависимости">Зависимости</a> ·
-  <a href="#удаление">Удаление</a> ·
-  <a href="#поддержать-проект">Поддержать проект</a>
+  <a href="#take-a-tour">Widget tour</a> ·
+  <a href="#theme-gallery">20 themes</a> ·
+  <a href="#installation">Installation</a> ·
+  <a href="#dependencies">Dependencies</a> ·
+  <a href="#uninstall">Uninstall</a> ·
+  <a href="#support-the-project">Support</a>
 </p>
+
+ONEXTweaks runs inside **Xbox Game Bar** on Windows 11 x64. Open it with **Win + G** and use touch, a mouse, or the built-in controller. It's designed for the Intel ONEXPLAYER 3. The hardware helper checks for board `1002-B`, BIOS `5.01`, and compatible OneXConsole components before enabling hardware controls.
+
+## Take a tour
+
+### 🏠 Home
 
 <p align="center">
-  <img src="docs/images/controller-remap.png" width="640" alt="Редактор переназначения с интерактивной схемой ONEXPLAYER 3 спереди, сзади и сверху">
+  <img src="docs/images/home-tab.png" width="650" alt="ONEXTweaks Home with live performance readings, power and volume sliders, and quick settings tiles">
 </p>
 
-**Для кого.** Виджет рассчитан на ONEXPLAYER 3 с Intel и Windows 11 x64. Аппаратное управление через PowerAgent включается после проверки платы `1002-B`, BIOS `5.01` и совместимых компонентов OneXConsole.
+- **See how your handheld is doing.** Check processor and graphics load, temperature, power draw, and battery level at a glance.
+- **Keep your favorite controls on Home.** Change power, brightness, and volume. Rearrange or hide tiles, switch profiles, and open Wi-Fi, Bluetooth, the sound mixer, or the Windows keyboard.
+- **Put your shortcuts in the widget.** Add a key combination, app, or website as a tile. Built-in shortcuts cover Steam, media playback, and switching windows.
+- **Manage the battery.** Set an upper charge limit for time spent plugged in. Use the keep-awake timer and optional dimming when you want to leave the handheld running.
 
-## Возможности
+### ⚡ Performance
 
-### 🏠 Главное
+<img src="docs/images/performance-tab.png" width="650" alt="Performance tab power settings with separate sliders for sustained and short-burst processor power">
 
-Следите за загрузкой CPU и GPU, температурой, мощностью и зарядом в реальном времени. Меняйте яркость, громкость и лимиты мощности поверх игры. Быстрые плитки открывают управление Wi‑Fi и Bluetooth, микшер и выбор аудиовыхода, клавиатуру Windows, профили и режим питания. Плитки можно перемещать, скрывать и дополнять своими сочетаниями клавиш, приложениями и ссылками. Есть быстрые действия для Steam, управления музыкой и переключения окон.
+**The TDP card sets the processor's power limits in watts.** The two sliders let you set a steady limit for regular play and a higher limit for short bursts of work.
 
-### ⚡ Производительность
+- **PL1 is the sustained power limit.** It's the main setting for a long gaming session. A lower PL1 can reduce heat and battery use. A higher one gives games more room to run at the cost of more heat and power.
+- **PL2 is the short-burst power limit.** It gives the processor extra room to boost during brief spikes in demand, such as loading a busy scene. For example, **25 W PL1 / 28 W PL2** allows a short burst up to 28 W while sustained power stays around the 25 W limit. Actual power depends on the workload and temperature. [Intel's explanation of processor power limits](https://cdrdv2-public.intel.com/872188/872188-001.pdf)
 
-Настраивайте PL1 и PL2, режим питания Windows, CPU Boost и предпочтение производительных или энергоэффективных ядер. Сохраняйте отдельные настройки от сети (**AC**) и от батареи (**DC**). Профили можно выбирать вручную или привязывать к запущенной игре. В настройках FPS доступен выбор между RTSS и Intel. Доступность Intel зависит от драйвера и игры.
-
-<img src="docs/images/power-limits.png" width="620" alt="Два ползунка на общей шкале с отдельными значениями PL1 и PL2">
-
-### 🎮 Геймпад
-
-- Переключайтесь между физическим контроллером (**Hardware**) и виртуальными **Xbox 360** или **DualShock 4** на VIIPER.
-- Переназначайте кнопки и дополнительные клавиши корпуса. На интерактивной схеме можно выбрать кнопку геймпада, клавишу, действие мыши или комбинацию. Для DualShock 4 доступны отдельные назначения на левый и правый клик тачпада.
-- Настраивайте мёртвые зоны, ход триггеров и вибрацию в поддерживаемых режимах. Окно **Test sticks & triggers** показывает исходные и обработанные значения по осям. Чтобы применить программную обработку стиков и триггеров к игре, выберите виртуальный контроллер.
-- Калибруйте гироскоп и направляйте его в стик или мышь. Тест показывает движение 3D-модели, угловую скорость и данные акселерометра. Виртуальный DS4 отдельно умеет передавать данные датчиков совместимым играм.
+Create a quieter profile for battery play (**DC**) and a faster one when plugged in (**AC**). Link a profile to a game to apply it automatically. Choose a Windows power mode, decide how aggressively the processor boosts to higher speeds, or set a **frame-rate cap** to stop a game rendering more frames than you want. Choose RTSS or the Intel limiter where your driver and game support it.
 
 <details>
-<summary>Скриншоты DualShock 4, теста стиков и гироскопа</summary>
+<summary>See the 25 W / 28 W example on Home</summary>
 
-<img src="docs/images/dualshock-4.png" width="530" alt="Схема DualShock 4 с выделенной правой половиной тачпада">
-
-<img src="docs/images/stick-test.png" width="740" alt="Графики двух стиков и триггеров, исходные и обработанные значения осей">
-
-<img src="docs/images/gyro-test.png" width="740" alt="Тест гироскопа с 3D-моделью консоли, тремя круговыми диаграммами и акселерометром">
+<img src="docs/images/power-limits.png" width="650" alt="Home power limits set to 25 watts for sustained use and 28 watts for short bursts">
 
 </details>
 
-### ⌨️ Клавиатура и мышь
+### 🎮 Controller
 
-Используйте стики как курсор и прокрутку, меняйте скорость и точность мыши. Назначайте клики, сочетания клавиш и последовательности с задержками. Основное действие и **Fn-слой** настраиваются в одном редакторе кнопки.
+<img src="docs/images/controller-tab.png" width="620" alt="Controller tab with profiles, controller mode, remapping, stick and trigger tuning, and gyro settings">
 
-<img src="docs/images/keyboard-layout.png" width="675" alt="Интерактивная клавиатура с цифровым блоком и выделенными клавишами">
-
-### 🖥️ Экран
-
-Переключайте разрешение и частоту обновления, блокируйте поворот, настраивайте яркость и профили цвета. В профилях можно сохранить насыщенность, оттенок, контраст и гамму. HDR, VRR, масштабирование и функции графики Intel доступны в зависимости от экрана, режима и драйвера. Плитка **OptiScaler** открывает меню OptiScaler в играх, где он уже установлен.
-
-### 📊 Оверлей
-
-Показывайте FPS, время кадра, температуры, загрузку и мощность в игре через RTSS. Можно выбрать готовый пресет или настроить метрики, размер, шрифт и фон под себя.
-
-### 🌬️ Вентилятор
-
-Оставьте системный **Auto** или настройте свою кривую по температурным точкам. Профили вентилятора можно назначать играм отдельно от профилей производительности. Обороты видны в виджете при доступном аппаратном канале.
+- **Choose how games see the controller.** **Hardware** uses the handheld's built-in controller directly. **Virtual Xbox 360** and **Virtual DualShock 4** use VIIPER and apply your software stick and trigger settings to games.
+- **Map buttons by clicking the diagram.** Assign a button to another controller input, a key or key combo, or a mouse action. Map two physical buttons to separate clicks on the left and right halves of the virtual DualShock 4 touchpad.
+- **See your inputs as you tune them.** A stick's **dead zone** is the small area around its center where movement is ignored. Use the live test to see stick drift, compare input before and after your settings, and check how far you need to pull either trigger to reach full input. Vibration strength is adjustable in supported modes.
+- **Aim by moving the console.** Calibrate the gyro, then use motion to move the aim stick or mouse. The live test shows the console rotating in 3D and displays how fast it's turning. Virtual DualShock 4 can pass motion data directly to compatible games.
 
 <details>
-<summary>Скриншот редактора кривой</summary>
+<summary>ONEXPLAYER, Xbox, and DualShock 4 remapping diagrams</summary>
 
-<img src="docs/images/fan-curve.png" width="540" alt="Кривая вентилятора с температурными точками и уровнями скорости">
+<img src="docs/images/controller-remap.png" width="620" alt="Interactive front, rear, and top views of the ONEXPLAYER 3 for button remapping">
+
+<p>
+  <img src="docs/images/xbox-controller.png" width="47%" alt="Xbox controller diagram with the A button selected">
+  <img src="docs/images/dualshock-4.png" width="47%" alt="DualShock 4 diagram with the right side of the touchpad selected">
+</p>
 
 </details>
 
-### 💡 Подсветка
-
-Меняйте цвет, яркость и эффекты подсветки консоли. Схема показывает управляемые зоны, включая кольца стиков и совместимый Controller Bridge.
-
 <details>
-<summary>Скриншот зон подсветки</summary>
+<summary>Live stick and trigger tests, plus gyro motion</summary>
 
-<img src="docs/images/lighting-zones.png" width="680" alt="Зоны подсветки ONEXPLAYER 3 и Controller Bridge">
+<img src="docs/images/stick-test.png" width="720" alt="Live stick and trigger test with charts and numbers for input before and after tuning">
+
+<img src="docs/images/gyro-test.png" width="720" alt="Live gyro test with a 3D model of the handheld, three rotation gauges, and accelerometer readings">
+
+<img src="docs/images/gyro-motion.gif" width="552" alt="The widget's 3D model tilting and turning as it replays recorded sensor data">
+
+*Motion replay rendered with the widget's 3D model.*
 
 </details>
 
-### ⚙️ Система и оформление
+### ⌨️ Keyboard / Mouse
 
-Задавайте лимит заряда и временно удерживайте консоль активной с таймером и затемнением. Настраивайте автозапуск, порядок и видимость вкладок, язык и тему. В комплекте есть светлые, тёмные и OLED-палитры, в том числе Dracula, Catppuccin и Kanagawa. Виджетом можно управлять геймпадом, касанием или мышью. Закрепить его поверх игры можно штатной кнопкой Game Bar.
+<img src="docs/images/keyboard-mouse-tab.png" width="650" alt="Keyboard and Mouse tab with Mouse speed, Mouse precision, and Full Remapping tiles">
 
-## Установка
+Use the sticks as a cursor and scroll wheel. Tune pointer speed and precision separately. Pick keyboard keys and mouse actions visually. A button can trigger a shortcut such as **Alt + Tab**, or several inputs in a row with a delay between them. Set a second action on the **Fn layer** in the same button editor.
+
+<img src="docs/images/keyboard-layout.png" width="680" alt="Interactive keyboard with a number pad and several highlighted keys">
+
+### 🖥️ Screen Colors
+
+<img src="docs/images/screen-colors.png" width="650" alt="Screen Colors tab with an image preview and sliders for brightness, saturation, hue, contrast, and gamma">
+
+- **Give each game its own look.** Preview changes to color, brightness, and contrast, then save them as a screen profile.
+- **Tune the display to the game.** Resolution sets how many pixels the screen shows. Refresh rate sets how often the screen can update each second. Higher refresh rates can make motion look smoother. On supported setups, **VRR** lets the display match the game's frame rate, and **HDR** can show a wider range of brightness. Availability depends on the display, driver, and mode. [Windows refresh rate guide](https://support.microsoft.com/en-us/windows/hardware/display-graphics/change-the-refresh-rate-on-your-monitor-in-windows) · [Windows HDR guide](https://support.microsoft.com/en-gb/windows/hardware/display-graphics/hdr-settings-in-windows)
+- **Keep display controls close.** Lock screen rotation from the widget, adjust supported Intel graphics features, or open OptiScaler from a tile in games where it's installed.
+
+### 📊 Overlay
+
+<img src="docs/images/overlay-tab.png" width="620" alt="Overlay tab with Basic, Horizontal, and custom game overlay presets">
+
+Put an RTSS overlay over the game and choose what it shows. Start with just **FPS** (frames per second), or add **frame time** (the time between frames), temperature, power use, and processor load. Frame time is useful for spotting a stutter that an average FPS number can hide. Save a compact or detailed layout with your preferred font, size, colors, and background.
+
+### 🌬️ Fan
+
+<img src="docs/images/fan-curve.png" width="590" alt="Fan tab with a chart of fan speeds at different temperatures">
+
+Let the system handle cooling in **Auto**, or set a custom **fan curve** that tells the fan how fast to run at different temperatures. For example, you can keep it slower at light loads and have it ramp up sooner during a demanding game. Save a fan profile for a specific game independently of its performance profile. The widget displays actual fan speed when hardware readings are available.
+
+### 💡 Lighting
+
+<img src="docs/images/lighting-motion.gif" width="680" alt="Animated lighting diagram showing Colorful Neon on the stick rings and a fade on the top light bar">
+
+*Animated preview of the diagram with Colorful Neon and breathing colors.*
+
+Select a zone on the diagram or adjust all zones together. Pick a solid color, control brightness, or try an effect such as a slow breathing fade or **Colorful Neon**. Zones include the stick rings, G button, top light bar, and the logo on a compatible Controller Bridge. Available effects depend on the zone.
+
+<details>
+<summary>Lighting editor screenshots</summary>
+
+<img src="docs/images/lighting-tab.png" width="640" alt="Lighting editor with a selected stick ring, All Zones switch, brightness slider, and color picker">
+
+<img src="docs/images/lighting-zones.png" width="640" alt="Lighting diagram with all zones linked">
+
+</details>
+
+### ⚙️ Settings
+
+<img src="docs/images/settings-tab.png" width="620" alt="Settings tab with Tabs, Appearance, Navigation guide, and Drivers and components sections">
+
+Choose your language, font, theme, and the optional glass finish. Hide or reorder tabs and pick which one opens first, or return to your last used tab. Use the navigation guide for touch and gamepad shortcuts. The **Drivers & components** section shows installed versions and links to official updates.
+
+## Theme gallery
+
+All 20 themes are available under **Settings → Appearance**. The screenshots show the same Appearance controls in each theme.
+
+<details>
+<summary>ONEXPLAYER, OLED, and Liquid Glass · 3 themes</summary>
+
+ONEXPLAYER · OLED · Liquid Glass
+
+<p>
+  <img src="docs/images/themes/onexplayer.png" width="47%" alt="ONEXPLAYER theme in the Appearance settings">
+  <img src="docs/images/themes/oled.png" width="47%" alt="OLED theme in the Appearance settings">
+</p>
+
+<p>
+  <img src="docs/images/themes/liquid-glass.png" width="47%" alt="Liquid Glass theme in the Appearance settings">
+</p>
+
+</details>
+
+<details>
+<summary>Catppuccin · 5 themes</summary>
+
+Mocha · Macchiato · Frappé · Latte · Latte Soft (adapted)
+
+<p>
+  <img src="docs/images/themes/catppuccin-mocha.png" width="47%" alt="Mocha theme in the Appearance settings">
+  <img src="docs/images/themes/catppuccin-macchiato.png" width="47%" alt="Macchiato theme in the Appearance settings">
+</p>
+
+<p>
+  <img src="docs/images/themes/catppuccin-frappe.png" width="47%" alt="Frappé theme in the Appearance settings">
+  <img src="docs/images/themes/catppuccin-latte.png" width="47%" alt="Latte theme in the Appearance settings">
+</p>
+
+<p>
+  <img src="docs/images/themes/catppuccin-latte-soft-adapted.png" width="47%" alt="Latte Soft (adapted) theme in the Appearance settings">
+</p>
+
+</details>
+
+<details>
+<summary>Kanagawa and Miasma · 4 themes</summary>
+
+Kanagawa Wave · Kanagawa Dragon · Kanagawa Lotus · Miasma
+
+<p>
+  <img src="docs/images/themes/kanagawa-wave.png" width="47%" alt="Kanagawa Wave theme in the Appearance settings">
+  <img src="docs/images/themes/kanagawa-dragon.png" width="47%" alt="Kanagawa Dragon theme in the Appearance settings">
+</p>
+
+<p>
+  <img src="docs/images/themes/kanagawa-lotus.png" width="47%" alt="Kanagawa Lotus theme in the Appearance settings">
+  <img src="docs/images/themes/miasma.png" width="47%" alt="Miasma theme in the Appearance settings">
+</p>
+
+</details>
+
+<details>
+<summary>Dracula, Cobalt2, and Shades of Purple · 3 themes</summary>
+
+Dracula · Cobalt2 · Shades of Purple
+
+<p>
+  <img src="docs/images/themes/dracula.png" width="47%" alt="Dracula theme in the Appearance settings">
+  <img src="docs/images/themes/cobalt2.png" width="47%" alt="Cobalt2 theme in the Appearance settings">
+</p>
+
+<p>
+  <img src="docs/images/themes/shades-of-purple.png" width="47%" alt="Shades of Purple theme in the Appearance settings">
+</p>
+
+</details>
+
+<details>
+<summary>Console and Windows themes · 5 themes</summary>
+
+Xbox 360 · PS4 · PS5 · Windows 11 Light · Windows 11 Dark
+
+<p>
+  <img src="docs/images/themes/xbox-360.png" width="47%" alt="Xbox 360 theme in the Appearance settings">
+  <img src="docs/images/themes/ps4.png" width="47%" alt="PS4 theme in the Appearance settings">
+</p>
+
+<p>
+  <img src="docs/images/themes/ps5.png" width="47%" alt="PS5 theme in the Appearance settings">
+  <img src="docs/images/themes/windows-11-light.png" width="47%" alt="Windows 11 Light theme in the Appearance settings">
+</p>
+
+<p>
+  <img src="docs/images/themes/windows-11-dark.png" width="47%" alt="Windows 11 Dark theme in the Appearance settings">
+</p>
+
+</details>
+
+## Installation
 
 > [!NOTE]
-> Первый публичный установщик готовится. Ссылка на скачивание появится в [GitHub Releases](https://github.com/KiryaChainik/ONEXTweaks/releases).
+> The first public installer is in preparation. It will appear under [GitHub Releases](https://github.com/KiryaChainik/ONEXTweaks/releases).
 
-1. Убедитесь, что **Xbox Game Bar** открывается по **Win + G**. При необходимости установите его из Microsoft Store. Для аппаратных функций оставьте установленной совместимую **OneXConsole**. [Xbox Game Bar](https://apps.microsoft.com/detail/9NZKPSTSNW4P) · [Драйверы и ПО ONEXPLAYER](https://onexplayerstore.com/pages/drivers-and-faqs)
-2. Скачайте `ONEXTweaks-Setup-x64.exe` из релиза и сверьте его SHA‑256 со значением на странице релиза. Запустите Setup из своего обычного аккаунта Windows, нажмите **Install** и подтвердите запросы Windows по ходу установки.
-3. Если Setup запросит перезагрузку, перезагрузитесь, войдите в тот же аккаунт и снова запустите тот же EXE. После завершения откройте **Win + G → Виджеты → ONEXTweaks**.
+1. **Check Game Bar.** Press **Win + G**. Install or update Xbox Game Bar from Microsoft Store if it doesn't open. Keep a compatible OneXConsole installation for the handheld's hardware controls. [Xbox Game Bar](https://apps.microsoft.com/detail/9NZKPSTSNW4P) · [ONEXPLAYER drivers and software](https://onexplayerstore.com/pages/drivers-and-faqs)
+2. **Run Setup.** Download `ONEXTweaks-Setup-x64.exe` from the release and compare its SHA-256 (the file's fingerprint) with the one posted there. Open Setup from the Windows account you normally use, choose **Install**, and follow the Windows prompts.
+3. **Open the widget.** If Setup asks you to restart, sign back in to the same Windows account and run the same installer again. Then open **Win + G → Widget menu → ONEXTweaks**.
 
-**Что важно знать**
+<details>
+<summary>How to check the installer's fingerprint</summary>
 
-- После проверки аппаратного канала Setup отключает штатный автозапуск **интерфейса** OneXConsole, если он был включён. Её аппаратные компоненты остаются доступны. При необходимости интерфейс можно открыть вручную.
-- Для бета-сборки при первой установке Setup может запросить доверие к сертификату виджета. Сверьте издателя и отпечаток с конкретным релизом. Windows также может показать предупреждение SmartScreen.
-- Тестовый режим Windows и обход проверки подписи для штатной установки не требуются. Подробности о сертификате, подготовке пакетов и обновлении с 1109 на 1110 есть в [документации установщика](tools/installer/README.md).
-
-## Зависимости
-
-**Подготовьте перед установкой**
-
-- **Windows 11 x64 и Xbox Game Bar** — платформа и меню виджетов. Game Bar ставится через Microsoft Store. [Xbox Game Bar](https://apps.microsoft.com/detail/9NZKPSTSNW4P)
-- **OneXConsole** — предоставляет PowerAgent аппаратные компоненты для вентилятора, мощности, зарядки и других функций консоли. Проверенный комплект относится к OneXConsole **0.10.4-fix3**. Для обычной установки используйте совместимую копию от производителя. Setup также принимает отдельно предоставленный OEM-установщик после проверки подписи и контрольной суммы. [ПО производителя](https://onexplayerstore.com/pages/drivers-and-faqs)
-
-**Setup скачивает и ставит недостающие компоненты**
-
-- **PawnIO 2.2.0** — аппаратная телеметрия и управление. [Релиз PawnIO](https://github.com/namazso/PawnIO.Setup/releases/tag/2.2.0)
-- **usbip-win2 0.9.8.1 x64** — драйвер для виртуальных контроллеров. Его установщик может также установить нужный Visual C++ Runtime. [Релиз usbip-win2](https://github.com/vadimgrn/usbip-win2/releases/tag/v.0.9.8.1)
-- **HidHide 1.5.230** — скрывает физический контроллер при активном виртуальном, чтобы игра не получала двойной ввод. [Релиз HidHide](https://github.com/nefarius/HidHide/releases/tag/v1.5.230.0)
-- **RivaTuner Statistics Server 7.3.7** — игровой оверлей и лимитер FPS при выборе RTSS. [RTSS](https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/)
-
-**В комплекте ONEXTweaks**
-
-- Виджет и фреймворки его MSIX, Bridge со своей средой .NET, PowerAgent, Launcher и DependencyManager.
-- Библиотека **VIIPER 0.9.0** уже входит в Bridge. Отдельная установка VIIPER для виртуальных Xbox 360 и DualShock 4 не требуется. [Релиз VIIPER](https://github.com/Alia5/VIIPER/releases/tag/v0.9.0)
-
-## Удаление
-
-Войдите в тот же аккаунт Windows, из которого устанавливали виджет. Закройте Game Bar и выполните в **Windows PowerShell**:
+Open **Windows PowerShell** in the folder where you saved the installer and run:
 
 ```powershell
-$uninstaller = Join-Path $env:ProgramFiles 'ONEXTweaks\Tools\Installer\Uninstall-ONEXTweaksRelease.ps1'
-& $uninstaller -Uninstall
+Get-FileHash .\ONEXTweaks-Setup-x64.exe -Algorithm SHA256
 ```
 
-Подтвердите повышение прав, когда его запросит Windows. Сценарий освобождает захват контроллера, сохраняет данные виджета в `%LOCALAPPDATA%\ONEXTweaks\UninstallBackups`, удаляет компоненты ONEXTweaks и восстанавливает исходный автозапуск OneXConsole. Общие драйверы, RTSS и OneXConsole остаются установленными. Для предварительного просмотра запустите ту же команду с `-Report`. [Подробности удаления и отката](tools/installer/README.md#удаление-и-откат)
+Compare the value in **Hash** with the SHA-256 shown on the release page.
 
-## Поддержать проект
+</details>
 
-Если ONEXTweaks пригодился, можно поддержать разработку на [Patreon Киря Чайник](https://www.patreon.com/cw/kiryachainik). QR ведёт на ту же страницу.
+**What to expect**
 
-<a href="https://www.patreon.com/cw/kiryachainik"><img src="src/ONEXTweaks.Widget/XboxGamingBar/Assets/support-author-qr.png" width="152" height="152" alt="QR-код для перехода на Patreon Киря Чайник"></a>
+- **OneXConsole startup.** When the hardware checks pass, Setup disables the OneXConsole window's automatic launch if it was enabled. This keeps the two apps from competing for hardware controls. Its hardware components remain installed, and you can open the OneXConsole window manually.
+- **Beta certificates.** On a first beta install, Setup may ask you to trust the widget's signing certificate. Compare the publisher and fingerprint with the release details. Windows may also show a SmartScreen prompt. Standard installation uses normal Windows signature checks.
+- **Updates.** For the 1109 to 1110 upgrade and recovery procedure, see the [installer guide (Russian)](tools/installer/README.md).
 
-## Спасибо
+## Dependencies
 
-- **enterTheVoidCode (Riff_Lash) и участникам ClawTweaks** — за открытый интерфейс Game Bar и общие модели, с которых начался ONEXTweaks. Спасибо также **corando98** и участникам GoTweaks, от которого ответвился ClawTweaks. [ClawTweaks](https://github.com/enterTheVoidCode/ClawTweaks) · [GoTweaks](https://github.com/corando98/GoTweaks) · [Поддержать Riff_Lash](https://ko-fi.com/rifflash)
-- **Alia5, vadimgrn, Nefarius и namazso** — за VIIPER, usbip-win2, HidHide и PawnIO. Эти проекты обеспечивают виртуальный ввод и доступ к аппаратным функциям. [VIIPER](https://github.com/Alia5/VIIPER) · [usbip-win2](https://github.com/vadimgrn/usbip-win2) · [HidHide](https://github.com/nefarius/HidHide) · [PawnIO](https://github.com/namazso/PawnIO.Setup)
-- **Unwinder и команде RTSS** — за игровой оверлей и ограничение FPS. **Intel** — за открытые интерфейсы Graphics Control Library. **Команде OptiScaler** — за игровой инструмент, для которого в виджете есть быстрый доступ. [RTSS](https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/) · [Intel IGCL](https://github.com/intel/drivers.gpu.control-library) · [OptiScaler](https://github.com/optiscaler/OptiScaler)
-- **Авторам цветовых схем** — за палитры, которые мы адаптировали для виджета. [Dracula](https://draculatheme.com/contribute) · [Catppuccin](https://catppuccin.com/) · [Kanagawa](https://github.com/rebelot/kanagawa.nvim) · [Miasma](https://github.com/xero/miasma.nvim) · [Cobalt2](https://github.com/wesbos/cobalt2-vscode) · [Shades of Purple](https://github.com/ahmadawais/shades-of-purple-vscode)
+**Have these ready before installation**
 
-## Разработка и лицензии
+- **Windows 11 x64 and Xbox Game Bar.** Windows runs the helper processes and Game Bar hosts the widget. [Xbox Game Bar](https://apps.microsoft.com/detail/9NZKPSTSNW4P)
+- **OneXConsole.** The manufacturer's app supplies the components PowerAgent needs for fan, power, and charging controls. The validated package is **0.10.4-fix3**. Use a compatible copy from the manufacturer. Setup can also use a separately provided OEM installer after verifying its signature and checksum. [ONEXPLAYER software](https://onexplayerstore.com/pages/drivers-and-faqs)
 
-[Сборка, CI и подготовка релиза](docs/development.md) · [Лицензии и атрибуция](third-party/NOTICE.txt) · [AGPL-3.0 для кода виджета](src/ONEXTweaks.Widget/LICENSE)
+**Setup downloads and installs these if missing**
 
-ONEXTweaks — независимый проект для ONEXPLAYER 3.
+- **PawnIO 2.2.0** gives ONEXTweaks access to supported hardware readings and controls. [PawnIO release](https://github.com/namazso/PawnIO.Setup/releases/tag/2.2.0)
+- **usbip-win2 0.9.8.1 x64** lets Windows connect to virtual controllers. Its installer can also install the required Visual C++ Runtime. [usbip-win2 release](https://github.com/vadimgrn/usbip-win2/releases/tag/v.0.9.8.1)
+- **HidHide 1.5.230** hides the physical controller while the virtual one is active, which prevents a game from seeing each press twice. [HidHide release](https://github.com/nefarius/HidHide/releases/tag/v1.5.230.0)
+- **RivaTuner Statistics Server (RTSS) 7.3.7** displays the overlay in games and provides the RTSS frame-rate limiter. [RTSS download](https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/)
+
+**Included with ONEXTweaks**
+
+- The widget and its MSIX framework packages, the Bridge that connects it to Windows, PowerAgent for hardware controls, Launcher, and DependencyManager. Bridge includes the .NET runtime it needs.
+- **VIIPER 0.9.0** ships inside Bridge and provides virtual Xbox 360 and DualShock 4 controllers. [VIIPER release](https://github.com/Alia5/VIIPER/releases/tag/v0.9.0)
+
+## Uninstall
+
+1. Sign in to the Windows account you used to install the widget and close Game Bar.
+2. Open **Windows PowerShell** and run the installed uninstaller:
+
+   ```powershell
+   $uninstaller = Join-Path $env:ProgramFiles 'ONEXTweaks\Tools\Installer\Uninstall-ONEXTweaksRelease.ps1'
+   & $uninstaller -Uninstall
+   ```
+
+3. Approve the Windows administrator prompt when it appears.
+
+The script releases the controller, backs up widget settings under `%LOCALAPPDATA%\ONEXTweaks\UninstallBackups`, and removes ONEXTweaks components. It restores the OneXConsole startup setting recorded at installation. Shared drivers, RTSS, and OneXConsole stay installed. To preview what will be removed, use `-Report` in place of `-Uninstall`. [Uninstall and rollback details (Russian)](tools/installer/README.md#удаление-и-откат)
+
+## Support the project
+
+If you use ONEXTweaks and would like to support its development, visit [Kirya Chainik on Patreon](https://www.patreon.com/cw/kiryachainik). The QR code opens the same page.
+
+<a href="https://www.patreon.com/cw/kiryachainik"><img src="src/ONEXTweaks.Widget/XboxGamingBar/Assets/support-author-qr.png" width="152" height="152" alt="QR code for Kirya Chainik's Patreon page"></a>
+
+## Acknowledgments
+
+- Thanks to **enterTheVoidCode (Riff_Lash)** and the **ClawTweaks** contributors for the open Game Bar frontend and shared models that got ONEXTweaks started. Thanks also to **corando98** and the contributors to **GoTweaks**, the project ClawTweaks forked from. [ClawTweaks](https://github.com/enterTheVoidCode/ClawTweaks) · [GoTweaks](https://github.com/corando98/GoTweaks) · [Support Riff_Lash](https://ko-fi.com/rifflash)
+- Thanks to **Alia5**, **vadimgrn**, **Nefarius**, and **namazso** for the work that makes virtual input and hardware access possible. [VIIPER](https://github.com/Alia5/VIIPER) · [usbip-win2](https://github.com/vadimgrn/usbip-win2) · [HidHide](https://github.com/nefarius/HidHide) · [PawnIO](https://github.com/namazso/PawnIO.Setup)
+- Thanks to **Unwinder** and the **RTSS** team for the overlay and frame-rate limiter, **Intel** for the public Graphics Control Library interfaces, and the **OptiScaler** team for the in-game tool. [RTSS](https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/) · [Intel IGCL](https://github.com/intel/drivers.gpu.control-library) · [OptiScaler](https://github.com/optiscaler/OptiScaler)
+- Thanks to the artists and communities behind the palettes adapted for the widget. [Dracula](https://draculatheme.com/contribute) · [Catppuccin](https://catppuccin.com/) · [Kanagawa](https://github.com/rebelot/kanagawa.nvim) · [Miasma](https://github.com/xero/miasma.nvim) · [Cobalt2](https://github.com/wesbos/cobalt2-vscode) · [Shades of Purple](https://github.com/ahmadawais/shades-of-purple-vscode)
+
+## Development and licenses
+
+[Build, CI, and release process](docs/development.md) · [Third-party notices](third-party/NOTICE.txt) · [Widget source license (AGPL-3.0)](src/ONEXTweaks.Widget/LICENSE)
+
+ONEXTweaks is an independent project for the ONEXPLAYER 3.
