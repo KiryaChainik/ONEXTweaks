@@ -1,0 +1,30 @@
+name: Windows CI report
+
+on:
+  workflow_run:
+    workflows: [Windows CI]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  report:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    steps:
+      # Use repository-owned code on the trusted branch. This job only reads
+      # GitHub CI metadata. It never executes PR code or downloads its artifacts.
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Post Windows CI result
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: python3 tools/ci/github_ops.py --repo "$GITHUB_REPOSITORY" report-run "$RUN_ID"
