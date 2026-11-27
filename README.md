@@ -267,7 +267,7 @@ Xbox 360 · PS4 · PS5 · Windows 11 Light · Windows 11 Dark
 ## Installation
 
 > [!NOTE]
-> The first public installer is in preparation. It will appear under [GitHub Releases](https://github.com/KiryaChainik/ONEXTweaks/releases).
+> Download the beta installer from [GitHub Releases](https://github.com/KiryaChainik/ONEXTweaks/releases).
 
 1. **Check Game Bar.** Press **Win + G**. Install or update Xbox Game Bar from Microsoft Store if it doesn't open. Keep a compatible OneXConsole installation for the handheld's hardware controls. [Xbox Game Bar](https://apps.microsoft.com/detail/9NZKPSTSNW4P) · [ONEXPLAYER drivers and software](https://onexplayerstore.com/pages/drivers-and-faqs)
 2. **Run Setup.** Download `ONEXTweaks-Setup-x64.exe` from the release and compare its SHA-256 (the file's fingerprint) with the one posted there. Open Setup from the Windows account you normally use, choose **Install**, and follow the Windows prompts.
@@ -344,4 +344,4 @@ If you use ONEXTweaks and would like to support its development, visit [Kirya Ch
 
 [Build, CI, and release process](docs/development.md) · [Third-party notices](third-party/NOTICE.txt) · [Widget source license (AGPL-3.0)](src/ONEXTweaks.Widget/LICENSE)
 
-ONEXTweaks is an independent project for the ONEXPLAYER 3.
+ONEXTweaks is an independent project for the ONEXPLAYER 3 created by [Kirya Chainik](https://github.com/KiryaChainik). If you reuse original ONEXTweaks code, please credit Kirya Chainik and link to the [project repository](https://github.com/KiryaChainik/ONEXTweaks).
