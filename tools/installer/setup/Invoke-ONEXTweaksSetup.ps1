@@ -132,7 +132,27 @@ try {
     }
     if ($metadata.PackageFullName -ceq 'ONEXTweaks.Widget_0.29.1110.0_x64__3a23eh8tyg7na' -and
         ((Test-Path -LiteralPath (Join-Path $state 'owned-release.json')) -or (Test-Path -LiteralPath (Join-Path $state 'runtime-update-1110.json')))) {
-        if (!$package) { throw 'The installed 1110 widget registration is missing.' }
+        $registeredForUpdate = $false
+        if (!$package) {
+            $stage = '1110 widget registration repair'
+            $existing = Get-ONEXTweaksUninstallPlan $state $root -OwnerOnly
+            if (!$existing -or $existing.Receipt.OwnerSid -cne $OwnerSid -or
+                $existing.Receipt.PackageFullName -cne $metadata.PackageFullName) {
+                throw 'A verified 1110 runtime for the signed-in account is required to restore the widget registration.'
+            }
+
+            Write-SetupLine STEP 'Restoring the 1110 widget registration...'
+            $ownerResult = Invoke-DesktopPhase Register
+            if ($ownerResult -eq 3010) {
+                Write-SetupResult 'Restart Windows, then run this same Setup to finish installing dependencies.'
+                exit 3010
+            }
+            if ($ownerResult -ne 0) { throw 'Widget registration repair failed. See %LOCALAPPDATA%\ONEXTweaks\Setup\setup-entry-last.log.' }
+            $registered = @(Get-AppxPackage -User $OwnerSid -Name 'ONEXTweaks.Widget' -PackageTypeFilter Main)
+            if ($registered.Count -ne 1 -or $registered[0].PackageFullName -cne $metadata.PackageFullName -or
+                $registered[0].Status -ne 'Ok') { throw 'Windows did not confirm the restored 1110 widget registration.' }
+            $registeredForUpdate = $true
+        }
         $stage = '1110 runtime update'
         $updateStatus = & $updater @runtimeArguments -OwnerSid $OwnerSid -Action Inspect
         if ($updateStatus -ceq 'Rolled back') {
@@ -140,13 +160,15 @@ try {
             exit 1
         }
         if ($updateStatus -ceq 'Update required') {
-            Write-SetupLine STEP 'Checking dependencies for the 1110 update...'
-            $ownerResult = Invoke-DesktopPhase Register
-            if ($ownerResult -eq 3010) {
-                Write-SetupResult 'Restart Windows, then run this same Setup to finish installing dependencies.'
-                exit 3010
+            if (!$registeredForUpdate) {
+                Write-SetupLine STEP 'Checking dependencies for the 1110 update...'
+                $ownerResult = Invoke-DesktopPhase Register
+                if ($ownerResult -eq 3010) {
+                    Write-SetupResult 'Restart Windows, then run this same Setup to finish installing dependencies.'
+                    exit 3010
+                }
+                if ($ownerResult -ne 0) { throw 'Update dependencies failed. See %LOCALAPPDATA%\ONEXTweaks\Setup\setup-entry-last.log.' }
             }
-            if ($ownerResult -ne 0) { throw 'Update dependencies failed. See %LOCALAPPDATA%\ONEXTweaks\Setup\setup-entry-last.log.' }
             Write-SetupLine STEP 'Updating 1110 while keeping the existing widget and profiles...'
             $upgrading = $true
             $updateStatus = & $updater @runtimeArguments -OwnerSid $OwnerSid -Action Stage

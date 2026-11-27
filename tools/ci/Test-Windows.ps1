@@ -31,6 +31,7 @@ $installerTests = @(
     'Test-ONEXTweaksReleaseCompletion',
     'Test-ONEXTweaksReleaseRuntime',
     'Test-ONEXTweaksRuntimeUpdate',
+    'Test-ONEXTweaksSetupRegistration',
     'Test-ONEXTweaksUpgradeHash',
     'Test-ONEXTweaksWidgetInstaller',
     'Test-OneXConsoleHandoff',
