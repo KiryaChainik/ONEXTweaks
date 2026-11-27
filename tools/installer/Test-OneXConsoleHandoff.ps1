@@ -24,6 +24,10 @@ function Get-ScheduledTask($TaskPath) {
 }
 function Export-ScheduledTask($TaskPath, $TaskName) {
     Check ($TaskPath -ceq '\' -and $TaskName -ceq 'OneXConsole') 'Unexpected task export.'
+    if ($fixture.TransientExportFailures -gt 0) {
+        $fixture.TransientExportFailures--
+        throw [IO.FileNotFoundException]::new('Scheduler task export is briefly unavailable.')
+    }
     $enabled = ([string]$fixture.Task.Settings.Enabled).ToLowerInvariant()
     "<Task xmlns='http://schemas.microsoft.com/windows/2004/02/mit/task'><RegistrationInfo><Author>$($fixture.Author)</Author></RegistrationInfo><Settings><Enabled>$enabled</Enabled></Settings></Task>"
 }
@@ -38,6 +42,7 @@ function Disable-ScheduledTask($InputObject) {
     if ($fixture.FailDisable) { throw 'Disable denied' }
     $fixture.Disables++
     $fixture.Task.Settings.Enabled = $false
+    if ($fixture.InjectTransientReadback) { $fixture.TransientExportFailures = 1 }
 }
 function Enable-ScheduledTask($InputObject) {
     Check ([object]::ReferenceEquals($fixture.Task, $InputObject)) 'Unexpected restore target.'
@@ -97,7 +102,10 @@ try {
     ExpectFailure { Restore } 'incomplete ownership'
     $task.Settings.Enabled = $true
     $fixture.FailDisable = $false
+    $fixture.InjectTransientReadback = $true
     Check ((Apply) -eq 'Disabled by ONEXTweaks') 'Recoverable intent could not be applied.'
+    Check ($fixture.TransientExportFailures -eq 0) 'Immediate readback did not encounter and recover from the missing task export.'
+    $fixture.InjectTransientReadback = $false
     Check ((Apply) -eq 'Disabled by ONEXTweaks' -and $fixture.Disables -eq 1) 'Repair repeated the disable.'
     $fixture.Author = 'Replaced after install'
     ExpectFailure { Restore } 'definition changed'

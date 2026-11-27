@@ -73,6 +73,24 @@ function Get-ONEXTweaksOemHandoffBootId {
     return (Get-CimInstance Win32_OperatingSystem).LastBootUpTime.ToUniversalTime().Ticks.ToString([Globalization.CultureInfo]::InvariantCulture)
 }
 
+function Confirm-ONEXTweaksOemTaskChange([string]$UserSid, $SchedulerFolder, [string]$Fingerprint, [bool]$Enabled) {
+    for ($attempt = 0; $attempt -lt 8; $attempt++) {
+        try {
+            $after = Get-ONEXTweaksOemTaskSnapshot $UserSid $SchedulerFolder
+            if ($after.State -eq 'Recognized') {
+                if ($after.Fingerprint -cne $Fingerprint) { break }
+                if ($after.Enabled -eq $Enabled) { return }
+            } elseif ($after.State -ne 'Not found') { break }
+        } catch {
+            # The scheduler can briefly return ERROR_FILE_NOT_FOUND after changing the task.
+            if ($_.Exception.GetBaseException().HResult -ne -2147024894 -and
+                $_.FullyQualifiedErrorId -notmatch '^HRESULT 0x80070002,') { throw }
+        }
+        if ($attempt -lt 7) { Start-Sleep -Milliseconds 500 }
+    }
+    throw 'OneXConsole task readback failed. Retain the receipt.'
+}
+
 function Invoke-ONEXTweaksOneXConsoleHandoff {
     [CmdletBinding()]
     param(
@@ -210,11 +228,7 @@ function Invoke-ONEXTweaksOneXConsoleHandoff {
         } else {
             if ($SchedulerFolder) { $before.Task.Enabled = $true } else { Enable-ScheduledTask -InputObject $before.Task -ErrorAction Stop | Out-Null }
         }
-        $after = Get-ONEXTweaksOemTaskSnapshot $UserSid $SchedulerFolder
-        if ($after.State -ne 'Recognized' -or $after.Fingerprint -cne $receipt.Fingerprint -or
-            $after.Enabled -ne ($Operation -in @('Restore','RestoreRestart'))) {
-            throw 'OneXConsole task readback failed. Retain the receipt.'
-        }
+        Confirm-ONEXTweaksOemTaskChange $UserSid $SchedulerFolder $receipt.Fingerprint ($Operation -in @('Restore','RestoreRestart'))
         if ($Operation -eq 'Restore') {
             [IO.File]::Delete($path)
             return 'Restored'

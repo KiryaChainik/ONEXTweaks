@@ -120,7 +120,7 @@ namespace ONEXTweaks.Power
 
         private static ManagementObject Open()
         {
-            Hardware.ValidateDevice();
+            Hardware.ValidateOemHardware();
             using (var query = new ManagementObjectSearcher("SELECT EmbeddedControllerMajorVersion, EmbeddedControllerMinorVersion FROM Win32_BIOS"))
             using (var items = query.Get())
             {

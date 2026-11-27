@@ -6,11 +6,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +21,9 @@ using System.Windows.Forms;
 internal static class Setup
 {
     internal const int Canceled = 1223;
+
+    [DllImport("kernel32.dll")]
+    private static extern uint GetOEMCP();
 
     [STAThread]
     private static int Main(string[] args)
@@ -85,6 +90,10 @@ internal static class Setup
                     start.CreateNoWindow = true;
                     start.RedirectStandardOutput = true;
                     start.RedirectStandardError = true;
+                    start.StandardOutputEncoding = Encoding.UTF8;
+                    start.StandardErrorEncoding = Encoding.GetEncoding((int)GetOEMCP());
+                    var errorLock = new object();
+                    Action<string> reportError = line => { lock (errorLock) error(line); };
                     using (var process = new Process { StartInfo = start })
                     {
                         process.OutputDataReceived += (sender, args) =>
@@ -92,8 +101,9 @@ internal static class Setup
                             if (args.Data == null) return;
                             if (args.Data.StartsWith("STEP ", StringComparison.Ordinal)) progress(args.Data.Substring(5));
                             if (args.Data.StartsWith("RESULT ", StringComparison.Ordinal)) result(args.Data.Substring(7));
+                            if (args.Data.StartsWith("ERROR ", StringComparison.Ordinal)) reportError(args.Data.Substring(6));
                         };
-                        process.ErrorDataReceived += (sender, args) => { if (args.Data != null) error(args.Data); };
+                        process.ErrorDataReceived += (sender, args) => { if (args.Data != null) reportError(args.Data); };
                         process.Start();
                         process.BeginOutputReadLine();
                         process.BeginErrorReadLine();

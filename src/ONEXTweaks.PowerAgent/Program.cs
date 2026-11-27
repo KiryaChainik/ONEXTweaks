@@ -47,7 +47,12 @@ namespace ONEXTweaks.Power
                     using (var hardware = new Hardware())
                     {
                         string command = args.Length == 0 ? "serve" : args[0];
-                        if (command == "snapshot") { WriteReport(report, hardware.State()); return 0; }
+                        if (command == "snapshot")
+                        {
+                            State snapshot = hardware.State();
+                            WriteReport(report, snapshot);
+                            return snapshot.available ? 0 : 1;
+                        }
                         if (command == "verify-preferred" || command == "verify-captured-preferred")
                         {
                             if(command=="verify-captured-preferred")
@@ -84,7 +89,7 @@ namespace ONEXTweaks.Power
                             return 0;
                         }
                         if (!installed && command != "serve") throw new ArgumentException("Unknown command");
-                        hardware.RecoverFanAtStartup();
+                        if (hardware.OemHardwareQualified) hardware.RecoverFanAtStartup();
                         Serve(hardware, desktop);
                     }
                 }
@@ -115,11 +120,11 @@ namespace ONEXTweaks.Power
             catch (UnauthorizedAccessException) { }
         }
 
-        private static void ReportInstallerHardware(uint session, bool fanAvailable, State state)
+        private static void ReportInstallerHardware(uint session, bool fanRequired, bool fanAvailable, State state)
         {
             DateTime now = DateTime.UtcNow;
             if (now >= InstallerProbeExpiresUtc) return;
-            if (!fanAvailable || !state.available)
+            if (!state.available || (fanRequired ? !fanAvailable : !state.canWrite))
             {
                 ResetInstallerHardwareProbe();
                 return;
@@ -135,7 +140,7 @@ namespace ONEXTweaks.Power
             try
             {
                 using (var process = System.Diagnostics.Process.GetCurrentProcess())
-                    WriteReport(temporary, new { schema = 2, processId = process.Id, ownerSession = session, utc = now.ToString("o"), samples = installerProbeSamples, fan = true, tdp = true });
+                    WriteReport(temporary, new { schema = 3, processId = process.Id, ownerSession = session, utc = now.ToString("o"), samples = installerProbeSamples, fan = fanAvailable, tdp = state.available, tdpWritable = state.canWrite });
                 if (File.Exists(path)) File.Replace(temporary, path, null);
                 else File.Move(temporary, path);
             }
@@ -187,6 +192,10 @@ namespace ONEXTweaks.Power
                                     var request = Json.DeserializeObject(line) as Dictionary<string, object>;
                                     if (request == null || !request.ContainsKey("action") || !(request["action"] is string)) throw new ArgumentException("Invalid request");
                                     action = (string)request["action"];
+                                    if (!hardware.OemHardwareQualified && (action == "chargeRead" || action == "chargeSet" ||
+                                        action == "fanSet" || action == "fanCurveSet" || action == "lightingSet" || action == "lightingFeedback" ||
+                                        action == "controllerRead" || action == "controllerPrepare" || action == "smallMaskSet" || action == "cpuClockSet"))
+                                        throw new InvalidOperationException(Hardware.UnqualifiedOemHardware);
                                     if (action == "read") { }
                                     else if (action == "set")
                                     {
@@ -247,7 +256,7 @@ namespace ONEXTweaks.Power
                                         bool fanAvailable;
                                         var homeState=hardware.HomeState(out fanAvailable);
                                         var powerState=hardware.State();
-                                        if(desktop!=null&&action=="homeRead")ReportInstallerHardware(session,fanAvailable,powerState);
+                                        if(desktop!=null&&action=="homeRead")ReportInstallerHardware(session,hardware.OemHardwareQualified,fanAvailable,powerState);
                                         reply=new{ok=true,home=homeState,state=powerState};writer.WriteLine(Json.Serialize(reply));continue;
                                     }
                                     else if (action == "captureFactoryPower")
@@ -326,9 +335,12 @@ namespace ONEXTweaks.Power
     }
     internal sealed partial class Hardware : IDisposable
     {
+        internal const string UnqualifiedOemHardware = "Board and firmware have not been qualified for this hardware control.";
+        internal readonly bool OemHardwareQualified;
         private readonly Type msr;
-        private readonly MethodInfo read, write, close;
+        private readonly MethodInfo init, read, write, close;
         private readonly OemPipe oem;
+        private bool powerReaderInitialized;
         private Sample baseline;
         private Sample factoryPowerSnapshot;
         private string factoryPowerToken;
@@ -341,7 +353,8 @@ namespace ONEXTweaks.Power
         private Assembly vendorAssembly;
         internal Hardware()
         {
-            ValidateDevice();
+            string boardRevision = ReadDeviceBoardRevision();
+            OemHardwareQualified = HasQualifiedOemHardware(boardRevision);
             string path = Path.Combine(Program.VendorRoot, "CompatLayerCT.exe");
             ValidateHash(path, Program.VendorHash, Program.VendorFix3Hash);
             ValidateHash(Path.Combine(Program.VendorRoot, "PawnIOLib.dll"), "D71F62627D66983BB9F5B1C269F27BCD8C1B8A46E794377A6330F84C198F4443");
@@ -352,12 +365,12 @@ namespace ONEXTweaks.Power
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
             assembly.GetType("CompatLayerCT.Global", true).GetField("rootPath", flags).SetValue(null, Program.VendorRoot);
             msr = assembly.GetType("CompatLayerCT.pawnio.IntelMSRSingleModule", true);
+            init = msr.GetMethod("Init", flags);
             read = msr.GetMethod("ioctl_read_msr", flags);
             write = msr.GetMethod("ioctl_write_msr", flags);
             close = msr.GetMethod("Close", flags);
-            if (!(bool)msr.GetMethod("Init", flags).Invoke(null, new object[0])) throw new InvalidOperationException("Не удалось открыть модуль чтения лимитов.");
-            baseline = Read();
-            oem = new OemPipe();InitializeGameLightingRecovery();
+            oem = new OemPipe();
+            if (OemHardwareQualified) InitializeGameLightingRecovery();
         }
         internal static void ValidateHash(string path, params string[] expected)
         {
@@ -366,34 +379,65 @@ namespace ONEXTweaks.Power
                 if (Array.IndexOf(expected, BitConverter.ToString(hash.ComputeHash(file)).Replace("-", "")) < 0)
                     throw new InvalidOperationException("Версия аппаратного модуля изменилась. Нужна повторная проверка.");
         }
-        internal static void ValidateDevice()
+        private static string ReadDeviceBoardRevision()
         {
             using (var search = new ManagementObjectSearcher("SELECT Manufacturer,Product,Version FROM Win32_BaseBoard"))
             using (var items = search.Get())
             {
                 if (items.Count != 1) throw new InvalidOperationException("Не удалось определить модель платы.");
                 foreach (ManagementObject board in items)
-                    if ((string)board["Manufacturer"] != "ONE-NETBOOK" || (string)board["Product"] != "ONEXPLAYER 3" || (string)board["Version"] != "1002-B") throw new InvalidOperationException("Модель платы не проверена.");
+                    if (IsSupportedModel((string)board["Manufacturer"], (string)board["Product"])) return (string)board["Version"];
             }
-            using (var search = new ManagementObjectSearcher("SELECT SMBIOSBIOSVersion FROM Win32_BIOS"))
-            using (var items = search.Get())
+            throw new InvalidOperationException("Модель платы не проверена.");
+        }
+        internal static bool IsSupportedModel(string manufacturer, string product)
+        {
+            return manufacturer == "ONE-NETBOOK" && product == "ONEXPLAYER 3";
+        }
+        internal static bool IsQualifiedOemHardware(string boardRevision, string biosVersion)
+        {
+            return boardRevision == "1002-B" && biosVersion == "5.01";
+        }
+        internal static void ValidateOemHardware()
+        {
+            if (!HasQualifiedOemHardware(ReadDeviceBoardRevision())) throw new InvalidOperationException(UnqualifiedOemHardware);
+        }
+        private static bool HasQualifiedOemHardware(string boardRevision)
+        {
+            if (boardRevision != "1002-B") return false;
+            try
             {
-                if (items.Count != 1) throw new InvalidOperationException("Не удалось определить версию BIOS.");
-                foreach (ManagementObject bios in items)
-                    if ((string)bios["SMBIOSBIOSVersion"] != "5.01") throw new InvalidOperationException("Версия BIOS не проверена.");
+                using (var search = new ManagementObjectSearcher("SELECT SMBIOSBIOSVersion FROM Win32_BIOS"))
+                using (var items = search.Get())
+                {
+                    if (items.Count == 1)
+                        foreach (ManagementObject bios in items)
+                            return IsQualifiedOemHardware(boardRevision, (string)bios["SMBIOSBIOSVersion"]);
+                }
             }
+            catch (ManagementException) { }
+            catch (UnauthorizedAccessException) { }
+            catch (COMException) { }
+            return false;
         }
         private Sample Read()
         {
+            if (!powerReaderInitialized)
+            {
+                if (!(bool)init.Invoke(null, new object[0])) throw new InvalidOperationException("Не удалось открыть модуль чтения лимитов.");
+                powerReaderInitialized = true;
+            }
             ulong units = (ulong)read.Invoke(null, new object[] { (uint)0x606 });
             ulong raw = (ulong)read.Invoke(null, new object[] { (uint)0x610 });
-            return new Sample { Raw = raw, Pl1 = PowerRules.Pl1(units, raw), Pl2 = PowerRules.Pl2(units, raw), Enabled = PowerRules.IsEnabled(raw), Locked = PowerRules.IsLocked(raw) };
+            var sample = new Sample { Raw = raw, Pl1 = PowerRules.Pl1(units, raw), Pl2 = PowerRules.Pl2(units, raw), Enabled = PowerRules.IsEnabled(raw), Locked = PowerRules.IsLocked(raw) };
+            if (sample.Pl1 <= 0 || sample.Pl2 <= 0 || raw == ulong.MaxValue || units == ulong.MaxValue) throw new IOException("Invalid power limit readback.");
+            return sample;
         }
         internal void BeginSession()
         {
             factoryPowerSnapshot = null;
             factoryPowerToken = null;
-            if (!changed) baseline = Read();
+            if (!changed) baseline = null;
         }
         private double? ReadApuWatts()
         {
@@ -420,7 +464,10 @@ namespace ONEXTweaks.Power
         }
         internal State State()
         {
-            Sample current = Read();
+            Sample current;
+            try { current = Read(); }
+            catch (Exception failure) { return new State { status = "Power limits unavailable: " + failure.GetBaseException().Message }; }
+            if (baseline == null) baseline = current;
             double? temperature = null;
             try
             {
@@ -429,17 +476,31 @@ namespace ONEXTweaks.Power
                 if (number >= 1 && number <= 110) temperature = number;
             }
             catch { }
-            bool supported = write!=null && oem.IsTrusted && current.Enabled && !current.Locked && baseline.Enabled && !baseline.Locked && PowerRules.CanRestoreCaptured(baseline.Pl1, baseline.Pl2) && PowerRules.CanRestoreCaptured(current.Pl1, current.Pl2);
+            bool supported = CanWriteLimits(current);
             return new State { available = true, canWrite = supported, pl1Watts = current.Pl1, pl2Watts = current.Pl2,
                 initialPl1Watts = baseline.Pl1, initialPl2Watts = baseline.Pl2, cpuTemperatureC = temperature, apuPowerWatts=ReadApuWatts(),
                 rawLimits = "0x" + current.Raw.ToString("X16"), status = supported ? "Лимиты прочитаны из MSR" :
                     !oem.IsTrusted ? "Аппаратный канал ещё не подтверждён" : "Запись недоступна для текущего состояния лимитов" };
         }
+        internal static bool CanRestoreLimits(Sample sample)
+        {
+            return sample != null && sample.Enabled && !sample.Locked && PowerRules.CanRestoreCaptured(sample.Pl1, sample.Pl2);
+        }
+        private bool CanWriteLimits(Sample current)
+        {
+            return write != null && oem.IsTrusted && CanRestoreLimits(baseline) && CanRestoreLimits(current);
+        }
         internal void Apply(int pl1, int pl2)
         {
             PowerRules.Validate(pl1, pl2);
+            if (!oem.IsTrusted)
+            {
+                State state = State();
+                if (!state.canWrite) throw new InvalidOperationException(state.status);
+            }
             Sample previous = Read();
-            if (!previous.Enabled || previous.Locked || !PowerRules.CanRestoreCaptured(previous.Pl1, previous.Pl2)) throw new InvalidOperationException("Нельзя подтвердить восстановление текущих лимитов.");
+            if (baseline == null) baseline = previous;
+            if (!CanWriteLimits(previous)) throw new InvalidOperationException("Нельзя подтвердить восстановление текущих лимитов.");
             changed = true;
             try { SetAndVerify(pl1, pl2); }
             catch (Exception failure)
@@ -548,6 +609,7 @@ namespace ONEXTweaks.Power
         }
         private void InitializeCharge()
         {
+            if (!OemHardwareQualified) throw new InvalidOperationException(UnqualifiedOemHardware);
             if (chargeInitialized) return;
             ValidateHash(Path.Combine(Program.VendorRoot, @"tools\pawnio\LpcIO.bin"), "B3896A1CAB0D808FCA31FE2EBCAE045D59DAC690DA87B17C858BB8DA357EB45E");
             ValidateHash(Path.Combine(Program.VendorRoot, @"tools\pawnio\LpcACPIEC.bin"), "C38FD116E7AFF4D1FDB0A494E296BE0A6708E5A22FC72F14587442FB7F8F7906");
@@ -612,7 +674,7 @@ namespace ONEXTweaks.Power
         public void Dispose()
         {
             try { try { DisposeHome(); } finally { Restore(); } }
-            finally { if (oem != null) oem.Dispose(); if (ecClose != null) ecClose.Invoke(null, new object[0]); if (close != null) close.Invoke(null, new object[0]); }
+            finally { if (oem != null) oem.Dispose(); if (ecClose != null) ecClose.Invoke(null, new object[0]); if (powerReaderInitialized && close != null) close.Invoke(null, new object[0]); }
         }
     }
 

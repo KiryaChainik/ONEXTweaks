@@ -32,7 +32,7 @@ function Assert-ONEXTweaksProtectedStateDirectory([string]$StateDirectory) {
 function Get-ONEXTweaksReleaseStateDirectory([string]$CommonApplicationData = [Environment]::GetFolderPath('CommonApplicationData')) {
     $current = Join-Path $CommonApplicationData 'ONEXTweaksInstaller\Installation'
     $previous = Join-Path $CommonApplicationData 'ONEXTweaks\Installation'
-    $records = @('desktop-enrollment.json','owned-release.json','upgrade-1109.json','onexconsole-handoff.json','pending-restart.json')
+    $records = @('desktop-enrollment.json','owned-release.json','upgrade-1109.json','runtime-update-1110.json','onexconsole-handoff.json','pending-restart.json')
     $previousRecords = @($records | Where-Object { Test-Path -LiteralPath (Join-Path $previous $_) -ErrorAction Stop })
     if (!$previousRecords.Count) { return $current }
 
@@ -332,16 +332,25 @@ function Invoke-ONEXTweaksOwnerRemoval($Plan, [string]$Local, [bool]$Discard) {
 }
 
 function Get-ONEXTweaksRemainingTask($Plan, [string]$Name) {
+    if (!$Plan.Tasks.ContainsKey($Name)) { return }
     $expected = $Plan.Tasks[$Name].DefinitionSha256
     for ($attempt = 0; $attempt -lt 8; $attempt++) {
-        $tasks = @(Get-ScheduledTask -TaskPath '\' -ErrorAction Stop | Where-Object { $_.TaskName -ieq $Name -and $_.TaskPath -eq '\' })
+        try {
+            $tasks = @(Get-ScheduledTask -TaskPath '\' -TaskName $Name -ErrorAction Stop |
+                Where-Object { $_.TaskName -ieq $Name -and $_.TaskPath -eq '\' })
+        } catch {
+            if ($_.Exception.GetBaseException().HResult -ne -2147024894 -and
+                $_.FullyQualifiedErrorId -notmatch '^HRESULT 0x80070002(?:,|$)|^CmdletizationQuery_NotFound') { throw }
+            $tasks = @()
+        }
         if ($tasks.Count -gt 1) { throw "Multiple registered tasks match the owned task: $Name" }
         if (!$tasks.Count -and !(Test-ONEXTweaksRegisteredTask $Name)) { return }
         if ($tasks.Count) {
             try {
                 if ((Get-ONEXTweaksReleaseTaskDigest $Name) -ieq $expected) { return $tasks[0] }
             } catch {
-                if ($_.Exception.GetBaseException().HResult -ne -2147024894) { throw }
+                if ($_.Exception.GetBaseException().HResult -ne -2147024894 -and
+                    $_.FullyQualifiedErrorId -notmatch '^HRESULT 0x80070002(?:,|$)') { throw }
             }
         }
         if ($attempt -lt 7) { Start-Sleep -Milliseconds 500 }
@@ -431,6 +440,30 @@ function Wait-ONEXTweaksHardwareRestore($Plan) {
     throw 'PowerAgent has not restored firmware fan or temporary lighting state. Keep the recovery files and complete recovery before uninstall.'
 }
 
+function Test-ONEXTweaksLegacyFanMarker($Item) {
+    if ($Item -isnot [IO.FileInfo] -or $Item.Name -cnotmatch '^fan-watchdog-[1-9][0-9]{0,9}-[1-9][0-9]{0,18}\.ready$') {
+        return $false
+    }
+    Assert-ONEXTweaksProtectedItem $Item.FullName
+    return $Item.Length -eq 5 -and [IO.File]::ReadAllText($Item.FullName) -ceq 'ready'
+}
+
+function Remove-ONEXTweaksLegacyFanResidue([string]$Root) {
+    Assert-ONEXTweaksProtectedItem $Root
+    $children = @(Get-ChildItem -LiteralPath $Root -Force -ErrorAction Stop)
+    if ($children.Count -ne 1 -or $children[0] -isnot [IO.DirectoryInfo] -or $children[0].Name -cne 'PowerAgent') { return }
+    $directory = $children[0].FullName
+    Assert-ONEXTweaksProtectedItem $directory
+    $markers = @(Get-ChildItem -LiteralPath $directory -Force -ErrorAction Stop)
+    if (!$markers.Count) { return }
+    foreach ($marker in $markers) {
+        if (!(Test-ONEXTweaksLegacyFanMarker $marker)) { return }
+    }
+    foreach ($marker in $markers) { [IO.File]::Delete($marker.FullName) }
+    [IO.Directory]::Delete($directory)
+    [IO.Directory]::Delete($Root)
+}
+
 function Remove-ONEXTweaksOwnedMachineState($Plan) {
     $selectionPath = Join-Path $Plan.StateDirectory 'desktop-enrollment.json'
     if (Test-Path -LiteralPath $selectionPath) {
@@ -444,6 +477,13 @@ function Remove-ONEXTweaksOwnedMachineState($Plan) {
     if (!$Plan.Receipt.PSObject.Properties['PowerStateOwned'] -or !$Plan.Receipt.PowerStateOwned) { return }
     $directory = Join-Path $Plan.Root 'PowerAgent'
     $hardwareData = Join-Path $Plan.StateDirectory 'RetainedHardwareSettings'
+    if (Test-Path -LiteralPath $directory -PathType Container) {
+        Assert-ONEXTweaksProtectedItem $directory
+        # Older PowerAgents left this marker behind if Task Scheduler stopped the watchdog.
+        foreach ($marker in Get-ChildItem -LiteralPath $directory -File -Force -Filter 'fan-watchdog-*.ready' -ErrorAction Stop) {
+            if (Test-ONEXTweaksLegacyFanMarker $marker) { [IO.File]::Delete($marker.FullName) }
+        }
+    }
     foreach ($name in @('home-oem-settings.json','led-color-profile.json','boost-modes.json')) {
         $file = Join-Path $directory $name
         if (!(Test-Path -LiteralPath $file -PathType Leaf)) { continue }
@@ -573,6 +613,9 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'OneXConsoleSetup.ps1')
 . (Join-Path $PSScriptRoot 'OneXConsoleHandoff.ps1')
 $stateDirectory = Get-ONEXTweaksReleaseStateDirectory
+if (Test-Path -LiteralPath (Join-Path $stateDirectory 'runtime-update-1110.json')) {
+    throw 'Finish the pending runtime update with its Setup before uninstalling.'
+}
 $releaseRoot = Join-Path ([Environment]::GetFolderPath('ProgramFiles')) 'ONEXTweaks'
 $plan = Get-ONEXTweaksUninstallPlan $stateDirectory $releaseRoot -OwnerOnly:(!$MachinePhase)
 if (!$plan) { return [pscustomobject]@{ State='No owned release' } }

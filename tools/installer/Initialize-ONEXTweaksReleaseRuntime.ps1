@@ -31,12 +31,12 @@ function Write-ONEXTweaksInstallationRecord([string]$Path, $Record) {
 }
 
 function Register-ONEXTweaksRuntimeTask($Folder, [string]$Name, [string]$Exe, [string]$Arguments, [string]$Owner,
-    [ValidateSet('Bridge','Hardware','Overlay','Recovery','OemHandoff')][string]$Purpose) {
+    [ValidateSet('Bridge','Hardware','Overlay','Recovery','OemHandoff')][string]$Purpose, [string]$UpgradeId) {
     $system = $Purpose -in @('Hardware','OemHandoff')
     $account = if ($system) { 'S-1-5-18' } else { $Owner }
     $logon = if ($system) { 5 } else { 3 }
     $definition = $Folder.Service.NewTask(0)
-    $definition.RegistrationInfo.Description = "ONEXTweaks $Purpose"
+    $definition.RegistrationInfo.Description = if ($UpgradeId) { "ONEXTweaks $Purpose $UpgradeId" } else { "ONEXTweaks $Purpose" }
     $definition.Principal.UserId = $account
     $definition.Principal.LogonType = $logon
     $definition.Principal.RunLevel = [int]($Purpose -eq 'Overlay')
@@ -63,6 +63,31 @@ function Register-ONEXTweaksRuntimeTask($Folder, [string]$Name, [string]$Exe, [s
     $rights = 'D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;GRGX;;;' + $Owner + ')'
     if ($Purpose -eq 'OemHandoff') { $rights = 'D:P(A;;GA;;;SY)(A;;GA;;;BA)' }
     $null = $Folder.Tasks.RegisterTaskDefinition($Name, $definition, 2, $account, $null, $logon, $rights)
+}
+
+function Register-ONEXTweaksHardwareTasks($Folder, [string]$Root, [string]$Owner, $CreatedTasks, [string]$UpgradeId) {
+    Register-ONEXTweaksRuntimeTask $folder 'ONEXTweaks-PowerAgent' (Join-Path $root 'PowerAgent\ONEXTweaks.PowerAgent.exe') "serve-desktop $owner" $owner Hardware $UpgradeId
+    $createdTasks.Add('ONEXTweaks-PowerAgent')
+    $resumeTool = Join-Path $root 'Tools\Installer\Complete-ONEXTweaksRelease.ps1'
+    $windowsPowerShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $resumeError = Join-Path $root 'PowerAgent\onexconsole-resume-error.json'
+    $resumeCommand = @'
+$ErrorActionPreference = 'Stop'
+try {
+    $resume = @(& '__TOOL__' -ResumeOneXConsoleHandoff -Confirm:$false)
+    if ($resume -contains 'Disabled by ONEXTweaks') { [IO.File]::Delete('__ERROR__') }
+} catch {
+    $detail = if ($_.Exception -is [AggregateException]) { @($_.Exception.InnerExceptions | ForEach-Object Message) } else { @() }
+    @{ Utc=[DateTimeOffset]::UtcNow.ToString('o'); Error=$_.Exception.Message; Causes=$detail; Id=$_.FullyQualifiedErrorId; At=$_.ScriptStackTrace } |
+        ConvertTo-Json -Compress | Set-Content -LiteralPath '__ERROR__' -Encoding UTF8
+    exit 1
+}
+'@
+    $resumeCommand = $resumeCommand.Replace('__TOOL__',$resumeTool.Replace("'","''")).Replace('__ERROR__',$resumeError.Replace("'","''"))
+    $resumeArguments = '-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand ' +
+        [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($resumeCommand))
+    Register-ONEXTweaksRuntimeTask $folder 'ONEXTweaks-OneXConsoleHandoff' $windowsPowerShell $resumeArguments $owner OemHandoff $UpgradeId
+    $createdTasks.Add('ONEXTweaks-OneXConsoleHandoff')
 }
 
 function Get-ONEXTweaksRuntimePayload($Manifest, [string]$Directory, [string]$Root, [bool]$Hardware) {
@@ -167,8 +192,6 @@ try {
     if ($package.Count -ne 1 -or $package[0].PackageFullName -cne $selection.PackageFullName -or $package[0].Status -ne 'Ok') {
         throw 'Register the selected widget as the desktop owner first.'
     }
-    if (Test-Path -LiteralPath $root) { throw 'An existing machine runtime is present. Use a reviewed migration to preserve it.' }
-
     $manifestFile = Get-Item -LiteralPath $RuntimeManifest -Force
     if ($manifestFile -isnot [IO.FileInfo] -or $manifestFile.Length -gt 1048576 -or $manifestFile.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         throw 'Expected a regular, bounded runtime manifest.'
@@ -189,6 +212,8 @@ try {
         'ONEXTweaks-OneXConsoleHandoff')
     $collisions = @(Get-ScheduledTask -TaskPath '\' | Where-Object TaskName -in $names)
     if ($collisions.Count) { throw ('Existing runtime tasks require a reviewed migration: ' + ($collisions.TaskName -join ', ')) }
+    if (Test-Path -LiteralPath $root -PathType Container) { Remove-ONEXTweaksLegacyFanResidue $root }
+    if (Test-Path -LiteralPath $root) { throw 'An existing machine runtime is present. Use a reviewed migration to preserve it.' }
 
     $service = New-Object -ComObject Schedule.Service
     $service.Connect()
@@ -209,28 +234,7 @@ try {
         $createdTasks.Add('ONEXTweaks-ControllerInputRecovery')
         if ($hardware) {
             [IO.File]::Copy((Join-Path $root 'PowerAgent\home-oem-seed.json'), (Join-Path $root 'PowerAgent\home-oem-settings.json'), $false)
-            Register-ONEXTweaksRuntimeTask $folder 'ONEXTweaks-PowerAgent' (Join-Path $root 'PowerAgent\ONEXTweaks.PowerAgent.exe') "serve-desktop $owner" $owner Hardware
-            $createdTasks.Add('ONEXTweaks-PowerAgent')
-            $resumeTool = Join-Path $root 'Tools\Installer\Complete-ONEXTweaksRelease.ps1'
-            $windowsPowerShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-            $resumeError = Join-Path $root 'PowerAgent\onexconsole-resume-error.json'
-            $resumeCommand = @'
-$ErrorActionPreference = 'Stop'
-try {
-    $resume = @(& '__TOOL__' -ResumeOneXConsoleHandoff -Confirm:$false)
-    if ($resume -contains 'Disabled by ONEXTweaks') { [IO.File]::Delete('__ERROR__') }
-} catch {
-    $detail = if ($_.Exception -is [AggregateException]) { @($_.Exception.InnerExceptions | ForEach-Object Message) } else { @() }
-    @{ Utc=[DateTimeOffset]::UtcNow.ToString('o'); Error=$_.Exception.Message; Causes=$detail; Id=$_.FullyQualifiedErrorId; At=$_.ScriptStackTrace } |
-        ConvertTo-Json -Compress | Set-Content -LiteralPath '__ERROR__' -Encoding UTF8
-    exit 1
-}
-'@
-            $resumeCommand = $resumeCommand.Replace('__TOOL__',$resumeTool.Replace("'","''")).Replace('__ERROR__',$resumeError.Replace("'","''"))
-            $resumeArguments = '-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand ' +
-                [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($resumeCommand))
-            Register-ONEXTweaksRuntimeTask $folder 'ONEXTweaks-OneXConsoleHandoff' $windowsPowerShell $resumeArguments $owner OemHandoff
-            $createdTasks.Add('ONEXTweaks-OneXConsoleHandoff')
+            Register-ONEXTweaksHardwareTasks $folder $root $owner $createdTasks
         }
         Register-ONEXTweaksRuntimeTask $folder 'ONEXTweaks-RTSS' $rtss '' $owner Overlay
         $createdTasks.Add('ONEXTweaks-RTSS')
