@@ -115,7 +115,7 @@ def build(args):
         copy_regular(source, destination)
         supplied.append({"Name": info["Name"], "Version": info["Version"], "File": source.name, "Sha256": digest(destination)})
     copy_regular(installer.parent / "Install-Startup.ps1", args.output / "Setup" / "Install-Startup.ps1")
-    for name in ("Initialize-ONEXTweaksReleaseRuntime.ps1", "Install-ONEXTweaksWidget.ps1", "Uninstall-ONEXTweaksRelease.ps1", "OneXConsoleSetup.ps1", "OneXConsoleHandoff.ps1", "DriverPrerequisites.ps1", "GameBarPrerequisite.ps1", "README.md"):
+    for name in ("Initialize-ONEXTweaksReleaseRuntime.ps1", "Install-ONEXTweaksWidget.ps1", "Uninstall-ONEXTweaksRelease.ps1", "Update-ONEXTweaksRuntime.ps1", "OneXConsoleSetup.ps1", "OneXConsoleHandoff.ps1", "DriverPrerequisites.ps1", "GameBarPrerequisite.ps1", "README.md"):
         copy_regular(installer / name, args.output / "Setup" / "Installer" / name)
 
     metadata = {"PackageFullName": full_name, "PackageFamilyName": args.package_family,

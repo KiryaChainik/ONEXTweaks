@@ -93,7 +93,10 @@ function Test-ONEXTweaksOemHardwareProbe($Plan, [datetime]$Boot) {
     if ($item.Length -gt 4096 -or $item.LastWriteTimeUtc -lt $Boot) { return $false }
     Assert-ONEXTweaksProtectedItem $path
     $proof = [IO.File]::ReadAllText($path) | ConvertFrom-Json
-    if ($proof.schema -ne 2 -or $proof.samples -ne 3 -or $proof.fan -isnot [bool] -or !$proof.fan -or
+    $requiresFan = Test-ONEXTweaksQualifiedOemHardware
+    if ($proof.schema -ne 3 -or $proof.samples -ne 3 -or
+        ($requiresFan -and ($proof.fan -isnot [bool] -or !$proof.fan)) -or
+        (!$requiresFan -and ($proof.tdpWritable -isnot [bool] -or !$proof.tdpWritable)) -or
         $proof.tdp -isnot [bool] -or !$proof.tdp -or $proof.processId -notmatch '^[0-9]+$' -or
         $proof.ownerSession -notmatch '^[1-9][0-9]*$') { return $false }
     $stamp = [DateTimeOffset]::Parse($proof.utc, [Globalization.CultureInfo]::InvariantCulture)

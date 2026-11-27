@@ -91,7 +91,7 @@ def build(bundle, output, development, beta=False):
             raise ValueError(f"Expected exactly one copy of {name}.")
         add(files[0], bundle / files[0], framework["Sha256"])
     scripts = ["Initialize-ONEXTweaksReleaseRuntime.ps1", "Install-ONEXTweaksWidget.ps1",
-               "Uninstall-ONEXTweaksRelease.ps1", "DriverPrerequisites.ps1", "OneXConsoleSetup.ps1",
+               "Uninstall-ONEXTweaksRelease.ps1", "Update-ONEXTweaksRuntime.ps1", "DriverPrerequisites.ps1", "OneXConsoleSetup.ps1",
                "OneXConsoleHandoff.ps1", "GameBarPrerequisite.ps1"]
     if "RollbackFile" in metadata:
         rollback = relative_path(metadata["RollbackFile"])

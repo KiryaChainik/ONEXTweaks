@@ -35,6 +35,7 @@ function Assert-Rejected([scriptblock]$Action, [string]$ExpectedError) {
 }
 
 function Test-WindowsWorkflow {
+    . (Join-Path $PSScriptRoot 'OneXConsoleSetup.ps1')
     $state = [pscustomobject]@{
         FixturePath = (Get-Item -LiteralPath $widget).FullName
         Version = $null
@@ -54,6 +55,8 @@ function Test-WindowsWorkflow {
         RtssInstalled = $true
         RtssInstalls = 0
         OemBoard = $false
+        BoardProduct = 'ONEXPLAYER 3'
+        BoardVersion = '1002-B'
         BiosVersion = '5.01'
         Downloads = 0
         DriverInstalls = 0
@@ -119,7 +122,7 @@ function Test-WindowsWorkflow {
             return [pscustomobject]@{ StartMode = 'Manual'; ExitCode = $code; PathName = (Join-Path $temp $file) }
         }
         if ($ClassName -eq 'Win32_BaseBoard' -and $state.OemBoard) {
-            return [pscustomobject]@{ Manufacturer = 'ONE-NETBOOK'; Product = 'ONEXPLAYER 3'; Version = '1002-B' }
+            return [pscustomobject]@{ Manufacturer = 'ONE-NETBOOK'; Product = $state.BoardProduct; Version = $state.BoardVersion }
         }
         if ($ClassName -eq 'Win32_BIOS' -and $state.OemBoard) {
             return [pscustomobject]@{ SMBIOSBIOSVersion = $state.BiosVersion }
@@ -336,18 +339,30 @@ function Test-WindowsWorkflow {
         throw 'RTSS setup did not install only the missing dependency.'
     }
     $state.OemBoard = $true
-    $state.BiosVersion = '5.02'
-    $wrongBios = & $installer @argsForWidget
-    if ($wrongBios.HardwareCompatibility -notlike '*detected: 5.02*' -or
-        ($wrongBios.Drivers | Where-Object Service -eq 'PawnIO').Status -ne 'Not applicable' -or
-        ($wrongBios.Applications | Where-Object Name -like 'OneXConsole*').Status -ne 'Not applicable') {
-        throw 'An unsupported BIOS was admitted for PowerAgent hardware dependencies.'
+    foreach ($revision in '1002-B', '1002-C', '') {
+        $state.BoardVersion = $revision
+        foreach ($version in '5.01', '5.08', '5.09', '5.39', '') {
+            $state.BiosVersion = $version
+            $oemPlan = & $installer @argsForWidget
+            if ($oemPlan.HardwareCompatibility -cne 'Supported' -or
+                ($oemPlan.Drivers | Where-Object Service -eq 'PawnIO').Status -eq 'Not applicable' -or
+                ($oemPlan.Applications | Where-Object Name -like 'OneXConsole*').Status -ne 'Compatible OEM installer missing from bundle') {
+                throw "ONEXPLAYER 3 rev '$revision' with BIOS '$version' must plan hardware dependencies."
+            }
+            if ((Test-ONEXTweaksQualifiedOemHardware) -ne ($revision -ceq '1002-B' -and $version -ceq '5.01')) {
+                throw "Unexpected EC qualification for board '$revision' with BIOS '$version'."
+            }
+        }
     }
+    $state.BoardProduct = 'ONEXPLAYER X2'
+    $otherModel = & $installer @argsForWidget
+    if ($otherModel.HardwareCompatibility -eq 'Supported' -or
+        ($otherModel.Drivers | Where-Object Service -eq 'PawnIO').Status -ne 'Not applicable') {
+        throw 'A different model must not be admitted to PowerAgent hardware dependencies.'
+    }
+    $state.BoardProduct = 'ONEXPLAYER 3'
+    $state.BoardVersion = '1002-B'
     $state.BiosVersion = '5.01'
-    $oemPlan = & $installer @argsForWidget
-    if (($oemPlan.Applications | Where-Object Name -like 'OneXConsole*').Status -ne 'Compatible OEM installer missing from bundle') {
-        throw 'A clean ONEXPLAYER must report the missing OEM setup.'
-    }
     $oemFixtureDirectory = Join-Path (Split-Path -LiteralPath $widget) 'Dependencies/OEM'
     $null = New-Item -ItemType Directory -Path $oemFixtureDirectory -Force
     Set-Content -LiteralPath (Join-Path $oemFixtureDirectory 'OneXConsole-0.10.4-fix3.exe') -Value 'Unverified OEM installer'
@@ -356,6 +371,7 @@ function Test-WindowsWorkflow {
     'PASS: Windows workflow with simulated AppX deployment (first registration, WhatIf, retry, blockers, update)'
     'PASS: automatic driver setup with simulated downloads, signature check, pending restart and retry'
     'PASS: RTSS archive validation and simulated setup'
+    'PASS: TDP setup accepts ONEXPLAYER 3 across board and BIOS versions; EC qualification stays separate'
 }
 
 function Test-RuntimeReadback {

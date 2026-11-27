@@ -9,11 +9,19 @@ $ErrorActionPreference = 'Stop'
 function Test-OemHandoffReadback {
     $family = 'ONEXTweaks.Widget_0123456789abc'
     $live = [pscustomobject]@{widgetPackageFamily=$family;connected=$true;processId=42;sessionId=1;version='0.29.1110';
-        state=@{available=$true};homeHardware=@{fan=@{available=$false}}}
+        state=@{available=$true;canWrite=$true};homeHardware=@{fan=@{available=$false}}}
     if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 15.4) -cne 'PowerAgent hardware readback temporarily stale' -or
         (Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 45) -notlike 'Bridge report outside*' -or
         (Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true "$family-wrong" 15.4) -notlike 'Widget package family differs*') {
         throw 'Handoff readiness did not distinguish recent hardware failure from unrelated or old telemetry.'
+    }
+    if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 1 -RequiresFan $false) -cne 'Healthy' -or
+        (Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 1) -cne 'PowerAgent hardware readback unavailable') {
+        throw 'Writable TDP must be sufficient only when fan qualification is not required.'
+    }
+    $live.state.canWrite = $false
+    if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 1 -RequiresFan $false) -cne 'PowerAgent hardware readback unavailable') {
+        throw 'A TDP-only handoff accepted power limits that cannot be changed.'
     }
     $live.homeHardware.fan.available = $true
     if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 15.4) -notlike 'Bridge report outside*') {
@@ -112,7 +120,35 @@ try {
             $method = $deserialize.MakeGenericMethod(@($agent.GetType('ONEXTweaks.Power.HomeSettings')))
             $homeSettings = $method.Invoke($serializer, [object[]]@($seed.PSObject.BaseObject))
             $flags = [Reflection.BindingFlags]'NonPublic,Static'
-            $agent.GetType('ONEXTweaks.Power.Hardware').GetMethod('ValidateHome', $flags).Invoke($null, [object[]]@($homeSettings.PSObject.BaseObject))
+            $hardware = $agent.GetType('ONEXTweaks.Power.Hardware')
+            $hardware.GetMethod('ValidateHome', $flags).Invoke($null, [object[]]@($homeSettings.PSObject.BaseObject))
+            $modelCheck = $hardware.GetMethod('IsSupportedModel', $flags)
+            $oemCheck = $hardware.GetMethod('IsQualifiedOemHardware', $flags)
+            if (!$modelCheck.Invoke($null, [object[]]@('ONE-NETBOOK', 'ONEXPLAYER 3')) -or
+                $modelCheck.Invoke($null, [object[]]@('ONE-NETBOOK', 'ONEXPLAYER X2')) -or
+                $modelCheck.Invoke($null, [object[]]@('Other', 'ONEXPLAYER 3'))) { throw 'The TDP model allowlist changed.' }
+            if (!$oemCheck.Invoke($null, [object[]]@('1002-B', '5.01')) -or
+                $oemCheck.Invoke($null, [object[]]@('1002-C', '5.01')) -or
+                $oemCheck.Invoke($null, [object[]]@('1002-B', '5.09')) -or
+                $oemCheck.Invoke($null, [object[]]@('1002-B', '5.39'))) { throw 'An unverified board or BIOS was admitted to EC controls.' }
+            $sampleType = $agent.GetType('ONEXTweaks.Power.Sample')
+            $sample = [Activator]::CreateInstance($sampleType, $true)
+            $fields = [Reflection.BindingFlags]'NonPublic,Instance'
+            $sampleType.GetField('Pl1', $fields).SetValue($sample, [double]25)
+            $sampleType.GetField('Pl2', $fields).SetValue($sample, [double]52)
+            $enabled = $sampleType.GetField('Enabled', $fields)
+            $locked = $sampleType.GetField('Locked', $fields)
+            $limitsCheck = $hardware.GetMethod('CanRestoreLimits', $flags)
+            foreach ($pair in @(@($true, $false), @($true, $true), @($false, $false))) {
+                $enabled.SetValue($sample, $pair[0])
+                $locked.SetValue($sample, $pair[1])
+                if ($limitsCheck.Invoke($null, [object[]]@($sample)) -ne ($pair[0] -and !$pair[1])) {
+                    throw 'Power limits require an enabled, unlocked and restorable sample.'
+                }
+            }
+            $enabled.SetValue($sample, $true)
+            $sampleType.GetField('Pl2', $fields).SetValue($sample, [double]64)
+            if ($limitsCheck.Invoke($null, [object[]]@($sample))) { throw 'Unexpected factory limit was accepted for rollback.' }
         }
         'PASS: real runtime manifest, hardware and generic x64 payloads'
     }

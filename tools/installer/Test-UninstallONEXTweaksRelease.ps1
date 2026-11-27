@@ -18,7 +18,7 @@ $sid = 'S-1-5-21-100-200-300-1001'
 $family = 'ONEXTweaks.Widget_3a23eh8tyg7na'
 $full = 'ONEXTweaks.Widget_0.29.100.0_x64__3a23eh8tyg7na'
 $f = @{ Running=$true; Enabled=$true; Task=$true; Package=$true; Marker=''; TaskReads=0; Stops=0; Restores=0; Unregisters=0; Author='installer';
-    MaintenanceActive=$false; MaintenanceStarts=0; MaintenanceStops=0; ParentKey=$false; ReceiptKey=$false; TransientReads=0; TransientOmission=$false;
+    MaintenanceActive=$false; MaintenanceStarts=0; MaintenanceStops=0; ParentKey=$false; ReceiptKey=$false; TransientReads=0; TransientOmission=$false; TransientQuery=$false;
     RuntimeDeleteBlocks=0; RuntimeDeleteAttempts=0; StopCountdown=0 }
 $comTask = [pscustomobject]@{Fixture=$f}
 Add-Member -InputObject $comTask -MemberType ScriptProperty -Name Enabled -Value { $this.Fixture.Enabled } -SecondValue {
@@ -57,9 +57,15 @@ function Export-ScheduledTask($TaskPath,$TaskName) {
     }
     "<Task xmlns='http://schemas.microsoft.com/windows/2004/02/mit/task'><RegistrationInfo><Author>$author</Author></RegistrationInfo><Settings><Enabled>$flag</Enabled></Settings></Task>"
 }
-function Get-ScheduledTask($TaskPath) {
-    Check ($TaskPath -eq '\') 'Unexpected folder.'
+function Get-ScheduledTask($TaskPath,$TaskName) {
+    Check ($TaskPath -eq '\' -and $TaskName -ceq 'ONEXTweaks-WidgetBridge') 'Unexpected task query.'
     $f.TaskReads++
+    if ($f.TransientQuery) {
+        $f.TransientQuery=$false
+        $failure = [Management.Automation.ErrorRecord]::new([InvalidOperationException]::new('Transient CIM task query failure'),
+            'HRESULT 0x80070002,Get-ScheduledTask',[Management.Automation.ErrorCategory]::ObjectNotFound,$TaskName)
+        throw $failure
+    }
     if ($f.TransientOmission) { $f.TransientOmission=$false; return }
     if ($f.Task) {
         [pscustomobject]@{ TaskName='ONEXTweaks-WidgetBridge'; TaskPath='\'; State=$(if(!$f.Enabled){'Disabled'}elseif($f.Running){'Running'}else{'Ready'});
@@ -110,6 +116,7 @@ function Invoke-ONEXTweaksOneXConsoleHandoff($Operation,$StateDirectory,$UserSid
     if ($f.FailRestore) { throw 'Changed OEM task' }
     $f.Restores++
     $f.TransientReads = 2
+    $f.TransientQuery = $true
     $f.TransientOmission = $true
     return 'Restored'
 }
@@ -213,13 +220,45 @@ try {
         Check ($f.RuntimeDeleteAttempts -eq 21 -and (Test-Path -LiteralPath $owned) -and
             (Test-Path -LiteralPath $receiptPath)) 'Persistent runtime lock did not stop at the retry limit.'
     }
+    $fanDirectory = Join-Path $root 'PowerAgent'
+    [void][IO.Directory]::CreateDirectory($fanDirectory)
+    $stale = Join-Path $fanDirectory 'fan-watchdog-10328-639313585837157160.ready'
+    $foreign = Join-Path $fanDirectory 'fan-watchdog-10329-639313585837157160.ready'
+    $journal = Join-Path $fanDirectory 'fan-control-journal'
+    [IO.File]::WriteAllText($stale,'ready')
+    [IO.File]::WriteAllText($foreign,'unrelated')
+    [IO.File]::WriteAllText($journal,'firmware recovery data')
+    Remove-ONEXTweaksOwnedMachineState $plan
+    Check ((Test-Path -LiteralPath $stale) -and (Test-Path -LiteralPath $journal)) 'Unverified hardware state was removed.'
+    $hardwarePlan = [pscustomobject]@{Root=$root;StateDirectory=$state;Receipt=[pscustomobject]@{PowerStateOwned=$true}}
+    Remove-ONEXTweaksOwnedMachineState $hardwarePlan
+    Check (!(Test-Path -LiteralPath $stale) -and (Test-Path -LiteralPath $foreign) -and (Test-Path -LiteralPath $journal)) 'Legacy fan marker cleanup touched the wrong files.'
+    [IO.File]::Delete($foreign)
+    [IO.File]::Delete($journal)
+    [IO.File]::WriteAllText($stale,'ready')
+    $manifest.PowerStateOwned = $true
+    [IO.File]::WriteAllText($receiptPath,($manifest | ConvertTo-Json -Depth 5))
+    $f.Marker = (Get-ONEXTweaksUninstallPlan $state $root).Digest
     $f.RuntimeDeleteAttempts = 0
     $f.RuntimeDeleteBlocks = 2
     $result = Invoke-ONEXTweaksMachineRemoval (Get-ONEXTweaksUninstallPlan $state $root) $lease
-    Check ($result.State -eq 'Removed' -and !$f.Task -and !(Test-Path -LiteralPath $owned) -and (Test-Path -LiteralPath $shared)) 'Unexpected machine cleanup result.'
-    Check ($f.TransientReads -eq 0 -and $f.Unregisters -eq 1) 'Transient scheduler reads prevented one verified removal.'
+    Check ($result.State -eq 'Removed' -and !$f.Task -and !(Test-Path -LiteralPath $owned) -and
+        !(Test-Path -LiteralPath $fanDirectory) -and (Test-Path -LiteralPath $shared)) 'Unexpected machine cleanup result.'
+    Check ($f.TransientReads -eq 0 -and !$f.TransientQuery -and $f.Unregisters -eq 1) 'Transient scheduler reads prevented one verified removal.'
     Check ($f.RuntimeDeleteAttempts -eq 3) 'The temporary runtime image mapping prevented first-attempt uninstall.'
     Check (!(Test-Path -LiteralPath $receiptPath) -and (Test-Path -LiteralPath $data) -and $null -eq (Get-ONEXTweaksUninstallPlan $state $root)) 'Repeated uninstall or user data changed.'
+    $oldRoot = Join-Path $temp 'previous-installation'
+    $oldFan = Join-Path $oldRoot 'PowerAgent'
+    [void][IO.Directory]::CreateDirectory($oldFan)
+    $oldMarker = Join-Path $oldFan 'fan-watchdog-10328-639313585837157160.ready'
+    $other = Join-Path $oldFan 'fan-watchdog-10329-639313585837157160.ready'
+    [IO.File]::WriteAllText($oldMarker,'ready')
+    [IO.File]::WriteAllText($other,'other')
+    Remove-ONEXTweaksLegacyFanResidue $oldRoot
+    Check ((Test-Path -LiteralPath $oldMarker) -and (Test-Path -LiteralPath $other)) 'Install attempted to clear a directory with unrelated data.'
+    [IO.File]::Delete($other)
+    Remove-ONEXTweaksLegacyFanResidue $oldRoot
+    Check (!(Test-Path -LiteralPath $oldRoot)) 'The legacy watchdog marker still blocks reinstall.'
     $actors = @()
     try {
         $relative = 'WidgetBridge\ONEXTweaks.WidgetBridge.exe'

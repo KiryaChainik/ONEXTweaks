@@ -16,7 +16,7 @@ Tune power, cooling, controls, and display settings without leaving your game.</
   <a href="#support-the-project">Support</a>
 </p>
 
-ONEXTweaks runs inside **Xbox Game Bar** on Windows 11 x64. Open it with **Win + G** and use touch, a mouse, or the built-in controller. It's designed for the Intel ONEXPLAYER 3. The hardware helper checks for board `1002-B`, BIOS `5.01`, and compatible OneXConsole components before enabling hardware controls.
+ONEXTweaks runs inside **Xbox Game Bar** on Windows 11 x64. Open it with **Win + G** and use touch, a mouse, or the built-in controller. It's designed for the Intel ONEXPLAYER 3. The current source checks whether the power limits can be read and changed through compatible OneXConsole components. Fan and charge controls still require a verified board and firmware configuration. The published `v0.29.1110-beta.1` installer requires board `1002-B` and BIOS `5.01` for hardware controls.
 
 ## Take a tour
 

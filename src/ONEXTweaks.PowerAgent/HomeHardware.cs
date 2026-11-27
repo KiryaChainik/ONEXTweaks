@@ -103,6 +103,12 @@ namespace ONEXTweaks.Power
         }
         internal object HomeState(out bool fanAvailable)
         {
+            if (!OemHardwareQualified)
+            {
+                fanAvailable = false;
+                return new { fan = new { available = false, error = UnqualifiedOemHardware },
+                    lighting = new { available = false, error = UnqualifiedOemHardware }, smallProcessorMask = (bool?)null, cpuClockMhz = 0 };
+            }
             lock(SyncRoot)
             {
                 bool fanOk=false,rgbOk=false;int? actualPercent=null,control=null,rpm=null;bool? smallMask=null;
@@ -339,29 +345,30 @@ namespace ONEXTweaks.Power
             {
                 int pid=parent.Id;
                 long ticks=parent.StartTime.ToUniversalTime().Ticks;
-                string ready=FanWatchdogReadyPath(pid,ticks);
-                if(fanWatchdog==null||fanWatchdog.HasExited)
+                using(var ready=new EventWaitHandle(false,EventResetMode.ManualReset,FanWatchdogReadyName(pid,ticks)))
                 {
-                    if(File.Exists(ready))File.Delete(ready);
-                    fanWatchdog=Process.Start(new ProcessStartInfo(parent.MainModule.FileName,
-                        "fan-watchdog "+pid+" "+ticks){UseShellExecute=false,CreateNoWindow=true});
-                }
-                for(int i=0;i<40;i++)
-                {
-                    if(fanWatchdog.HasExited)throw new IOException("Fan watchdog did not start");
-                    if(File.Exists(ready))return;
-                    Thread.Sleep(100);
+                    if(fanWatchdog==null||fanWatchdog.HasExited)
+                    {
+                        if(fanWatchdog!=null)fanWatchdog.Dispose();
+                        ready.Reset();
+                        fanWatchdog=Process.Start(new ProcessStartInfo(parent.MainModule.FileName,
+                            "fan-watchdog "+pid+" "+ticks){UseShellExecute=false,CreateNoWindow=true});
+                    }
+                    for(int i=0;i<40;i++)
+                    {
+                        if(ready.WaitOne(100)&&!fanWatchdog.HasExited)return;
+                        if(fanWatchdog.HasExited)throw new IOException("Fan watchdog did not start");
+                    }
                 }
             }
             throw new IOException("Fan watchdog is not ready");
         }
-        private static string FanWatchdogReadyPath(int pid,long ticks)
+        private static string FanWatchdogReadyName(int pid,long ticks)
         {
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"fan-watchdog-"+pid+"-"+ticks+".ready");
+            return @"Local\ONEXTweaks.PowerAgent.FanWatchdog."+FanFirmwareControl.Identity(pid,ticks).Replace('/','.');
         }
         internal static int RunFanWatchdog(int pid,long ticks)
         {
-            string ready=FanWatchdogReadyPath(pid,ticks);
             try
             {
                 using(var parent=Process.GetProcessById(pid))
@@ -369,11 +376,15 @@ namespace ONEXTweaks.Power
                 {
                     if(parent.StartTime.ToUniversalTime().Ticks!=ticks||
                        !string.Equals(parent.MainModule.FileName,current.MainModule.FileName,StringComparison.OrdinalIgnoreCase))return 1;
-                    File.WriteAllText(ready,"ready");parent.WaitForExit();
+                    using(var ready=EventWaitHandle.OpenExisting(FanWatchdogReadyName(pid,ticks)))
+                    {
+                        ready.Set();
+                        parent.WaitForExit();
+                    }
                 }
             }
             catch(ArgumentException){}
-            finally{try{File.Delete(ready);}catch{}}
+            catch(WaitHandleCannotBeOpenedException){}
             string owner=FanFirmwareControl.Identity(pid,ticks);
             for(int i=0;i<3;i++)try{FanFirmwareControl.Restore(owner);return 0;}catch{Thread.Sleep(1000);}
             return 1;
@@ -482,6 +493,7 @@ namespace ONEXTweaks.Power
         }
         internal void StopHomeControl()
         {
+            if (!OemHardwareQualified) return;
             lock(SyncRoot)
             {
                 try{StopGameLighting();}
@@ -490,6 +502,7 @@ namespace ONEXTweaks.Power
         }
         private void DisposeHome()
         {
+            if (!OemHardwareQualified) return;
             lock(SyncRoot)
             {
                 homeDisposed=true;
