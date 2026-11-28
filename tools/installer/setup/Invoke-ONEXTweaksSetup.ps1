@@ -128,7 +128,7 @@ try {
         }
     }
 
-    $cleanInstallMessage = 'Uninstall the previous ONEXTweaks beta in Windows Settings > Apps > Installed apps, then run this Setup again.'
+    $cleanInstallMessage = 'Use the installed ONEXTweaks uninstaller to remove the previous beta, then run this Setup again. See the Uninstall section in the GitHub README.'
     if ($package -and $package.PackageFullName -cne $metadata.PackageFullName) { throw $cleanInstallMessage }
     $ownedRelease = Join-Path $state 'owned-release.json'
     if (Test-Path -LiteralPath $ownedRelease) {

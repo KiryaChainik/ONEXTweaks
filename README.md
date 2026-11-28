@@ -290,7 +290,7 @@ Compare the value in **Hash** with the SHA-256 shown on the release page.
 
 - **OneXConsole startup.** When the hardware checks pass, Setup disables the OneXConsole window's automatic launch if it was enabled. This keeps the two apps from competing for hardware controls. Its hardware components remain installed, and you can open the OneXConsole window manually.
 - **Beta certificates.** On a first beta install, Setup may ask you to trust the widget's signing certificate. Compare the publisher and fingerprint with the release details. Windows may also show a SmartScreen prompt. Standard installation uses normal Windows signature checks.
-- **Updating from an earlier beta.** Uninstall ONEXTweaks from Windows Settings under **Apps → Installed apps**, then run the new Setup. Plan to set up your profiles again.
+- **Updating from an earlier beta.** Run the [installed ONEXTweaks uninstaller](#uninstall), then run the new Setup. Plan to set up your profiles again.
 
 ## Dependencies
 
