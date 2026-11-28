@@ -49,12 +49,21 @@ $service = New-Object -ComObject Schedule.Service
 $service.Connect()
 $tasks = $service.GetFolder('\')
 
-function Get-ONEXTweaksUpgradePackage {
+function Get-ONEXTweaksUpgradePackage([switch]$AllowMissing) {
     $registered = @(Get-AppxPackage -Name ONEXTweaks.Widget -PackageTypeFilter Main)
+    if ($AllowMissing -and !$registered.Count) { return }
     if ($registered.Count -ne 1 -or $registered[0].Status -ne 'Ok' -or $registered[0].PackageFullName -cnotin @($oldPackage,$newPackage)) {
         throw 'Expected one healthy, known ONEXTweaks package for the owner.'
     }
     $registered[0].PackageFullName
+}
+
+function Restore-ONEXTweaksLegacyRegistration([string]$VerifiedPackage) {
+    $current = Get-ONEXTweaksUpgradePackage -AllowMissing
+    if ($current -cne $oldPackage) {
+        Add-AppxPackage -Path $VerifiedPackage -ForceUpdateFromAnyVersion -ForceTargetApplicationShutdown
+    }
+    if ((Get-ONEXTweaksUpgradePackage) -cne $oldPackage) { throw 'Windows did not restore package 1109.' }
 }
 
 function Assert-ONEXTweaksUpgradeFile([string]$Path,[string]$Expected) {
@@ -153,6 +162,7 @@ function Get-ONEXTweaksUpgradeArchive($Journal) {
 function Restore-ONEXTweaksUpgrade($Journal, [bool]$RestartLegacy) {
     $archive = Get-ONEXTweaksUpgradeArchive $Journal
     $previous = Assert-ONEXTweaksUpgradeFile (Join-Path $archive 'ONEXTweaks-1109.msix') $oldHash
+    $current = Get-ONEXTweaksUpgradePackage -AllowMissing
     $parked = Join-Path $archive 'Runtime'
     $plan = Get-ONEXTweaksUninstallPlan $state $root
     if ($plan) {
@@ -162,7 +172,7 @@ function Restore-ONEXTweaksUpgrade($Journal, [bool]$RestartLegacy) {
         $remove = Get-ONEXTweaksVerifiedTool $plan 'Tools\Installer\Uninstall-ONEXTweaksRelease.ps1'
         # Keep the staged widget registered for the in-place downgrade, but
         # prevent activations while removing the private 1110 runtime.
-        $maintenance = if ((Get-ONEXTweaksUpgradePackage) -ceq $newPackage) { Open-ONEXTweaksPackageMaintenance $newPackage }
+        $maintenance = if ($current -ceq $newPackage) { Open-ONEXTweaksPackageMaintenance $newPackage }
         try { & $remove -Uninstall -Confirm:$false | Out-Null }
         finally { if ($maintenance) { $maintenance.Dispose() } }
     }
@@ -172,10 +182,7 @@ function Restore-ONEXTweaksUpgrade($Journal, [bool]$RestartLegacy) {
         if ($saved.InstallId -cne $Journal.InstallId) { throw 'An unrelated desktop enrollment is present.' }
         [IO.File]::Delete($enrollment)
     }
-    if ((Get-ONEXTweaksUpgradePackage) -ceq $newPackage) {
-        Add-AppxPackage -Path $previous -ForceUpdateFromAnyVersion -ForceTargetApplicationShutdown
-    }
-    if ((Get-ONEXTweaksUpgradePackage) -cne $oldPackage) { throw 'Windows did not restore package 1109.' }
+    Restore-ONEXTweaksLegacyRegistration $previous
     if (Test-Path -LiteralPath $parked -PathType Container) {
         Assert-ONEXTweaksLegacyRuntimeItem $parked
         Assert-ONEXTweaksLegacyRuntimeItem (Join-Path $parked 'PowerAgent')

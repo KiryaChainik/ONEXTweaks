@@ -20,12 +20,6 @@ $metadata = @{ PackageFullName = 'ONEXTweaks.Widget_0.29.1110.0_x64__3a23eh8tyg7
 $OwnerSid = 'S-1-5-21-1-2-3-4'
 $healthyPackage = [pscustomobject]@{ PackageFullName = $metadata.PackageFullName; Status = 'Ok' }
 
-function Get-ONEXTweaksUninstallPlan([string]$StateDirectory, [string]$Root, [switch]$OwnerOnly) {
-    if (!$OwnerOnly -or $StateDirectory -cne $state -or $Root -cne $state) { throw 'Unexpected ownership check.' }
-    $fixture.Trace.Add('Verify owner')
-    [pscustomobject]@{ Receipt = [pscustomobject]@{ OwnerSid = $fixture.ReceiptOwner; PackageFullName = $metadata.PackageFullName } }
-}
-
 function Get-AppxPackage([string]$User, [string]$Name, [string]$PackageTypeFilter) {
     if ($User -cne $OwnerSid -or $Name -cne 'ONEXTweaks.Widget' -or $PackageTypeFilter -cne 'Main') { throw 'Unexpected AppX lookup.' }
     $fixture.Trace.Add('Read registration')
@@ -35,7 +29,7 @@ function Get-AppxPackage([string]$User, [string]$Name, [string]$PackageTypeFilte
 function Invoke-DesktopPhase([string]$Action) {
     if ($Action -cne 'Register') { throw 'Unexpected owner desktop phase.' }
     $fixture.Trace.Add('Register')
-    if ($fixture.RegisterResult -eq 0 -and !$fixture.MissingReadback) { $fixture.Registered = $true }
+    if ($fixture.RegisterResult -eq 0) { $fixture.Registered = !$fixture.MissingReadback }
     return $fixture.RegisterResult
 }
 
@@ -44,23 +38,34 @@ function Write-SetupResult([string]$Status) { $fixture.Result = $Status }
 
 $updater = {
     param([string]$OwnerSid, [string]$Action)
-    if ($OwnerSid -cne $fixture.ExpectedOwner -or !$fixture.Registered) { throw 'The updater received an unregistered or foreign widget.' }
+    if ($OwnerSid -cne $fixture.ExpectedOwner -or ($Action -cne 'Assess' -and !$fixture.Registered)) { throw 'The updater received an unregistered or foreign widget.' }
     $fixture.Trace.Add($Action)
     switch ($Action) {
-        'Inspect' { return $fixture.UpdateStatus }
+        'Assess' {
+            if ($fixture.Blocker) { throw $fixture.Blocker }
+            if ($fixture.WrongOwner) { return 'No update' }
+            return $fixture.UpdateStatus
+        }
+        'Inspect' {
+            if ($fixture.RecoveryPending) { $fixture.RecoveryPending = $false; return 'Rolled back' }
+            return $fixture.UpdateStatus
+        }
         'Stage' { return 'Staged' }
         default { throw 'Unexpected runtime updater action.' }
     }
 }
 
-function Test-UpdatePath([string]$Trace, [switch]$AlreadyRegistered, [switch]$WrongOwner, [switch]$MissingReadback,
-    [int]$RegisterResult = 0, [string]$UpdateStatus = 'Update required', [int]$ExitCode = 0, [string]$ExpectedError) {
-    $package = if ($AlreadyRegistered) { $healthyPackage } else { $null }
+function Test-UpdatePath([string]$Trace, [switch]$AlreadyRegistered, [switch]$Unhealthy, [switch]$WrongOwner, [switch]$MissingReadback,
+    [switch]$RecoveryPending, [string]$Blocker, [int]$RegisterResult = 0, [string]$UpdateStatus = 'Update required', [int]$ExitCode = 0, [string]$ExpectedError) {
+    $package = if ($Unhealthy) { [pscustomobject]@{PackageFullName=$metadata.PackageFullName;Status='Modified'} }
+        elseif ($AlreadyRegistered) { $healthyPackage }
     $fixture = [pscustomobject]@{
         Registered = [bool]$AlreadyRegistered
         MissingReadback = [bool]$MissingReadback
         ExpectedOwner = $OwnerSid
-        ReceiptOwner = if ($WrongOwner) { 'S-1-5-21-1-2-3-5' } else { $OwnerSid }
+        WrongOwner = [bool]$WrongOwner
+        Blocker = $Blocker
+        RecoveryPending = [bool]$RecoveryPending
         RegisterResult = $RegisterResult
         UpdateStatus = $UpdateStatus
         Trace = [Collections.Generic.List[string]]::new()
@@ -85,13 +90,17 @@ try {
     # Run the production branch as a script so its reboot exit code is captured.
     $branchScript = Join-Path $root 'SetupRuntimeBranch.ps1'
     [IO.File]::WriteAllText($branchScript, $branches[0].Extent.Text)
-    Test-UpdatePath 'Verify owner, Register, Read registration, Inspect, Stage'
-    Test-UpdatePath 'Inspect, Register, Stage' -AlreadyRegistered
-    Test-UpdatePath 'Verify owner, Register, Read registration, Inspect' -UpdateStatus Staged
-    Test-UpdatePath 'Verify owner, Register' -RegisterResult 3010 -ExitCode 3010
-    Test-UpdatePath 'Verify owner, Register' -RegisterResult 1 -ExpectedError 'Widget registration repair failed.*'
-    Test-UpdatePath 'Verify owner, Register, Read registration' -MissingReadback -ExpectedError 'Windows did not confirm*'
-    Test-UpdatePath 'Verify owner' -WrongOwner -ExpectedError 'A verified 1110 runtime*'
+    Test-UpdatePath 'Assess, Register, Read registration, Inspect, Stage'
+    Test-UpdatePath 'Assess, Register, Read registration, Inspect, Stage' -Unhealthy
+    Test-UpdatePath 'Assess, Register, Read registration, Inspect, Stage' -AlreadyRegistered
+    Test-UpdatePath 'Assess, Register, Read registration, Inspect' -AlreadyRegistered -UpdateStatus Current
+    Test-UpdatePath 'Assess, Register, Read registration, Inspect' -UpdateStatus Staged
+    Test-UpdatePath 'Assess, Register, Read registration, Inspect, Inspect, Stage' -RecoveryPending
+    Test-UpdatePath 'Assess, Register' -RegisterResult 3010 -ExitCode 3010
+    Test-UpdatePath 'Assess, Register' -RegisterResult 1 -ExpectedError 'Widget registration or dependency repair failed.*'
+    Test-UpdatePath 'Assess, Register, Read registration' -MissingReadback -ExpectedError 'Windows did not confirm*'
+    Test-UpdatePath 'Assess' -WrongOwner -ExpectedError 'The existing 1110 installation could not be verified*'
+    Test-UpdatePath 'Assess' -Blocker 'Foreign task' -ExpectedError 'Foreign task'
     if ([IO.File]::ReadAllText($receipt) -cne 'Existing owned runtime') { throw 'Setup replaced the existing runtime ownership receipt.' }
     'PASS Setup repairs the owned 1110 registration before inspecting or staging the runtime update.'
 } finally {

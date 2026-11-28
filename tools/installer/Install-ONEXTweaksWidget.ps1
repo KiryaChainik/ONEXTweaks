@@ -391,7 +391,7 @@ try {
         $params = @{ Path = $widget.Path }
         $offline = @($frameworkPlan | Where-Object Source -eq 'Offline package' | ForEach-Object { $_.Path })
         if ($offline.Count) { $params.DependencyPath = $offline }
-        if ($CloseActiveWidget -and $operation -eq 'Update') { $params.ForceTargetApplicationShutdown = $true }
+        if ($CloseActiveWidget -and $operation -in 'Update','Repair registration') { $params.ForceTargetApplicationShutdown = $true }
         Assert-WidgetHash $widget.Path
         Add-AppxPackage @params
     }

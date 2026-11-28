@@ -91,6 +91,7 @@ if ($Phase -ne 'Install') {
 
 $setupOutput = [Console]::OpenStandardOutput()
 $stage = 'Preflight'
+$state = $null
 $upgrading = $false
 $updater = Join-Path $setup 'Update-ONEXTweaksRuntime.ps1'
 try {
@@ -132,46 +133,41 @@ try {
     }
     if ($metadata.PackageFullName -ceq 'ONEXTweaks.Widget_0.29.1110.0_x64__3a23eh8tyg7na' -and
         ((Test-Path -LiteralPath (Join-Path $state 'owned-release.json')) -or (Test-Path -LiteralPath (Join-Path $state 'runtime-update-1110.json')))) {
-        $registeredForUpdate = $false
-        if (!$package) {
-            $stage = '1110 widget registration repair'
-            $existing = Get-ONEXTweaksUninstallPlan $state $root -OwnerOnly
-            if (!$existing -or $existing.Receipt.OwnerSid -cne $OwnerSid -or
-                $existing.Receipt.PackageFullName -cne $metadata.PackageFullName) {
-                throw 'A verified 1110 runtime for the signed-in account is required to restore the widget registration.'
-            }
-
+        $pendingFirstInstall = Test-Path -LiteralPath (Join-Path $state 'fresh-runtime.json')
+        $stage = '1110 installation inspection'
+        if (!$pendingFirstInstall -and (& $updater @runtimeArguments -OwnerSid $OwnerSid -Action Assess) -ceq 'No update') {
+            throw 'The existing 1110 installation could not be verified for this Windows account.'
+        }
+        $stage = '1110 widget registration and dependencies'
+        if (!$package -or $package.Status -ne 'Ok') {
             Write-SetupLine STEP 'Restoring the 1110 widget registration...'
-            $ownerResult = Invoke-DesktopPhase Register
-            if ($ownerResult -eq 3010) {
-                Write-SetupResult 'Restart Windows, then run this same Setup to finish installing dependencies.'
-                exit 3010
-            }
-            if ($ownerResult -ne 0) { throw 'Widget registration repair failed. See %LOCALAPPDATA%\ONEXTweaks\Setup\setup-entry-last.log.' }
-            $registered = @(Get-AppxPackage -User $OwnerSid -Name 'ONEXTweaks.Widget' -PackageTypeFilter Main)
-            if ($registered.Count -ne 1 -or $registered[0].PackageFullName -cne $metadata.PackageFullName -or
-                $registered[0].Status -ne 'Ok') { throw 'Windows did not confirm the restored 1110 widget registration.' }
-            $registeredForUpdate = $true
+        } else { Write-SetupLine STEP 'Checking 1110 widget dependencies...' }
+        $ownerResult = Invoke-DesktopPhase Register
+        if ($ownerResult -eq 3010) {
+            Write-SetupResult 'Restart Windows, then run this same Setup to finish installing dependencies.'
+            exit 3010
+        }
+        if ($ownerResult -ne 0) { throw 'Widget registration or dependency repair failed. See %LOCALAPPDATA%\ONEXTweaks\Setup\setup-entry-last.log.' }
+        $registered = @(Get-AppxPackage -User $OwnerSid -Name 'ONEXTweaks.Widget' -PackageTypeFilter Main)
+        if ($registered.Count -ne 1 -or $registered[0].PackageFullName -cne $metadata.PackageFullName -or
+            $registered[0].Status -ne 'Ok') { throw 'Windows did not confirm the 1110 widget registration.' }
+        if ($pendingFirstInstall) {
+            $stage = 'Interrupted first installation'
+            Write-SetupLine STEP 'Resuming the interrupted first installation...'
+            $null = & $initialize @runtimeArguments -Confirm:$false
         }
         $stage = '1110 runtime update'
         $updateStatus = & $updater @runtimeArguments -OwnerSid $OwnerSid -Action Inspect
-        if ($updateStatus -ceq 'Rolled back') {
-            Write-SetupResult 'The interrupted update was rolled back. Run this Setup again to retry.'
-            exit 1
+        if ($updateStatus -cin @('Rolled back','Committed')) {
+            Write-SetupLine STEP 'Checking the installation after recovering the previous update...'
+            $updateStatus = & $updater @runtimeArguments -OwnerSid $OwnerSid -Action Inspect
         }
+        if ($updateStatus -cnotin @('Current','Update required','Staged')) { throw 'Could not confirm a stable 1110 installation after recovery.' }
         if ($updateStatus -ceq 'Update required') {
-            if (!$registeredForUpdate) {
-                Write-SetupLine STEP 'Checking dependencies for the 1110 update...'
-                $ownerResult = Invoke-DesktopPhase Register
-                if ($ownerResult -eq 3010) {
-                    Write-SetupResult 'Restart Windows, then run this same Setup to finish installing dependencies.'
-                    exit 3010
-                }
-                if ($ownerResult -ne 0) { throw 'Update dependencies failed. See %LOCALAPPDATA%\ONEXTweaks\Setup\setup-entry-last.log.' }
-            }
-            Write-SetupLine STEP 'Updating 1110 while keeping the existing widget and profiles...'
+            Write-SetupLine STEP 'Repairing or updating ONEXTweaks while keeping your profiles...'
             $upgrading = $true
             $updateStatus = & $updater @runtimeArguments -OwnerSid $OwnerSid -Action Stage
+            if ($updateStatus -cnotin @('Current','Staged')) { throw 'Windows did not confirm the staged runtime.' }
         }
         $upgrading = $updateStatus -ceq 'Staged'
     }
@@ -199,9 +195,13 @@ try {
 
     $stage = 'ONEXTweaks startup'
     $complete = Get-ONEXTweaksVerifiedTool $plan 'Tools\Installer\Complete-ONEXTweaksRelease.ps1'
-    foreach ($name in 'ONEXTweaks-Startup','ONEXTweaks-RTSS') {
+    $startup = Get-ONEXTweaksRemainingTask $plan 'ONEXTweaks-Startup'
+    $startupTask = if ($startup.Settings.Enabled) { 'ONEXTweaks-Startup' } else { 'ONEXTweaks-WidgetBridge' }
+    foreach ($name in $startupTask,'ONEXTweaks-RTSS') {
         $task = Get-ONEXTweaksRemainingTask $plan $name
-        if ($task -and $task.State -notin 'Running','Queued') { Start-ScheduledTask -InputObject $task }
+        if (!$task) { throw "The required release task is missing: $name" }
+        if (!$task.Settings.Enabled) { throw "The required release task is disabled: $name. Enable it in Task Scheduler and run Setup again." }
+        if ($task.State -notin 'Running','Queued') { Start-ScheduledTask -InputObject $task }
     }
     Write-SetupLine STEP 'Checking the connection between Game Bar and Bridge...'
     $stage = 'Opening ONEXTweaks in Game Bar'
@@ -235,8 +235,18 @@ try {
             }
         } catch { $recovery = " Run the same Setup to resume recovery. $($_.Exception.Message)" }
     }
-    Write-SetupResult "$stage failed. $($failure.Exception.Message)$recovery"
     $details = @(($failure | Out-String).Trim(), $failure.FullyQualifiedErrorId, $failure.ScriptStackTrace) -join [Environment]::NewLine
+    $diagnostics = ''
+    if ($state -and (Test-Path -LiteralPath $state -PathType Container)) {
+        try {
+            Assert-ONEXTweaksProtectedStateDirectory $state
+            $log = Join-Path $state 'setup-failure.log'
+            if (Test-Path -LiteralPath $log) { Assert-ONEXTweaksProtectedItem $log }
+            [IO.File]::WriteAllText($log,$details)
+            $diagnostics = " Setup log: $log"
+        } catch { }
+    }
+    Write-SetupResult "$stage failed. $($failure.Exception.Message)$recovery$diagnostics"
     foreach ($line in ($details -split '\r?\n')) { Write-SetupLine ERROR $line }
     exit 1
 }
