@@ -32,6 +32,38 @@ $verify = $updaterAst.Find({
 },$true)
 if (!$handoff -or !$check -or !$verify) { throw 'The Setup upgrade hash contract is missing.' }
 
+foreach ($name in 'Get-ONEXTweaksUpgradePackage','Restore-ONEXTweaksLegacyRegistration') {
+    $definition = $updaterAst.Find({
+        param($node)
+        $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -ceq $name
+    },$true)
+    . ([scriptblock]::Create($definition.Extent.Text))
+}
+$oldPackage = 'ONEXTweaks.Widget_0.29.1109.0_x64__3a23eh8tyg7na'
+$newPackage = 'ONEXTweaks.Widget_0.29.1110.0_x64__3a23eh8tyg7na'
+$deployment = @{Name=$null;Changes=0}
+function Get-AppxPackage {
+    if ($deployment.Name) { [pscustomobject]@{PackageFullName=$deployment.Name;Status='Ok'} }
+}
+function Add-AppxPackage([string]$Path, [switch]$ForceUpdateFromAnyVersion, [switch]$ForceTargetApplicationShutdown) {
+    if ($Path -cne 'verified-legacy.msix' -or !$ForceUpdateFromAnyVersion -or !$ForceTargetApplicationShutdown) {
+        throw 'Rollback did not use the verified legacy media.'
+    }
+    $deployment.Name = $oldPackage
+    $deployment.Changes++
+}
+Restore-ONEXTweaksLegacyRegistration 'verified-legacy.msix'
+Restore-ONEXTweaksLegacyRegistration 'verified-legacy.msix'
+if ($deployment.Changes -ne 1) { throw 'Missing registration recovery did not restore 1109 exactly once.' }
+$deployment.Name = $newPackage
+Restore-ONEXTweaksLegacyRegistration 'verified-legacy.msix'
+if ($deployment.Changes -ne 2) { throw 'Downgrade did not restore 1109.' }
+$deployment.Name = 'Another widget'
+$rejected = $false
+try { Restore-ONEXTweaksLegacyRegistration 'verified-legacy.msix' }
+catch { $rejected = $_.Exception.Message -like '*healthy, known ONEXTweaks*' }
+if (!$rejected -or $deployment.Changes -ne 2) { throw 'Rollback attempted to modify an unverified package.' }
+
 $folder = Join-Path ([IO.Path]::GetTempPath()) ('ONEX-upgrade-hash-' + [guid]::NewGuid().ToString('N'))
 $null = New-Item -ItemType Directory -Path $folder
 try {

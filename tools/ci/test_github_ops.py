@@ -90,6 +90,15 @@ class DraftGateTest(unittest.TestCase):
         with self.assertRaisesRegex(ops.GateError, "missing or failed"):
             ops.validate_receipt(HEAD, self.setup, self.receipt)
 
+    def test_healthy_installation_does_not_replace_repair_evidence(self):
+        for case in ("combined1110Repair", "uninstallAfterRepair", "sameVersionSetupRetry",
+                     "interruptedFirstSetup", "rollbackWithoutAppx"):
+            with self.subTest(case=case):
+                self.receipt["checks"][case] = False
+                with self.assertRaisesRegex(ops.GateError, case):
+                    ops.validate_receipt(HEAD, self.setup, self.receipt)
+                self.receipt["checks"][case] = True
+
     def test_rejects_untested_commit_outside_main(self):
         with patch.object(ops, "api", side_effect=[{"commit": {"sha": NEW_HEAD}}, {"status": "diverged"}]), \
              patch.object(ops, "windows_run") as windows_run:

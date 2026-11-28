@@ -285,6 +285,12 @@ try {
         }
         return
     }
+    $taskFolder = Get-ONEXTweaksTaskFolder
+    foreach ($name in $fresh.Tasks.Keys) {
+        if (!(Get-ONEXTweaksComOwnedTask $fresh $taskFolder $name)) {
+            throw "Release task is missing: $name. Run Setup to repair the installation."
+        }
+    }
     $profile = Get-ItemProperty -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$sid" -Name ProfileImagePath
     $local = Join-Path ([Environment]::ExpandEnvironmentVariables($profile.ProfileImagePath)) 'AppData\Local'
     $folders = Get-ItemProperty -LiteralPath "Registry::HKEY_USERS\$sid\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" -Name 'Local AppData'
@@ -337,7 +343,7 @@ try {
     if (!$Complete -or $ready -ne 'Ready' -or !$PSCmdlet.ShouldProcess('verified ONEXTweaks release','Complete installation')) { return $result }
 
     $result.OneXConsoleStartup = Invoke-ONEXTweaksOneXConsoleHandoff -Operation Apply -StateDirectory $state -UserSid $sid -BackendState $runtime.Backend -OemStatus $oem
-    $result.SetupComplete = $result.OneXConsoleStartup -in @('Disabled by ONEXTweaks','Already disabled before installation','Not applicable','Not found')
+    $result.SetupComplete = $result.OneXConsoleStartup -in @('Disabled by ONEXTweaks','Already disabled before installation','Re-enabled externally','Not applicable','Not found')
     $result.Status = if ($result.SetupComplete) { 'Complete' } else { 'OneXConsole startup review required' }
     return $result
 } finally { $lock.Dispose() }

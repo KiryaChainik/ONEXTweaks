@@ -15,7 +15,9 @@ JOB = "Windows build and tests"
 MARKER = "<!-- onextweaks-windows-ci -->"
 SETUP = "ONEXTweaks-Setup-x64.exe"
 QA_CASES = ("cleanInstall", "reboot", "upgrade1109", "profilesPreserved",
-            "rollback1109", "uninstall", "oemStartupRestored")
+            "rollback1109", "uninstall", "oemStartupRestored",
+            "combined1110Repair", "uninstallAfterRepair", "sameVersionSetupRetry",
+            "interruptedFirstSetup", "rollbackWithoutAppx")
 
 
 class GateError(Exception):
@@ -213,8 +215,9 @@ def validate_receipt(sha, setup, receipt):
     if (machine.get("os") != "Windows 11" or machine.get("architecture") != "x64"
             or machine.get("virtualMachine") is not True or machine.get("oneXConsole") is not True):
         raise GateError("VM receipt must identify Windows 11 x64 with OneXConsole.")
-    if any(receipt.get("checks", {}).get(case) is not True for case in QA_CASES):
-        raise GateError("A required Windows VM scenario is missing or failed.")
+    missing = [case for case in QA_CASES if receipt.get("checks", {}).get(case) is not True]
+    if missing:
+        raise GateError("Required Windows VM scenarios are missing or failed: " + ", ".join(missing))
     return digest
 
 

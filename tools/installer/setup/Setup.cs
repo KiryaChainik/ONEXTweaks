@@ -46,20 +46,27 @@ internal static class Setup
                     var start = new ProcessStartInfo(Application.ExecutablePath, "--desktop " + identity.User.Value);
                     start.Verb = "runas";
                     start.UseShellExecute = true;
-                    using (Process.Start(start)) { }
-                    return 0;
+                    using (var process = Process.Start(start))
+                    {
+                        if (process == null) return 1;
+                        process.WaitForExit();
+                        return process.ExitCode;
+                    }
                 }
                 catch (Win32Exception error)
                 {
                     if (error.NativeErrorCode != Canceled) MessageBox.Show(error.Message, "ONEXTweaks Setup");
-                    return 1;
+                    return error.NativeErrorCode == Canceled ? Canceled : 1;
                 }
             }
 
             string desktop = args.Length == 0 ? identity.User.Value : args.Length == 2 && args[0] == "--desktop" ? args[1] : "";
             if (!elevated || !Regex.IsMatch(desktop, @"\AS-1-5-21(?:-[0-9]{1,10}){4}\z")) return 1;
-            using (var window = new SetupWindow(desktop)) Application.Run(window);
-            return 0;
+            using (var window = new SetupWindow(desktop))
+            {
+                Application.Run(window);
+                return window.ExitCode;
+            }
         }
     }
 
@@ -229,9 +236,11 @@ internal sealed class SetupWindow : Form
     private readonly Button install;
     private readonly Button close;
     private bool running;
+    internal int ExitCode { get; private set; }
 
     internal SetupWindow(string desktop)
     {
+        ExitCode = Setup.Canceled;
         Text = "ONEXTweaks Setup";
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -260,21 +269,23 @@ internal sealed class SetupWindow : Form
         close.Enabled = false;
         progress.Visible = true;
         progress.Style = ProgressBarStyle.Marquee;
-        var output = new System.Text.StringBuilder();
         string final = "";
         try
         {
             int exit = await Task.Run(() => Setup.Run(desktop, message => BeginInvoke(new Action(() => status.Text = message)),
-                line => { if (output.Length < 8000) output.AppendLine(line); }, line => final = line,
+                line => System.Diagnostics.Trace.WriteLine(line), line => final = line,
                 message => (bool)Invoke(new Func<bool>(() => MessageBox.Show(this, message, "ONEXTweaks signing certificate",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes))));
+            ExitCode = exit;
             if (String.IsNullOrEmpty(final)) final = "Setup exited with code " + exit + ".";
             status.Text = final;
             if (exit == Setup.Canceled) install.Enabled = true;
-            if (exit != 0 && exit != 3010 && output.Length != 0)
-                MessageBox.Show(this, output.ToString(), "ONEXTweaks Setup", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (exit != 0 && exit != 3010 && exit != Setup.Canceled)
+            {
+                MessageBox.Show(this, final, "ONEXTweaks Setup", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
-        catch (Exception error) { status.Text = error.Message; }
+        catch (Exception error) { ExitCode = 1; status.Text = error.Message; }
         finally
         {
             running = false;

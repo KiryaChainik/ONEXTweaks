@@ -230,9 +230,23 @@ try {
     [IO.File]::WriteAllText($journal,'firmware recovery data')
     Remove-ONEXTweaksOwnedMachineState $plan
     Check ((Test-Path -LiteralPath $stale) -and (Test-Path -LiteralPath $journal)) 'Unverified hardware state was removed.'
-    $hardwarePlan = [pscustomobject]@{Root=$root;StateDirectory=$state;Receipt=[pscustomobject]@{PowerStateOwned=$true}}
+    $hardwarePlan = [pscustomobject]@{Root=$root;StateDirectory=$state;Receipt=[pscustomobject]@{PowerStateOwned=$true;InstallId=$manifest.InstallId}}
     Remove-ONEXTweaksOwnedMachineState $hardwarePlan
     Check (!(Test-Path -LiteralPath $stale) -and (Test-Path -LiteralPath $foreign) -and (Test-Path -LiteralPath $journal)) 'Legacy fan marker cleanup touched the wrong files.'
+    $liveConfig = Join-Path $fanDirectory 'home-oem-settings.json'
+    $backupDirectory = Join-Path $state "RetainedHardwareSettings\$($manifest.InstallId)"
+    $retainedConfig = Join-Path $backupDirectory 'home-oem-settings.json'
+    [IO.File]::WriteAllText($liveConfig,'{"fan":1}')
+    Remove-ONEXTweaksOwnedMachineState $hardwarePlan
+    [IO.File]::Copy($retainedConfig,$liveConfig)
+    Remove-ONEXTweaksOwnedMachineState $hardwarePlan
+    Check (!(Test-Path -LiteralPath $liveConfig) -and [IO.File]::ReadAllText($retainedConfig) -ceq '{"fan":1}' -and
+        !(Get-ChildItem -LiteralPath $backupDirectory -Filter '*.previous')) 'Removing a restored settings copy failed.'
+    [IO.File]::WriteAllText($liveConfig,'{"fan":2}')
+    Remove-ONEXTweaksOwnedMachineState $hardwarePlan
+    $archive = @(Get-ChildItem -LiteralPath $backupDirectory -Filter '*.previous')
+    Check ($archive.Count -eq 1 -and [IO.File]::ReadAllText($archive[0].FullName) -ceq '{"fan":1}' -and
+        [IO.File]::ReadAllText($retainedConfig) -ceq '{"fan":2}') 'A second uninstall lost the original or newer settings.'
     [IO.File]::Delete($foreign)
     [IO.File]::Delete($journal)
     [IO.File]::WriteAllText($stale,'ready')

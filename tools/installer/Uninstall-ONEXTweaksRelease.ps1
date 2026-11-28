@@ -32,7 +32,7 @@ function Assert-ONEXTweaksProtectedStateDirectory([string]$StateDirectory) {
 function Get-ONEXTweaksReleaseStateDirectory([string]$CommonApplicationData = [Environment]::GetFolderPath('CommonApplicationData')) {
     $current = Join-Path $CommonApplicationData 'ONEXTweaksInstaller\Installation'
     $previous = Join-Path $CommonApplicationData 'ONEXTweaks\Installation'
-    $records = @('desktop-enrollment.json','owned-release.json','upgrade-1109.json','runtime-update-1110.json','onexconsole-handoff.json','pending-restart.json')
+    $records = @('desktop-enrollment.json','owned-release.json','fresh-runtime.json','upgrade-1109.json','runtime-update-1110.json','onexconsole-handoff.json','pending-restart.json')
     $previousRecords = @($records | Where-Object { Test-Path -LiteralPath (Join-Path $previous $_) -ErrorAction Stop })
     if (!$previousRecords.Count) { return $current }
 
@@ -69,6 +69,31 @@ function Get-ONEXTweaksComTask($Folder, [string]$Name) {
     }
 }
 
+function Test-ONEXTweaksReleaseTaskAccess($Task, [string]$OwnerSid, [switch]$RequireOwnerAccess) {
+    $descriptor = [Security.AccessControl.RawSecurityDescriptor]::new($Task.GetSecurityDescriptor(5))
+    $trusted = @('S-1-5-18','S-1-5-32-544')
+    if (!$descriptor.Owner -or $descriptor.Owner.Value -notin $trusted -or !$descriptor.DiscretionaryAcl) { return $false }
+    $full = @()
+    $desktopAccess = $Task.Name -ceq 'ONEXTweaks-OneXConsoleHandoff'
+    foreach ($entry in $descriptor.DiscretionaryAcl) {
+        if ($entry -isnot [Security.AccessControl.CommonAce] -or $entry.AceQualifier -ne 'AccessAllowed' -or $entry.AceFlags -ne 'None') {
+            return $false
+        }
+        $sid = $entry.SecurityIdentifier.Value
+        $mask = $entry.AccessMask
+        if ($sid -in $trusted) {
+            if ($mask -in 0x1F01FF,0x10000000) { $full += $sid }
+            elseif ($mask -notin 0x120089,0x1200A9) { return $false }
+        } elseif ($sid -ceq $OwnerSid -and $Task.Name -cne 'ONEXTweaks-OneXConsoleHandoff') {
+            if ($mask -eq 0x1200A9 -and $Task.Name -cne 'ONEXTweaks-Startup') { $desktopAccess = $true; continue }
+            if ($mask -in 0x120089,0x1200A9) { continue }
+            if ($Task.Name -cne 'ONEXTweaks-Startup' -or $mask -notin 0x1F01FF,0x10000000) { return $false }
+            $desktopAccess = $true
+        } else { return $false }
+    }
+    return (!$RequireOwnerAccess -or $desktopAccess) -and !@($trusted | Where-Object { $_ -notin $full }).Count
+}
+
 function Get-ONEXTweaksTaskFolder {
     $scheduler = New-Object -ComObject Schedule.Service
     $scheduler.Connect()
@@ -88,7 +113,12 @@ function Get-ONEXTweaksComOwnedTask($Plan, $Folder, [string]$Name) {
         $task = Get-ONEXTweaksComTask $Folder $Name
         if ($task) {
             $seen = $true
-            if ((Get-ONEXTweaksTaskXmlDigest $task.Xml) -ieq $expected) { return $task }
+            if ((Get-ONEXTweaksTaskXmlDigest $task.Xml) -ieq $expected) {
+                if (!(Test-ONEXTweaksReleaseTaskAccess $task $Plan.Receipt.OwnerSid -RequireOwnerAccess)) {
+                    throw "Scheduled task permissions changed: $Name"
+                }
+                return $task
+            }
         }
         Start-Sleep -Milliseconds 500
     } while ($watch.Elapsed.TotalSeconds -lt 12)
@@ -448,7 +478,7 @@ function Test-ONEXTweaksLegacyFanMarker($Item) {
     return $Item.Length -eq 5 -and [IO.File]::ReadAllText($Item.FullName) -ceq 'ready'
 }
 
-function Remove-ONEXTweaksLegacyFanResidue([string]$Root) {
+function Get-ONEXTweaksLegacyFanResidue([string]$Root) {
     Assert-ONEXTweaksProtectedItem $Root
     $children = @(Get-ChildItem -LiteralPath $Root -Force -ErrorAction Stop)
     if ($children.Count -ne 1 -or $children[0] -isnot [IO.DirectoryInfo] -or $children[0].Name -cne 'PowerAgent') { return }
@@ -459,6 +489,13 @@ function Remove-ONEXTweaksLegacyFanResidue([string]$Root) {
     foreach ($marker in $markers) {
         if (!(Test-ONEXTweaksLegacyFanMarker $marker)) { return }
     }
+    return $markers
+}
+
+function Remove-ONEXTweaksLegacyFanResidue([string]$Root) {
+    $markers = @(Get-ONEXTweaksLegacyFanResidue $Root)
+    if (!$markers.Count) { return }
+    $directory = Join-Path $Root 'PowerAgent'
     foreach ($marker in $markers) { [IO.File]::Delete($marker.FullName) }
     [IO.Directory]::Delete($directory)
     [IO.Directory]::Delete($Root)
@@ -493,10 +530,21 @@ function Remove-ONEXTweaksOwnedMachineState($Plan) {
         $backup = Join-Path $hardwareData ([string]$Plan.Receipt.InstallId)
         $null = [IO.Directory]::CreateDirectory($backup)
         Assert-ONEXTweaksProtectedItem $backup
-        [IO.File]::Move($file, (Join-Path $backup $name))
+        $destination = Join-Path $backup $name
+        if (Test-Path -LiteralPath $destination) {
+            Assert-ONEXTweaksProtectedItem $destination
+            if (!(Test-Path -LiteralPath $destination -PathType Leaf)) { throw "Invalid retained hardware settings file: $destination" }
+            if ((Get-FileHash -LiteralPath $file).Hash -ceq (Get-FileHash -LiteralPath $destination).Hash) {
+                [IO.File]::Delete($file)
+                continue
+            }
+            # A previous removal may have saved a copy before Setup repaired the runtime.
+            [IO.File]::Move($destination, "$destination.$([guid]::NewGuid().ToString('N')).previous")
+        }
+        [IO.File]::Move($file, $destination)
     }
     foreach ($name in 'power-agent-result.json','installer-hardware-ready.json','installer-hardware-ready.json.tmp','onexconsole-resume-error.json',
-        'hardware-health.jsonl','hardware-health.jsonl.prev') {
+        'hardware-health.jsonl','hardware-health.jsonl.prev','fan-control-journal.new') {
         $report = Join-Path $directory $name
         if (Test-Path -LiteralPath $report -PathType Leaf) {
             Assert-ONEXTweaksProtectedItem $report
@@ -613,7 +661,8 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'OneXConsoleSetup.ps1')
 . (Join-Path $PSScriptRoot 'OneXConsoleHandoff.ps1')
 $stateDirectory = Get-ONEXTweaksReleaseStateDirectory
-if (Test-Path -LiteralPath (Join-Path $stateDirectory 'runtime-update-1110.json')) {
+if ((Test-Path -LiteralPath (Join-Path $stateDirectory 'runtime-update-1110.json')) -or
+    (Test-Path -LiteralPath (Join-Path $stateDirectory 'fresh-runtime.json'))) {
     throw 'Finish the pending runtime update with its Setup before uninstalling.'
 }
 $releaseRoot = Join-Path ([Environment]::GetFolderPath('ProgramFiles')) 'ONEXTweaks'
