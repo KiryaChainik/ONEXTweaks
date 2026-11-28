@@ -17,6 +17,19 @@ internal static class ControllerDs4AuxVerification
    Check(!Map(new(0x1000),overlay:true).TouchpadClick,"Overlay emitted game touch click");
    Check(!Map(new(0x1000),policy with{GamepadRemappingDisabled=true}).TouchpadClick&&Map(new(0x1000),policy with{GamepadRemappingDisabled=true}).Pad.Buttons==0x1000,"Disabled standard group still remapped");
    var extra=policy with{Bindings=null,Oem=new(Bindings:new(){["M1"]=new("gamepad","TouchpadClick")})};Check(Map(new(Oem:16),extra).TouchpadClick,"OEM did not reach DS4 touch target");
+   for(int index=0;index<ControllerOemPolicy.Inputs.Length;index++)
+   {
+    string button=ControllerOemPolicy.Inputs[index];
+    foreach(string target in new[]{"Xbox360","DualShock4"})
+    {
+     var mapping=new ControllerPolicy(VirtualTarget:target,Oem:new(Bindings:new(){[button]=new("gamepad","A")})).Validate();
+     var route=new ControllerTranslator();
+     var pressed=route.Translate(new(Oem:(ushort)(1<<index)),mapping).Pad;
+     var releasedOem=route.Translate(new(),mapping).Pad;
+     Check(pressed.Buttons==0x1000&&releasedOem.Buttons==0,$"{button} did not press and release mapped A on {target}");
+     if(target=="DualShock4") Check((ControllerViiperDs4Device.Encode(pressed).Buttons&0x20)!=0,"OEM mapping did not reach the DS4 cross button");
+    }
+   }
    var macroPolicy=policy with{Bindings=new(){["A"]=new("macro",Macro:new(["TouchpadClick"],"holdToggle"))}};var macroTranslator=new ControllerTranslator();macroTranslator.Translate(new(),macroPolicy,false,0);Check(macroTranslator.Translate(new(0x1000),macroPolicy,false,10).TouchpadClick,"Macro could not hold DS4 touch click");Check(macroTranslator.Translate(new(),macroPolicy,false,20).TouchpadClick,"Hold macro lost touch state");macroTranslator.Translate(new(),macroPolicy,true,30);Check(!macroTranslator.Translate(new(),macroPolicy,false,40).TouchpadClick,"Overlay did not cancel touch macro");
    var source=new ControllerGyroReading(true,new(10,-20,30),new(.5,-.25,-1),1,1,42);var imu=ControllerDs4Motion.Read(source,null,true);
    Check(imu==new ControllerDs4Motion(160,-320,480,4096,-2048,-8192),"Motion unit/sign conversion wrong");

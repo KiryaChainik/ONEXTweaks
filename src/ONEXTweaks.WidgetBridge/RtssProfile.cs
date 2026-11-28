@@ -38,7 +38,7 @@ internal static class RtssProfile
             Initialize();load!(profile);var before=new Dictionary<string,byte[]>();
             foreach(var pair in values){var old=new byte[pair.Value.Length];if(!get!(pair.Key,old,(uint)old.Length))throw new IOException("RTSS property is not supported: "+pair.Key);before[pair.Key]=old;}
             string backup=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ONEXTweaks","dev","references","rtss-original-properties.json");
-            if(!File.Exists(backup))File.WriteAllText(backup,JsonSerializer.Serialize(before.ToDictionary(x=>x.Key,x=>Convert.ToBase64String(x.Value))));
+            SaveOriginalProperties(backup, before);
             try
             {
                 foreach(var pair in values)
@@ -51,6 +51,21 @@ internal static class RtssProfile
             catch{load!(profile);foreach(var pair in before)set!(pair.Key,pair.Value,PropertySize(pair.Key,pair.Value));save!(profile);update!();throw;}
         }
     }
+    internal static void SaveOriginalProperties(string path, IReadOnlyDictionary<string, byte[]> properties)
+    {
+        if (File.Exists(path)) return;
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        string temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            File.WriteAllText(temporary, JsonSerializer.Serialize(properties.ToDictionary(
+                pair => pair.Key, pair => Convert.ToBase64String(pair.Value))));
+            try { File.Move(temporary, path); }
+            catch (IOException) when (File.Exists(path)) { }
+        }
+        finally { File.Delete(temporary); }
+    }
+
     private static uint PropertySize(string name,byte[] value)=>name=="FontFace"?(uint)Math.Max(1,Array.IndexOf(value,(byte)0)):(uint)value.Length;
     internal static void EnableOsd()=>Apply(new Dictionary<string,byte[]>{{"EnableOSD",BitConverter.GetBytes(1u)}});
     internal static (uint Enabled,uint Color) ReadBackground()

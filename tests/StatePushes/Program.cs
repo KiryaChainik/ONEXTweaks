@@ -17,4 +17,9 @@ var replies=new OnexLatestStates();replies.Put("charge","old");replies.Take(4);r
 replies.Put("charge","older queued state");replies.Take(4);replies.ResetAfterReply();replies.Complete("charge","older queued state",true);
 replies.Put("charge","old");Check(replies.Take(4).Single().Value=="old","A command reply invalidates an old in-flight cache even when the next value matches a prior snapshot");
 replies.Put("mode","stale");replies.ResetAfterReply();Check(replies.PendingCount==0,"A fresh command reply discards older queued telemetry");
+Check(!OnexProfileWriteGate.RequiresProfileSnapshot(new[]{"OnexOverlayLevel","OnexProfileId","OnexOverlayPresetId"}),"Overlay level is writable while hardware profiles are unavailable");
+Check(!OnexProfileWriteGate.RequiresProfileSnapshot(new[]{"OnexOverlayPresetsSet","OnexUserInput"}),"Overlay preset selection does not depend on hardware profiles");
+Check(!OnexProfileWriteGate.RequiresProfileSnapshot(new[]{"OnexControllerSet","OnexUserInput"}),"OEM capture and controller mappings do not depend on hardware profiles");
+Check(OnexProfileWriteGate.RequiresProfileSnapshot(new[]{"OnexOverlayLevel","OnexProfilesSet"}),"A mixed request cannot bypass the profile gate");
+Check(OnexProfileWriteGate.RequiresProfileSnapshot(new[]{"OnexDisplaySet"})&&OnexProfileWriteGate.RequiresProfileSnapshot(new[]{"OnexFanSet"}),"Profile-scoped display and fan writes still require the active profile snapshot");
 Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{passed=true,checks}));

@@ -16,6 +16,7 @@ namespace XboxGamingBar
         private bool _onexOverlayBusy,_onexOverlaySyncing;
         private TextBlock _onexOverlayCaption;
         private static readonly string[] OnexOverlayNames={"Off","Basic","Horizontal","Horizontal Custom","Vertical Custom"};
+        private string _onexOverlayCommandError;
         private int OnexOverlayLevel=>(int)(_onexOverlayState?.GetNamedNumber("level",0)??0);
         private void ApplyOnexOverlayState(string json)
         {
@@ -24,18 +25,31 @@ namespace XboxGamingBar
             try
             {
                 osd.SuppressRemoteSync=true;try{osd.SetValue(OnexOverlayLevel,DateTimeOffset.Now.Ticks);}finally{osd.SuppressRemoteSync=false;}
-                isLoadingPerformanceOverlaySetting=true;PerformanceOverlayComboBox.SelectedIndex=OnexOverlayLevel;
-                if(_onexOverlayCaption!=null)_onexOverlayCaption.Text=(state.TryGetValue("error",out var error)&&error.ValueType==JsonValueType.String?error.GetString():null)??(state.GetNamedBoolean("running",false)?"RTSS · "+OnexOverlayNames[OnexOverlayLevel]:OnexStrings.Get("RTSS starts when you enable the overlay."));
+                isLoadingPerformanceOverlaySetting=true;
+                if(!_onexOverlayBusy&&!PerformanceOverlayComboBox.IsDropDownOpen)
+                    PerformanceOverlayComboBox.SelectedIndex=OnexOverlayLevel;
+                if(_onexOverlayCaption!=null)_onexOverlayCaption.Text=_onexOverlayCommandError??(state.TryGetValue("error",out var error)&&error.ValueType==JsonValueType.String?error.GetString():null)??(state.GetNamedBoolean("running",false)?"RTSS · "+OnexOverlayNames[OnexOverlayLevel]:OnexStrings.Get("RTSS starts when you enable the overlay."));
             }
             finally{isLoadingPerformanceOverlaySetting=false;_onexOverlaySyncing=false;}
             ApplyOnexTileAvailability();
         }
         private async Task SetOnexOverlayLevelAsync(int level)
         {
-            if(_onexOverlayBusy||!App.IsConnected)return;_onexOverlayBusy=true;ApplyOnexTileAvailability();
+            if(_onexOverlayBusy||!App.IsConnected)return;
+            _onexOverlayCommandError=null;_onexOverlayBusy=true;ApplyOnexTileAvailability();
             try{var reply=await SendOnexHomeRequestAsync(new ValueSet{["OnexOverlayLevel"]=level});ApplyOnexOverlayState((string)reply["OnexOverlayState"]);}
-            catch(Exception ex){ShowOnexDesktopStatus(ex.Message);}
-            finally{_onexOverlayBusy=false;ApplyOnexTileAvailability();}
+            catch(Exception ex)
+            {
+                _onexOverlayCommandError=ex.Message;
+                Logger.Warn("RTSS overlay change failed: " + ex.Message);
+                ShowOnexDesktopStatus(ex.Message);
+            }
+            finally
+            {
+                _onexOverlayBusy=false;
+                if(_onexOverlayState!=null)ApplyOnexOverlayState(_onexOverlayState.Stringify());
+                else ApplyOnexTileAvailability();
+            }
         }
         private MenuFlyout ShowOnexOverlayMenu(Button anchor)
         {

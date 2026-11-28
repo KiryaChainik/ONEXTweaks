@@ -24,6 +24,14 @@ if ($BetaCertificateThumbprint -and !(Test-Path -LiteralPath $RollbackWidget -Pa
 $bridge = Join-Path $OutputRoot 'Bridge'
 & $dotnet publish (Join-Path $root 'src/ONEXTweaks.WidgetBridge/ONEXTweaks.WidgetBridge.csproj') -c Release -r win-x64 --self-contained true -o $bridge
 if ($LASTEXITCODE) { throw 'Bridge publish failed.' }
+$bridgeImage = Join-Path $bridge 'ONEXTweaks.WidgetBridge.exe'
+foreach ($verification in 'overlay-preset-model', 'controller-ds4-aux-model') {
+    $report = Join-Path $OutputRoot "$verification.json"
+    $check = Start-Process -FilePath $bridgeImage -ArgumentList @("--$verification-verify", ('"' + $report + '"')) -Wait -PassThru
+    $exit = $check.ExitCode
+    if (Test-Path -LiteralPath $report) { Get-Content -LiteralPath $report }
+    if ($exit -ne 0 -or !(Test-Path -LiteralPath $report)) { throw "Bridge verification failed: $verification" }
+}
 
 $widgetRoot = Join-Path $root 'src/ONEXTweaks.Widget/XboxGamingBar'
 $packages = @(Get-ChildItem -LiteralPath (Join-Path $widgetRoot 'AppPackages') -Recurse -File -Filter '*.msix')

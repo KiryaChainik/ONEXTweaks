@@ -70,7 +70,20 @@ internal sealed class RtssOverlay:IDisposable
         // Reject malformed drafts before changing either the native profile or saved preferences.
         for(int level=1;level<=4;level++)OverlayFormatting.Preview(level,value.Config);
     }
-    internal static bool IsRunning(){foreach(var process in Process.GetProcessesByName("RTSS")){process.Dispose();return true;}return false;}
+    private static readonly int OwnerSession = Process.GetCurrentProcess().SessionId;
+    internal static bool IsRunning()
+    {
+        bool running = false;
+        foreach (var process in Process.GetProcessesByName("RTSS"))
+        {
+            using (process)
+            {
+                try { running |= process.SessionId == OwnerSession; }
+                catch (InvalidOperationException) { } // RTSS exited during enumeration.
+            }
+        }
+        return running;
+    }
     internal static void EnsureRunning()
     {
         string directory=DirectoryPath??throw new FileNotFoundException("Install RivaTuner Statistics Server first");

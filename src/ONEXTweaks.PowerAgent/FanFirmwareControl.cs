@@ -28,6 +28,16 @@ namespace ONEXTweaks.Power
             return string.Format(CultureInfo.InvariantCulture, "{0}/{1}", pid, startTicks);
         }
 
+        internal static void Probe(int observedMode)
+        {
+            using (var ec = Open())
+            {
+                Read(ec, ApplicationRegister);
+                if ((Read(ec, ModeRegister) & 1) != (observedMode & 1))
+                    throw new IOException("Fan mode readback disagrees between the OEM and WMI interfaces");
+            }
+        }
+
         internal static void Acquire()
         {
             WithLock(delegate
@@ -120,16 +130,7 @@ namespace ONEXTweaks.Power
 
         private static ManagementObject Open()
         {
-            Hardware.ValidateOemHardware();
-            using (var query = new ManagementObjectSearcher("SELECT EmbeddedControllerMajorVersion, EmbeddedControllerMinorVersion FROM Win32_BIOS"))
-            using (var items = query.Get())
-            {
-                foreach (ManagementObject bios in items)
-                    if (Convert.ToInt32(bios["EmbeddedControllerMajorVersion"]) != 0 ||
-                        Convert.ToInt32(bios["EmbeddedControllerMinorVersion"]) != 11)
-                        throw new IOException("EC firmware is not qualified for application fan control");
-                if (items.Count != 1) throw new IOException("EC firmware could not be determined");
-            }
+            Hardware.ValidateDeviceModel();
             using (var query = new ManagementObjectSearcher(@"root\wmi", "SELECT * FROM SuRwECRegInterface"))
             using (var devices = query.Get())
             {

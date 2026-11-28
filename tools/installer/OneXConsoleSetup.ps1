@@ -17,16 +17,6 @@ function Get-ONEXTweaksHardwareCompatibility {
     return 'Supported'
 }
 
-function Test-ONEXTweaksQualifiedOemHardware {
-    try {
-        $boards = @(Get-CimInstance Win32_BaseBoard -ErrorAction Stop)
-        if ($boards.Count -ne 1 -or $boards[0].Manufacturer -cne 'ONE-NETBOOK' -or
-            $boards[0].Product -cne 'ONEXPLAYER 3' -or $boards[0].Version -cne '1002-B') { return $false }
-        $bios = @(Get-CimInstance Win32_BIOS -ErrorAction Stop)
-        return $bios.Count -eq 1 -and $bios[0].SMBIOSBIOSVersion -ceq '5.01'
-    } catch { return $false }
-}
-
 function Get-OneXConsolePrerequisiteState {
     if ((Get-ONEXTweaksHardwareCompatibility) -ne 'Supported') { return 'Not applicable' }
     $directory = Join-Path $env:ProgramFiles 'OneXConsole'
@@ -90,14 +80,14 @@ function Get-ONEXTweaksEnrolledDesktopSid($Task) {
 }
 
 function Get-ONEXTweaksBridgeReportState($Health, [int]$BridgePid, [int]$Session, [version]$BridgeVersion, [bool]$RequiresHardware, [string]$ExpectedFamily,
-    [double]$AgeSeconds = 0, [bool]$RequiresFan = $true) {
+    [double]$AgeSeconds = 0) {
     if (!$ExpectedFamily -or $Health.widgetPackageFamily -cne $ExpectedFamily) { return 'Widget package family differs from registration' }
     if ($Health.connected -isnot [bool] -or !$Health.connected) { return 'Bridge reports no widget connection' }
     if ($Health.processId -ne $BridgePid -or $Health.sessionId -ne $Session) { return 'Bridge process or session differs from the report' }
     if (([version]$Health.version).ToString(3) -ne $BridgeVersion.ToString(3)) { return 'Bridge version differs from the installed file' }
     $hardwareUnavailable = $RequiresHardware -and ($Health.state.available -isnot [bool] -or !$Health.state.available -or
-        ($RequiresFan -and ($Health.homeHardware.fan.available -isnot [bool] -or !$Health.homeHardware.fan.available)) -or
-        (!$RequiresFan -and ($Health.state.canWrite -isnot [bool] -or !$Health.state.canWrite)))
+        (($Health.state.canWrite -isnot [bool] -or !$Health.state.canWrite) -and
+            ($Health.homeHardware.fan.available -isnot [bool] -or !$Health.homeHardware.fan.available)))
     if ($AgeSeconds -lt 0 -or $AgeSeconds -gt 10) {
         # OEM can hold the hardware pipe long enough to age a live Bridge report.
         # This state permits only the guarded restart, never successful setup.
@@ -110,7 +100,7 @@ function Get-ONEXTweaksBridgeReportState($Health, [int]$BridgePid, [int]$Session
     return 'Healthy'
 }
 
-function Get-ONEXTweaksBackendState($Tasks, [string]$Sid, [int]$Session, [bool]$RequiresHardware, [string]$ExpectedFamily, [string]$LocalAppData = $env:LOCALAPPDATA, [bool]$RequiresFan = $true) {
+function Get-ONEXTweaksBackendState($Tasks, [string]$Sid, [int]$Session, [bool]$RequiresHardware, [string]$ExpectedFamily, [string]$LocalAppData = $env:LOCALAPPDATA) {
     $startup = $Tasks | Where-Object TaskName -eq 'ONEXTweaks-Startup'
     $agent = $Tasks | Where-Object TaskName -eq 'ONEXTweaks-PowerAgent'
     $bridge = $Tasks | Where-Object TaskName -eq 'ONEXTweaks-WidgetBridge'
@@ -152,7 +142,7 @@ function Get-ONEXTweaksBackendState($Tasks, [string]$Sid, [int]$Session, [bool]$
         if (([DateTimeOffset]$actors[0].CreationDate) -gt $observed) { return 'Bridge process started after the report' }
         $assembly = Get-Item -LiteralPath ([IO.Path]::ChangeExtension($bridgeExe, '.dll'))
         $version = [version]$assembly.VersionInfo.FileVersion
-        return Get-ONEXTweaksBridgeReportState $health $actors[0].ProcessId $Session $version $RequiresHardware $ExpectedFamily $age $RequiresFan
+        return Get-ONEXTweaksBridgeReportState $health $actors[0].ProcessId $Session $version $RequiresHardware $ExpectedFamily $age
     } catch { return ('Release Bridge readback unavailable: ' + $_.Exception.Message) }
 }
 
@@ -185,8 +175,7 @@ function Get-ONEXTweaksRuntimeStatus([string]$OemStatus, [string]$ExpectedFamily
         }
         $result.RtssTask = Get-ONEXTweaksRtssTaskState ($tasks | Where-Object TaskName -eq 'ONEXTweaks-RTSS') $Sid
         $requiresHardware = $OemStatus -ne 'Not applicable'
-        $requiresFan = $requiresHardware -and (Test-ONEXTweaksQualifiedOemHardware)
-        $result.Backend = Get-ONEXTweaksBackendState $tasks $Sid $Session $requiresHardware $ExpectedFamily $LocalAppData $requiresFan
+        $result.Backend = Get-ONEXTweaksBackendState $tasks $Sid $Session $requiresHardware $ExpectedFamily $LocalAppData
     } catch {
         Write-Verbose ("Runtime verification failed: " + $_.Exception.Message)
     }

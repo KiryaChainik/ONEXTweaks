@@ -10,20 +10,20 @@ function Test-OemHandoffReadback {
     $family = 'ONEXTweaks.Widget_0123456789abc'
     $live = [pscustomobject]@{widgetPackageFamily=$family;connected=$true;processId=42;sessionId=1;version='0.29.1110';
         state=@{available=$true;canWrite=$true};homeHardware=@{fan=@{available=$false}}}
-    if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 15.4) -cne 'PowerAgent hardware readback temporarily stale' -or
-        (Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 45) -notlike 'Bridge report outside*' -or
-        (Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true "$family-wrong" 15.4) -notlike 'Widget package family differs*') {
-        throw 'Handoff readiness did not distinguish recent hardware failure from unrelated or old telemetry.'
-    }
-    if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 1 -RequiresFan $false) -cne 'Healthy' -or
-        (Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 1) -cne 'PowerAgent hardware readback unavailable') {
-        throw 'Writable TDP must be sufficient only when fan qualification is not required.'
+    if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 1) -cne 'Healthy') {
+        throw 'A working TDP channel must permit installation independently of fan capability.'
     }
     $live.state.canWrite = $false
-    if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 1 -RequiresFan $false) -cne 'PowerAgent hardware readback unavailable') {
-        throw 'A TDP-only handoff accepted power limits that cannot be changed.'
+    if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 1) -cne 'PowerAgent hardware readback unavailable' -or
+        (Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 15.4) -cne 'PowerAgent hardware readback temporarily stale' -or
+        (Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 45) -notlike 'Bridge report outside*' -or
+        (Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true "$family-wrong" 15.4) -notlike 'Widget package family differs*') {
+        throw 'Handoff readiness did not distinguish an unavailable TDP channel from expired or mismatched telemetry.'
     }
     $live.homeHardware.fan.available = $true
+    if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 1) -cne 'Healthy') {
+        throw 'A working fan no longer permits setup when firmware locks TDP writes.'
+    }
     if ((Get-ONEXTweaksBridgeReportState $live 42 1 '0.29.1110' $true $family 15.4) -notlike 'Bridge report outside*') {
         throw 'Stale previously healthy telemetry unexpectedly allowed setup.'
     }
@@ -123,14 +123,9 @@ try {
             $hardware = $agent.GetType('ONEXTweaks.Power.Hardware')
             $hardware.GetMethod('ValidateHome', $flags).Invoke($null, [object[]]@($homeSettings.PSObject.BaseObject))
             $modelCheck = $hardware.GetMethod('IsSupportedModel', $flags)
-            $oemCheck = $hardware.GetMethod('IsQualifiedOemHardware', $flags)
             if (!$modelCheck.Invoke($null, [object[]]@('ONE-NETBOOK', 'ONEXPLAYER 3')) -or
                 $modelCheck.Invoke($null, [object[]]@('ONE-NETBOOK', 'ONEXPLAYER X2')) -or
-                $modelCheck.Invoke($null, [object[]]@('Other', 'ONEXPLAYER 3'))) { throw 'The TDP model allowlist changed.' }
-            if (!$oemCheck.Invoke($null, [object[]]@('1002-B', '5.01')) -or
-                $oemCheck.Invoke($null, [object[]]@('1002-C', '5.01')) -or
-                $oemCheck.Invoke($null, [object[]]@('1002-B', '5.09')) -or
-                $oemCheck.Invoke($null, [object[]]@('1002-B', '5.39'))) { throw 'An unverified board or BIOS was admitted to EC controls.' }
+                $modelCheck.Invoke($null, [object[]]@('Other', 'ONEXPLAYER 3'))) { throw 'The ONEXPLAYER 3 hardware model check changed.' }
             $sampleType = $agent.GetType('ONEXTweaks.Power.Sample')
             $sample = [Activator]::CreateInstance($sampleType, $true)
             $fields = [Reflection.BindingFlags]'NonPublic,Instance'

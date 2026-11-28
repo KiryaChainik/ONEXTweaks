@@ -73,6 +73,7 @@ namespace ONEXTweaks.Power
             LoadHome();InitializeCharge();
             if(fanInitialized&&oem.IsTrusted&&fanConnectionGeneration==oem.ConnectionGeneration)return;
             fanInitialized=false;
+            FanFirmwareControl.Probe(ReadChargeByte(1098));
             // The helper process has its own EC access mode. Match the ONEXPLAYER 3
             // OEM initialization before enabling manual control on this connection.
             oem.Call("/func/setECAccessType/2");
@@ -103,12 +104,6 @@ namespace ONEXTweaks.Power
         }
         internal object HomeState(out bool fanAvailable)
         {
-            if (!OemHardwareQualified)
-            {
-                fanAvailable = false;
-                return new { fan = new { available = false, error = UnqualifiedOemHardware },
-                    lighting = new { available = false, error = UnqualifiedOemHardware }, smallProcessorMask = (bool?)null, cpuClockMhz = 0 };
-            }
             lock(SyncRoot)
             {
                 bool fanOk=false,rgbOk=false;int? actualPercent=null,control=null,rpm=null;bool? smallMask=null;
@@ -493,7 +488,6 @@ namespace ONEXTweaks.Power
         }
         internal void StopHomeControl()
         {
-            if (!OemHardwareQualified) return;
             lock(SyncRoot)
             {
                 try{StopGameLighting();}
@@ -502,7 +496,6 @@ namespace ONEXTweaks.Power
         }
         private void DisposeHome()
         {
-            if (!OemHardwareQualified) return;
             lock(SyncRoot)
             {
                 homeDisposed=true;
