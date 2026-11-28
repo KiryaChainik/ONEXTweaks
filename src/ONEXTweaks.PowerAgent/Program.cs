@@ -89,7 +89,7 @@ namespace ONEXTweaks.Power
                             return 0;
                         }
                         if (!installed && command != "serve") throw new ArgumentException("Unknown command");
-                        if (hardware.OemHardwareQualified) hardware.RecoverFanAtStartup();
+                        hardware.RecoverFanAtStartup();
                         Serve(hardware, desktop);
                     }
                 }
@@ -120,11 +120,11 @@ namespace ONEXTweaks.Power
             catch (UnauthorizedAccessException) { }
         }
 
-        private static void ReportInstallerHardware(uint session, bool fanRequired, bool fanAvailable, State state)
+        private static void ReportInstallerHardware(uint session, bool fanAvailable, State state)
         {
             DateTime now = DateTime.UtcNow;
             if (now >= InstallerProbeExpiresUtc) return;
-            if (!state.available || (fanRequired ? !fanAvailable : !state.canWrite))
+            if (!state.available || (!state.canWrite && !fanAvailable))
             {
                 ResetInstallerHardwareProbe();
                 return;
@@ -192,10 +192,6 @@ namespace ONEXTweaks.Power
                                     var request = Json.DeserializeObject(line) as Dictionary<string, object>;
                                     if (request == null || !request.ContainsKey("action") || !(request["action"] is string)) throw new ArgumentException("Invalid request");
                                     action = (string)request["action"];
-                                    if (!hardware.OemHardwareQualified && (action == "chargeRead" || action == "chargeSet" ||
-                                        action == "fanSet" || action == "fanCurveSet" || action == "lightingSet" || action == "lightingFeedback" ||
-                                        action == "controllerRead" || action == "controllerPrepare" || action == "smallMaskSet" || action == "cpuClockSet"))
-                                        throw new InvalidOperationException(Hardware.UnqualifiedOemHardware);
                                     if (action == "read") { }
                                     else if (action == "set")
                                     {
@@ -256,7 +252,7 @@ namespace ONEXTweaks.Power
                                         bool fanAvailable;
                                         var homeState=hardware.HomeState(out fanAvailable);
                                         var powerState=hardware.State();
-                                        if(desktop!=null&&action=="homeRead")ReportInstallerHardware(session,hardware.OemHardwareQualified,fanAvailable,powerState);
+                                        if(desktop!=null&&action=="homeRead")ReportInstallerHardware(session,fanAvailable,powerState);
                                         reply=new{ok=true,home=homeState,state=powerState};writer.WriteLine(Json.Serialize(reply));continue;
                                     }
                                     else if (action == "captureFactoryPower")
@@ -335,8 +331,6 @@ namespace ONEXTweaks.Power
     }
     internal sealed partial class Hardware : IDisposable
     {
-        internal const string UnqualifiedOemHardware = "Board and firmware have not been qualified for this hardware control.";
-        internal readonly bool OemHardwareQualified;
         private readonly Type msr;
         private readonly MethodInfo init, read, write, close;
         private readonly OemPipe oem;
@@ -353,8 +347,7 @@ namespace ONEXTweaks.Power
         private Assembly vendorAssembly;
         internal Hardware()
         {
-            string boardRevision = ReadDeviceBoardRevision();
-            OemHardwareQualified = HasQualifiedOemHardware(boardRevision);
+            ValidateDeviceModel();
             string path = Path.Combine(Program.VendorRoot, "CompatLayerCT.exe");
             ValidateHash(path, Program.VendorHash, Program.VendorFix3Hash);
             ValidateHash(Path.Combine(Program.VendorRoot, "PawnIOLib.dll"), "D71F62627D66983BB9F5B1C269F27BCD8C1B8A46E794377A6330F84C198F4443");
@@ -370,7 +363,7 @@ namespace ONEXTweaks.Power
             write = msr.GetMethod("ioctl_write_msr", flags);
             close = msr.GetMethod("Close", flags);
             oem = new OemPipe();
-            if (OemHardwareQualified) InitializeGameLightingRecovery();
+            InitializeGameLightingRecovery();
         }
         internal static void ValidateHash(string path, params string[] expected)
         {
@@ -379,46 +372,20 @@ namespace ONEXTweaks.Power
                 if (Array.IndexOf(expected, BitConverter.ToString(hash.ComputeHash(file)).Replace("-", "")) < 0)
                     throw new InvalidOperationException("Версия аппаратного модуля изменилась. Нужна повторная проверка.");
         }
-        private static string ReadDeviceBoardRevision()
+        internal static void ValidateDeviceModel()
         {
-            using (var search = new ManagementObjectSearcher("SELECT Manufacturer,Product,Version FROM Win32_BaseBoard"))
+            using (var search = new ManagementObjectSearcher("SELECT Manufacturer,Product FROM Win32_BaseBoard"))
             using (var items = search.Get())
             {
                 if (items.Count != 1) throw new InvalidOperationException("Не удалось определить модель платы.");
                 foreach (ManagementObject board in items)
-                    if (IsSupportedModel((string)board["Manufacturer"], (string)board["Product"])) return (string)board["Version"];
+                    if (IsSupportedModel((string)board["Manufacturer"], (string)board["Product"])) return;
             }
             throw new InvalidOperationException("Модель платы не проверена.");
         }
         internal static bool IsSupportedModel(string manufacturer, string product)
         {
             return manufacturer == "ONE-NETBOOK" && product == "ONEXPLAYER 3";
-        }
-        internal static bool IsQualifiedOemHardware(string boardRevision, string biosVersion)
-        {
-            return boardRevision == "1002-B" && biosVersion == "5.01";
-        }
-        internal static void ValidateOemHardware()
-        {
-            if (!HasQualifiedOemHardware(ReadDeviceBoardRevision())) throw new InvalidOperationException(UnqualifiedOemHardware);
-        }
-        private static bool HasQualifiedOemHardware(string boardRevision)
-        {
-            if (boardRevision != "1002-B") return false;
-            try
-            {
-                using (var search = new ManagementObjectSearcher("SELECT SMBIOSBIOSVersion FROM Win32_BIOS"))
-                using (var items = search.Get())
-                {
-                    if (items.Count == 1)
-                        foreach (ManagementObject bios in items)
-                            return IsQualifiedOemHardware(boardRevision, (string)bios["SMBIOSBIOSVersion"]);
-                }
-            }
-            catch (ManagementException) { }
-            catch (UnauthorizedAccessException) { }
-            catch (COMException) { }
-            return false;
         }
         private Sample Read()
         {
@@ -609,7 +576,6 @@ namespace ONEXTweaks.Power
         }
         private void InitializeCharge()
         {
-            if (!OemHardwareQualified) throw new InvalidOperationException(UnqualifiedOemHardware);
             if (chargeInitialized) return;
             ValidateHash(Path.Combine(Program.VendorRoot, @"tools\pawnio\LpcIO.bin"), "B3896A1CAB0D808FCA31FE2EBCAE045D59DAC690DA87B17C858BB8DA357EB45E");
             ValidateHash(Path.Combine(Program.VendorRoot, @"tools\pawnio\LpcACPIEC.bin"), "C38FD116E7AFF4D1FDB0A494E296BE0A6708E5A22FC72F14587442FB7F8F7906");

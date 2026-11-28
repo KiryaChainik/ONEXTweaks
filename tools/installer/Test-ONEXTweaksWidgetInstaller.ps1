@@ -349,9 +349,6 @@ function Test-WindowsWorkflow {
                 ($oemPlan.Applications | Where-Object Name -like 'OneXConsole*').Status -ne 'Compatible OEM installer missing from bundle') {
                 throw "ONEXPLAYER 3 rev '$revision' with BIOS '$version' must plan hardware dependencies."
             }
-            if ((Test-ONEXTweaksQualifiedOemHardware) -ne ($revision -ceq '1002-B' -and $version -ceq '5.01')) {
-                throw "Unexpected EC qualification for board '$revision' with BIOS '$version'."
-            }
         }
     }
     $state.BoardProduct = 'ONEXPLAYER X2'
@@ -371,7 +368,7 @@ function Test-WindowsWorkflow {
     'PASS: Windows workflow with simulated AppX deployment (first registration, WhatIf, retry, blockers, update)'
     'PASS: automatic driver setup with simulated downloads, signature check, pending restart and retry'
     'PASS: RTSS archive validation and simulated setup'
-    'PASS: TDP setup accepts ONEXPLAYER 3 across board and BIOS versions; EC qualification stays separate'
+    'PASS: ONEXPLAYER 3 setup accepts different board revisions and BIOS versions'
 }
 
 function Test-RuntimeReadback {
@@ -384,7 +381,7 @@ function Test-RuntimeReadback {
     $fixtureObserved = [DateTimeOffset]::UtcNow.AddSeconds(-1)
     $fixtureReport = [pscustomobject]@{
         connected = $true; processId = $bridgePid; sessionId = $session; updatedUtc = $fixtureObserved.ToString('o'); version = '0.29.1099'; widgetPackageFamily = 'ONEXTweaks.Widget_fixture'
-        state = [pscustomobject]@{ available = $true }; homeHardware = [pscustomobject]@{ fan = [pscustomobject]@{ available = $true } }
+        state = [pscustomobject]@{ available = $true; canWrite = $true }; homeHardware = [pscustomobject]@{ fan = [pscustomobject]@{ available = $true } }
     }
     try {
         foreach ($name in $variables) {
@@ -459,7 +456,10 @@ function Test-RuntimeReadback {
         if ((Get-ONEXTweaksBackendState $tasks $sid $session $true 'ONEXTweaks.Widget_fixture') -eq 'Healthy') { throw 'Accepted interactive elevation for PowerAgent.' }
         $tasks[1].Principal.LogonType = 'ServiceAccount'
         $fixtureReport.homeHardware.fan.available = $false
-        if ((Get-ONEXTweaksBackendState $tasks $sid $session $true 'ONEXTweaks.Widget_fixture') -eq 'Healthy') { throw 'Accepted absent hardware readback.' }
+        if ((Get-ONEXTweaksBackendState $tasks $sid $session $true 'ONEXTweaks.Widget_fixture') -ne 'Healthy') { throw 'Fan capability blocked an otherwise working installation.' }
+        $fixtureReport.state.canWrite = $false
+        if ((Get-ONEXTweaksBackendState $tasks $sid $session $true 'ONEXTweaks.Widget_fixture') -eq 'Healthy') { throw 'Accepted a read-only power agent with no active fan channel.' }
+        $fixtureReport.state.canWrite = $true
         $fixtureReport.homeHardware.fan.available = $true
         foreach ($mutation in @(
             @{ key = 'processId'; value = 5124 }, @{ key = 'sessionId'; value = 1 }, @{ key = 'connected'; value = 'false' },

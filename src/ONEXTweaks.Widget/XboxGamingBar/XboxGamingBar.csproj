@@ -94,6 +94,7 @@
     <Compile Include="OnexInputDiagnostics.cs" />
     <Compile Include="OnexFrameTrace.cs" />
     <Compile Include="OnexStatePushes.cs" />
+    <Compile Include="OnexProfileWriteGate.cs" />
     <Compile Include="OnexStartupFrontend.cs" />
     <Compile Include="OnexStartupVerification.cs" />
     <Compile Include="OnexFrontend.cs" />

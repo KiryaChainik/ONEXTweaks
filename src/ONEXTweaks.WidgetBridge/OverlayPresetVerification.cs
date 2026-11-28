@@ -13,6 +13,12 @@ internal static class OverlayPresetVerification
   void Change(object value){using var doc=JsonDocument.Parse(Data(value));catalog!.Mutate(doc.RootElement);}
   try
   {
+   string backup=Path.Combine(root,"fresh-install","dev","references","rtss-original-properties.json");
+   RtssProfile.SaveOriginalProperties(backup,new Dictionary<string,byte[]>{{"EnableOSD",new byte[]{0,0,0,0}}});
+   string savedBackup=File.ReadAllText(backup);
+   Check(JsonSerializer.Deserialize<Dictionary<string,string>>(savedBackup)!["EnableOSD"]=="AAAAAA==","First RTSS write creates the backup directory and saves the original setting");
+   RtssProfile.SaveOriginalProperties(backup,new Dictionary<string,byte[]>{{"EnableOSD",new byte[]{1,0,0,0}}});
+   Check(File.ReadAllText(backup)==savedBackup,"Later RTSS changes keep the original backup");
    catalog=Open();Check(live==original&&applies==0,"First catalog creation preserves legacy overlay settings without applying hardware");Check(Store().Presets.Count==5&&Store().Presets.Skip(1).Select(entry=>entry.Name).SequenceEqual(OverlayPresetCatalog.StandardNames),"Four standard English layout names are exact");Check(Store().Presets.All(entry=>entry.Values.Config==original.Config),"Existing customized layout/configuration is preserved in initial snapshots");
    Change(new{operation="create",name="QA Preset",activate=false});string own=Store().Presets.Single(entry=>entry.Name=="QA Preset").Id;Check(catalog.ActiveId=="global"&&applies==0,"Inactive create adds a preset without applying or changing selected preset");
    Change(new{operation="rename",id=own,name="QA Renamed"});Check(Store().Presets.Single(entry=>entry.Id==own).Name=="QA Renamed"&&live==original,"Rename keeps values and actual overlay unchanged");

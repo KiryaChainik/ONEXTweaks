@@ -15,20 +15,17 @@ namespace XboxGamingBar
         private bool _onexPushScheduled,_onexPushVisible=true;
         private NamedPipeClient _onexStatePushOwner;
         private NamedPipeClient _onexProfileEditOwner;
-        private static readonly string[] OnexProfileMutationKeys={"OnexProfilesSet","OnexDisplayProfilesSet","OnexDisplaySet",
-            "OnexFanProfilesSet","OnexFanSet","OnexControllerSet","OnexOverlayPresetsSet","OnexOverlayLevel",
-            "OnexCpuSettings","OnexCpuTuningSet","OnexCpuClockSet","OnexBoostSet","OnexWindowsPowerMode","OnexFpsSet"};
         private long _onexPushApplied;
 
         internal bool AcceptsOnexProfileRequest(NamedPipeClient owner, Windows.Foundation.Collections.ValueSet request)
         {
             if(ReferenceEquals(Volatile.Read(ref _onexProfileEditOwner),owner))return true;
-            foreach(var key in OnexProfileMutationKeys)if(request.ContainsKey(key))return false;
+            if (OnexProfileWriteGate.RequiresProfileSnapshot(request.Keys)) return false;
             if(request.TryGetValue("Command",out var command)&&Convert.ToInt32(command)==1&&request.TryGetValue("Function",out var id))
             {
                 var function=(Shared.Enums.Function)Convert.ToInt32(id);
                 if(function==Shared.Enums.Function.TDP||function==Shared.Enums.Function.TDPBoostEnabled||
-                   function==Shared.Enums.Function.TDPBoostFPPT||function==Shared.Enums.Function.OSDConfig)return false;
+                   function==Shared.Enums.Function.TDPBoostFPPT)return false;
             }
             return true;
         }
@@ -39,6 +36,7 @@ namespace XboxGamingBar
             CancelOnexPerformanceScopeEdits();
             CancelOnexDisplayProfileEdits();
             CancelControllerProfileEdits();
+            _onexOverlayCommandError = null;
             foreach(var form in OnexFanForms)
             {
                 form.Timer.Stop();

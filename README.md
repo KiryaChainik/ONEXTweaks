@@ -16,7 +16,7 @@ Tune power, cooling, controls, and display settings without leaving your game.</
   <a href="#support-the-project">Support</a>
 </p>
 
-ONEXTweaks runs inside **Xbox Game Bar** on Windows 11 x64. Open it with **Win + G** and use touch, a mouse, or the built-in controller. It's designed for the Intel ONEXPLAYER 3. The current source checks whether the power limits can be read and changed through compatible OneXConsole components. Fan and charge controls still require a verified board and firmware configuration. The published `v0.29.1110-beta.1` installer requires board `1002-B` and BIOS `5.01` for hardware controls.
+ONEXTweaks runs inside **Xbox Game Bar** on Windows 11 x64. Open it with **Win + G** and use touch, a mouse, or the built-in controller. It's designed for the Intel ONEXPLAYER 3. On Intel ONEXPLAYER 3, beta.5 checks the hardware features exposed by compatible OneXConsole components. Controls appear when the corresponding hardware responds.
 
 ## Take a tour
 
@@ -290,7 +290,7 @@ Compare the value in **Hash** with the SHA-256 shown on the release page.
 
 - **OneXConsole startup.** When the hardware checks pass, Setup disables the OneXConsole window's automatic launch if it was enabled. This keeps the two apps from competing for hardware controls. Its hardware components remain installed, and you can open the OneXConsole window manually.
 - **Beta certificates.** On a first beta install, Setup may ask you to trust the widget's signing certificate. Compare the publisher and fingerprint with the release details. Windows may also show a SmartScreen prompt. Standard installation uses normal Windows signature checks.
-- **Updates.** For the 1109 to 1110 upgrade and recovery procedure, see the [installer guide (Russian)](tools/installer/README.md).
+- **Updating from an earlier beta.** Run the [installed ONEXTweaks uninstaller](#uninstall), then run the new Setup. Plan to set up your profiles again.
 
 ## Dependencies
 

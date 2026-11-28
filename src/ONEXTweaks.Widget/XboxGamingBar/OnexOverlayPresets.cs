@@ -47,7 +47,7 @@ namespace XboxGamingBar
    RequireOnexProfileConnection(owner);
    if(_onexOverlayConfigWrites>0||osdBackgroundDebounceTimer?.IsEnabled==true)throw new InvalidOperationException(global::XboxGamingBar.OnexStrings.Get("Дождись сохранения оверлея."));
    if(_onexOverlaySettingsGate!=null)_onexOverlaySettingsGate.IsEnabled=false;ApplyOnexTileAvailability();
-   try{var reply=await SendOnexHomeRequestAsync(new ValueSet{{"OnexOverlayPresetsSet",mutation.Stringify()}});ApplyOnexOverlayPresetsState((string)reply["OnexOverlayPresetsState"]);if(reply.TryGetValue("OnexOverlayState",out var state))ApplyOnexOverlayState((string)state);if(mutation.GetNamedString("operation","")=="select"){SyncOsdCustomizeLevelToActiveOverlay();await ReadOnexOverlayConfigurationAsync();}}
+   try{var reply=await SendOnexHomeRequestAsync(new ValueSet{{"OnexOverlayPresetsSet",mutation.Stringify()}});_onexOverlayCommandError=null;ApplyOnexOverlayPresetsState((string)reply["OnexOverlayPresetsState"]);if(reply.TryGetValue("OnexOverlayState",out var state))ApplyOnexOverlayState((string)state);if(mutation.GetNamedString("operation","")=="select"){SyncOsdCustomizeLevelToActiveOverlay();await ReadOnexOverlayConfigurationAsync();}}
    finally{if(_onexOverlaySettingsGate!=null)_onexOverlaySettingsGate.IsEnabled=true;}
    }finally{_onexOverlayPresetChanging=false;ApplyOnexTileAvailability();}
   }
