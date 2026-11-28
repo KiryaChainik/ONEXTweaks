@@ -18,6 +18,10 @@ QA_CASES = ("cleanInstall", "reboot", "upgrade1109", "profilesPreserved",
             "rollback1109", "uninstall", "oemStartupRestored",
             "combined1110Repair", "uninstallAfterRepair", "sameVersionSetupRetry",
             "interruptedFirstSetup", "rollbackWithoutAppx")
+BETA5_TAG = "v0.29.1110-beta.5"
+BETA5_CASES = ("cleanInstall", "reboot", "previousBetaRemoved", "previousBetaRejected",
+               "uninstall", "oemStartupRestored", "sameVersionSetupRetry",
+               "firstRtssActivation", "rollbackByReinstallingBeta4")
 
 
 class GateError(Exception):
@@ -204,7 +208,7 @@ def release_commit(repo, sha):
     return job
 
 
-def validate_receipt(sha, setup, receipt):
+def validate_receipt(sha, setup, receipt, tag=None):
     if setup.name != SETUP or not setup.is_file():
         raise GateError(f"Expected the built {SETUP}.")
     with setup.open("rb") as data:
@@ -215,7 +219,8 @@ def validate_receipt(sha, setup, receipt):
     if (machine.get("os") != "Windows 11" or machine.get("architecture") != "x64"
             or machine.get("virtualMachine") is not True or machine.get("oneXConsole") is not True):
         raise GateError("VM receipt must identify Windows 11 x64 with OneXConsole.")
-    missing = [case for case in QA_CASES if receipt.get("checks", {}).get(case) is not True]
+    cases = BETA5_CASES if tag == BETA5_TAG else QA_CASES
+    missing = [case for case in cases if receipt.get("checks", {}).get(case) is not True]
     if missing:
         raise GateError("Required Windows VM scenarios are missing or failed: " + ", ".join(missing))
     return digest
@@ -225,7 +230,7 @@ def release(args, repo):
     if not re.fullmatch(r"v[0-9]+(?:\.[0-9]+){2,3}(?:-[A-Za-z0-9.-]+)?", args.tag):
         raise GateError("Use a version tag such as v0.29.1110-beta.1.")
     job = release_commit(repo, args.commit)
-    digest = validate_receipt(args.commit, args.setup, json.loads(args.receipt.read_text(encoding="utf-8-sig")))
+    digest = validate_receipt(args.commit, args.setup, json.loads(args.receipt.read_text(encoding="utf-8-sig")), args.tag)
     if args.check_only:
         print(f"Passed: {job['html_url']}\nSHA-256: {digest}")
         return
@@ -238,11 +243,17 @@ def release(args, repo):
                 obj = api(f"repos/{repo}/git/tags/{obj['sha']}")["object"]
             if obj["type"] != "commit" or obj["sha"] != args.commit:
                 raise GateError("The existing tag points at a different commit.")
+    scenarios = (
+        "Windows 11 x64 VM with OneXConsole: beta.4 removal, beta.5 clean install, reboot, "
+        "first RTSS activation, repeat Setup, uninstall and reinstalling beta.4 passed."
+        if args.tag == BETA5_TAG else
+        "Windows 11 x64 VM with OneXConsole: install, reboot, 1109 upgrade with profiles, "
+        "rollback, uninstall and OEM autostart restoration passed."
+    )
     notes = (
         f"Setup SHA-256: `{digest}`\n\n"
         f"Source commit: `{args.commit}` · [Windows CI]({job['html_url']})\n\n"
-        "Windows 11 x64 VM with OneXConsole: install, reboot, 1109 upgrade with profiles, "
-        "rollback, uninstall and OEM autostart restoration passed.\n\n"
+        f"{scenarios}\n\n"
         "Before publishing, verify Game Bar and controller input on ONEXPLAYER."
     )
     draft = api(f"repos/{repo}/releases", "--method", "POST", "-f", f"tag_name={args.tag}",

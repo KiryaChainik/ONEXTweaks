@@ -99,6 +99,15 @@ class DraftGateTest(unittest.TestCase):
                     ops.validate_receipt(HEAD, self.setup, self.receipt)
                 self.receipt["checks"][case] = True
 
+    def test_clean_beta_has_its_own_installation_contract(self):
+        self.receipt["checks"] = dict.fromkeys(ops.BETA5_CASES, True)
+        self.assertEqual(ops.validate_receipt(HEAD, self.setup, self.receipt, ops.BETA5_TAG), self.digest)
+        with self.assertRaisesRegex(ops.GateError, "upgrade1109"):
+            ops.validate_receipt(HEAD, self.setup, self.receipt, "v0.29.1110-beta.4")
+        self.receipt["checks"]["firstRtssActivation"] = False
+        with self.assertRaisesRegex(ops.GateError, "firstRtssActivation"):
+            ops.validate_receipt(HEAD, self.setup, self.receipt, ops.BETA5_TAG)
+
     def test_rejects_untested_commit_outside_main(self):
         with patch.object(ops, "api", side_effect=[{"commit": {"sha": NEW_HEAD}}, {"status": "diverged"}]), \
              patch.object(ops, "windows_run") as windows_run:

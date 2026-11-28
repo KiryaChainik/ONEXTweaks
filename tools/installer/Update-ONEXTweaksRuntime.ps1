@@ -72,7 +72,14 @@ Set-StrictMode -Version Latest
 . (Join-Path $PSScriptRoot 'DriverPrerequisites.ps1')
 . (Join-Path (Split-Path -LiteralPath $PSScriptRoot) 'Install-Startup.ps1')
 
-$package = 'ONEXTweaks.Widget_0.29.1110.0_x64__3a23eh8tyg7na'
+$manifestItem = Get-Item -LiteralPath $RuntimeManifest
+if ($manifestItem.Attributes -band [IO.FileAttributes]::ReparsePoint -or $manifestItem.Length -gt 1048576 -or
+    (Get-FileHash -LiteralPath $RuntimeManifest).Hash -cne $RuntimeManifestSha256) { throw 'Unverified runtime update manifest.' }
+$manifest = [IO.File]::ReadAllText($RuntimeManifest) | ConvertFrom-Json
+$package = [string]$manifest.PackageFullName
+if ($package -cnotmatch '^ONEXTweaks\.Widget_(?:[0-9]{1,5}\.){3}[0-9]{1,5}_x64__3a23eh8tyg7na$') {
+    throw 'The runtime update manifest does not describe the supported widget family.'
+}
 $root = Join-Path ([Environment]::GetFolderPath('ProgramFiles')) 'ONEXTweaks'
 $state = Get-ONEXTweaksReleaseStateDirectory
 $receiptPath = Join-Path $state 'owned-release.json'
@@ -86,7 +93,7 @@ try {
     if ($identity.User.Value -cne $OwnerSid -or
         !([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -or
         (Get-ONEXTweaksInteractiveSid) -cne $OwnerSid -or ![Environment]::Is64BitProcess) {
-        throw 'The 1110 runtime update needs administrator rights on the widget owner desktop.'
+        throw 'The runtime update needs administrator rights on the widget owner desktop.'
     }
 } finally { $identity.Dispose() }
 $installedPackage = @(Get-AppxPackage -Name 'ONEXTweaks.Widget' -PackageTypeFilter Main)
@@ -94,7 +101,7 @@ if ($installedPackage.Count -gt 1 -or ($installedPackage.Count -eq 1 -and $insta
     throw 'A different widget registration is using this Windows account.'
 }
 if ($Action -ne 'Assess' -and ($installedPackage.Count -ne 1 -or $installedPackage[0].Status -ne 'Ok')) {
-    throw 'The owner needs the registered ONEXTweaks 1110 widget before updating its runtime.'
+    throw 'The owner needs the registered release widget before updating its runtime.'
 }
 
 function Get-ONEXTweaksHotfixTask($Row) {
@@ -386,11 +393,6 @@ try {
     $plan = Get-ONEXTweaksUninstallPlan $state $root -OwnerOnly
     if (!$plan) { return 'No update' }
     if ($plan.Receipt.OwnerSid -cne $OwnerSid -or $plan.Receipt.PackageFullName -cne $package) { throw 'The installed runtime belongs to another release or desktop.' }
-    $manifestItem = Get-Item -LiteralPath $RuntimeManifest
-    if ($manifestItem.Attributes -band [IO.FileAttributes]::ReparsePoint -or $manifestItem.Length -gt 1048576 -or
-        (Get-FileHash -LiteralPath $RuntimeManifest).Hash -cne $RuntimeManifestSha256) { throw 'Unverified runtime update manifest.' }
-    $manifest = [IO.File]::ReadAllText($RuntimeManifest) | ConvertFrom-Json
-    if ($manifest.PackageFullName -cne $package) { throw 'The update does not match the installed widget.' }
     $id = [guid]::NewGuid().ToString('N')
     $saved = "$root-update-$id-old"
     $staged = "$root-update-$id-new"

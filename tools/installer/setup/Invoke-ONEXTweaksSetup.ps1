@@ -128,20 +128,27 @@ try {
         }
     }
 
-    if ($package -and $package.PackageFullName -cne $metadata.PackageFullName) {
-        throw 'A different ONEXTweaks package is installed. This beta supports a clean installation or the included 1109 upgrade.'
+    $cleanInstallMessage = 'Uninstall the previous ONEXTweaks beta in Windows Settings > Apps > Installed apps, then run this Setup again.'
+    if ($package -and $package.PackageFullName -cne $metadata.PackageFullName) { throw $cleanInstallMessage }
+    $ownedRelease = Join-Path $state 'owned-release.json'
+    if (Test-Path -LiteralPath $ownedRelease) {
+        Assert-ONEXTweaksProtectedStateDirectory $state
+        Assert-ONEXTweaksProtectedItem $ownedRelease
+        $existingRelease = [IO.File]::ReadAllText($ownedRelease) | ConvertFrom-Json
+        if ($existingRelease.PackageFullName -cne $metadata.PackageFullName) { throw $cleanInstallMessage }
     }
-    if ($metadata.PackageFullName -ceq 'ONEXTweaks.Widget_0.29.1110.0_x64__3a23eh8tyg7na' -and
-        ((Test-Path -LiteralPath (Join-Path $state 'owned-release.json')) -or (Test-Path -LiteralPath (Join-Path $state 'runtime-update-1110.json')))) {
+
+    if ((Test-Path -LiteralPath (Join-Path $state 'owned-release.json')) -or
+        (Test-Path -LiteralPath (Join-Path $state 'runtime-update-1110.json'))) {
         $pendingFirstInstall = Test-Path -LiteralPath (Join-Path $state 'fresh-runtime.json')
-        $stage = '1110 installation inspection'
+        $stage = 'Installed release inspection'
         if (!$pendingFirstInstall -and (& $updater @runtimeArguments -OwnerSid $OwnerSid -Action Assess) -ceq 'No update') {
-            throw 'The existing 1110 installation could not be verified for this Windows account.'
+            throw 'The existing installation could not be verified for this Windows account.'
         }
-        $stage = '1110 widget registration and dependencies'
+        $stage = 'Widget registration and dependencies'
         if (!$package -or $package.Status -ne 'Ok') {
-            Write-SetupLine STEP 'Restoring the 1110 widget registration...'
-        } else { Write-SetupLine STEP 'Checking 1110 widget dependencies...' }
+            Write-SetupLine STEP 'Restoring the widget registration...'
+        } else { Write-SetupLine STEP 'Checking widget dependencies...' }
         $ownerResult = Invoke-DesktopPhase Register
         if ($ownerResult -eq 3010) {
             Write-SetupResult 'Restart Windows, then run this same Setup to finish installing dependencies.'
@@ -150,19 +157,19 @@ try {
         if ($ownerResult -ne 0) { throw 'Widget registration or dependency repair failed. See %LOCALAPPDATA%\ONEXTweaks\Setup\setup-entry-last.log.' }
         $registered = @(Get-AppxPackage -User $OwnerSid -Name 'ONEXTweaks.Widget' -PackageTypeFilter Main)
         if ($registered.Count -ne 1 -or $registered[0].PackageFullName -cne $metadata.PackageFullName -or
-            $registered[0].Status -ne 'Ok') { throw 'Windows did not confirm the 1110 widget registration.' }
+            $registered[0].Status -ne 'Ok') { throw 'Windows did not confirm the widget registration.' }
         if ($pendingFirstInstall) {
             $stage = 'Interrupted first installation'
             Write-SetupLine STEP 'Resuming the interrupted first installation...'
             $null = & $initialize @runtimeArguments -Confirm:$false
         }
-        $stage = '1110 runtime update'
+        $stage = 'Release runtime update'
         $updateStatus = & $updater @runtimeArguments -OwnerSid $OwnerSid -Action Inspect
         if ($updateStatus -cin @('Rolled back','Committed')) {
             Write-SetupLine STEP 'Checking the installation after recovering the previous update...'
             $updateStatus = & $updater @runtimeArguments -OwnerSid $OwnerSid -Action Inspect
         }
-        if ($updateStatus -cnotin @('Current','Update required','Staged')) { throw 'Could not confirm a stable 1110 installation after recovery.' }
+        if ($updateStatus -cnotin @('Current','Update required','Staged')) { throw 'Could not confirm a stable installation after recovery.' }
         if ($updateStatus -ceq 'Update required') {
             Write-SetupLine STEP 'Repairing or updating ONEXTweaks while keeping your profiles...'
             $upgrading = $true

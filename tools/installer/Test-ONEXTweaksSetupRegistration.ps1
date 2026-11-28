@@ -11,12 +11,12 @@ $branches = @($ast.FindAll({
     $node -is [Management.Automation.Language.IfStatementAst] -and
         $node.Clauses[0].Item1.Extent.Text.Contains("'runtime-update-1110.json'")
 }, $true))
-if ($branches.Count -ne 1) { throw 'Expected one 1110 runtime update branch in Setup.' }
+if ($branches.Count -ne 1) { throw 'Expected one same-package runtime update branch in Setup.' }
 
 $root = Join-Path ([IO.Path]::GetTempPath()) ('onextweaks-registration-' + [guid]::NewGuid().ToString('N'))
 $state = $root
 $runtimeArguments = @{}
-$metadata = @{ PackageFullName = 'ONEXTweaks.Widget_0.29.1110.0_x64__3a23eh8tyg7na' }
+$metadata = @{ PackageFullName = 'ONEXTweaks.Widget_0.29.1110.1_x64__3a23eh8tyg7na' }
 $OwnerSid = 'S-1-5-21-1-2-3-4'
 $healthyPackage = [pscustomobject]@{ PackageFullName = $metadata.PackageFullName; Status = 'Ok' }
 
@@ -99,7 +99,7 @@ try {
     Test-UpdatePath 'Assess, Register' -RegisterResult 3010 -ExitCode 3010
     Test-UpdatePath 'Assess, Register' -RegisterResult 1 -ExpectedError 'Widget registration or dependency repair failed.*'
     Test-UpdatePath 'Assess, Register, Read registration' -MissingReadback -ExpectedError 'Windows did not confirm*'
-    Test-UpdatePath 'Assess' -WrongOwner -ExpectedError 'The existing 1110 installation could not be verified*'
+    Test-UpdatePath 'Assess' -WrongOwner -ExpectedError 'The existing installation could not be verified*'
     Test-UpdatePath 'Assess' -Blocker 'Foreign task' -ExpectedError 'Foreign task'
     if ([IO.File]::ReadAllText($receipt) -cne 'Existing owned runtime') { throw 'Setup replaced the existing runtime ownership receipt.' }
     'PASS Setup repairs the owned 1110 registration before inspecting or staging the runtime update.'
